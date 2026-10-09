@@ -63,7 +63,7 @@ test('Mac and Windows keep their actual platform constraints', () => {
   const mac=selectDevice({...DEFAULTS,method:'containers'},'mac');
   assert.equal(mac.method,'virtualenv');assert.equal(mac.channel,'alpha');
   assert.throws(()=>validateState({...mac,channel:'testing'}));
-  assert.equal(selectDevice(mac,'computer').channel,'testing');
+  assert.equal(selectDevice(mac,'computer').channel,'alpha');
   const windows=selectDevice({...DEFAULTS,method:'containers'},'windows');
   assert.equal(windows.method,'virtualenv');
   assert.match(compatibility(windows),/WSL2/);

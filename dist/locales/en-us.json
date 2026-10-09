@@ -925,5 +925,6 @@
   "My Mac uses Apple Silicon and macOS 15 or later; the required tools are installed.": "My Mac uses Apple Silicon and macOS 15 or later; the required tools are installed.",
   "Not supported by the installer.": "Not supported by the installer.",
   "Check Apple menu → About This Mac before continuing.": "Check Apple menu → About This Mac before continuing.",
-  "The installer uses the latest main branch.": "The installer uses the latest main branch."
+  "The installer uses the latest main branch.": "The installer uses the latest main branch.",
+  "Changes go through Alpha first.": "Changes go through Alpha first."
 }

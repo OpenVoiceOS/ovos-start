@@ -18,7 +18,7 @@ const source=readFileSync(new URL('../dist/app.mjs',import.meta.url),'utf8');
 function views(){
  const c=vm.createContext({prerequisiteGate:new PrerequisiteGate(),manualCopyFor:null,installTracker:{session:null},prerequisitesView,previewOnly:false,liveWizardUrl,...scenario,...flow,...journey,...recommendations,...handoff,...short,preparationFor,icon,deviceIcon,
  state:{...scenario.DEFAULTS,device:'pi'},answered:new Set(),step:'piModel',devicePane:'cards',unlistedDevice:false,platformUnsure:false,detailsOpen:false,setupSession:null,shareUrl:()=>'',launchToken:()=> 'L'.repeat(22),});
- const names=['escape','intro','card','answerCard','deviceView','platformView','experienceView','capabilityView','preparationView','detailsView','prerequisitePageView','reviewOptionsView','setupEditorView','manualCopyReady','resultView'];
+ const names=['escape','intro','card','answerCard','deviceView','platformView','experienceView','capabilityView','preparationView','detailsView','prerequisitePageView','reviewOptionsView','setupEditorView','manualCopyReady','resultView','tweakView'];
  const declarations=names.map(name=>source.match(new RegExp(`^function ${name}\\([^\\n]*\\) \\{[\\s\\S]*?^\\}`,'m'))?.[0]);
  // Escape is intentionally a one-line utility.
  declarations[0]=source.match(/^function escape\(.*$/m)[0];
@@ -31,6 +31,19 @@ function acceptPreparation(c){
  c.prerequisiteGate.selectFamily(['mark1','mark2','devkit'].includes(c.state.device)?'debian13':c.state.device==='windows'?'ubuntu-wsl':'debian');
  c.prerequisiteGate.confirm(true);assert.equal(c.prerequisiteGate.accept(c.state.device),true);
 }
+test('release choices show Alpha first and selected for new setups',()=>{
+ const c=views();c.step='channel';
+ const html=c.tweakView();
+ const buttons=[...html.matchAll(/<button[^>]*data-answer="channel"[^>]*>[\s\S]*?<\/button>/g)].map(match=>match[0]);
+ assert.equal(buttons.length,2);
+ assert.match(buttons[0],/data-value="alpha"/);
+ assert.match(buttons[0],/aria-pressed="true"/);
+ assert.match(buttons[0],/The default for compatible devices/);
+ assert.match(buttons[1],/data-value="testing"/);
+ assert.doesNotMatch(buttons[1],/The default for compatible devices/);
+ c.state.channel='testing';
+ assert.match(c.tweakView(),/<button[^>]*data-value="testing"[^>]*aria-pressed="true"/);
+});
 test('hardware and purpose cards render with real helpers for every intended use',()=>{
  const c=views();
  for(const experience of ['ready','tinker','hub']){c.state.experience=experience;assert.match(c.deviceView(),/data-value="server"/);assert.match(c.experienceView(),/data-pick="experience"/);}

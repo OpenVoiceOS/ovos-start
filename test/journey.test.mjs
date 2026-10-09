@@ -55,7 +55,7 @@ test('same-device edits retain confirmed capabilities and chosen speech', () => 
 test('changing purpose normalizes dependent features immediately for review edits', () => {
   const voice={...DEFAULTS,device:'computer',memory:'8plus',cpu:'avx2',speech:'local',channel:'alpha',homeassistant:true,llmMode:'online'};
   const hub=chooseExperience(voice,'hub');
-  assert.equal(hub.speech,'auto');assert.equal(hub.homeassistant,false);assert.equal(hub.llmMode,'off');assert.equal(hub.channel,'testing');
+  assert.equal(hub.speech,'auto');assert.equal(hub.homeassistant,false);assert.equal(hub.llmMode,'off');assert.equal(hub.channel,'alpha');
   assert.deepEqual(validateState(hub),hub);
   const containers=chooseExperience({...DEFAULTS,device:'computer',method:'containers',extraSkills:true},'hub');
   assert.equal(containers.extraSkills,false);validateState(containers);

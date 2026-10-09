@@ -17,7 +17,7 @@ export const EXPERIENCES = Object.freeze({
   hub: { name: 'A brain for my home', icon: 'network', desc: 'A headless hub. Connect room satellites after setup.', result: 'Big ideas. One little hub.', summary: 'HiveMind server + skills', profile: 'server' },
 });
 export const LANGUAGES = Object.freeze({ 'en-us': 'English (US)', 'fr-fr': 'Français', 'de-de': 'Deutsch', 'es-es': 'Español', 'it-it': 'Italiano', 'nl-nl': 'Nederlands', 'pt-pt': 'Português', 'ca-es': 'Català', 'eu-es': 'Euskara', 'gl-es': 'Galego', 'hi-in': 'हिन्दी', 'kab-dz': 'Taqbaylit' });
-export const DEFAULTS = Object.freeze({ device: null, experience: 'ready', locale: 'en-us', method: 'virtualenv', channel: 'testing', extraSkills: false, telemetry: false, expertise: 'guided', skills: true, speech: 'auto', memory: 'unknown', cpu: 'unknown', piModel: 'unknown', homeassistant: false, llmMode: 'off' });
+export const DEFAULTS = Object.freeze({ device: null, experience: 'ready', locale: 'en-us', method: 'virtualenv', channel: 'alpha', extraSkills: false, telemetry: false, expertise: 'guided', skills: true, speech: 'auto', memory: 'unknown', cpu: 'unknown', piModel: 'unknown', homeassistant: false, llmMode: 'off' });
 /** Describe every accepted option for optional browser agents; cross-field rules use validateState. */
 export const PRESET_SCHEMA = Object.freeze({ type: 'object', properties: {
   device: { type: 'string', enum: Object.keys(DEVICES) }, experience: { type: 'string', enum: Object.keys(EXPERIENCES) },
@@ -40,7 +40,7 @@ export function usesAlphaPreset(device) { return usesScreenHardware(device) || d
 export function selectDevice(state, device) {
   if (!Object.hasOwn(DEVICES, device)) throw new Error('Choose a supported device.');
   const experience = allowedExperiences(device).includes(state.experience) ? state.experience : allowedExperiences(device)[0];
-  return { ...state, device, experience, method: usesVirtualenvPreset(device) ? 'virtualenv' : state.method, channel: usesAlphaPreset(device) ? 'alpha' : (usesAlphaPreset(state.device) || state.speech === 'local') ? 'testing' : state.channel, extraSkills: experience === 'hub' && state.method === 'containers' ? false : state.extraSkills, speech: 'auto', homeassistant: experience === 'hub' ? false : state.homeassistant, llmMode: experience === 'hub' ? 'off' : state.llmMode, memory: ['mark1', 'mark2', 'devkit'].includes(device) ? 'under8' : 'unknown', cpu: ['mark1', 'mark2', 'devkit'].includes(device) ? 'arm64' : 'unknown', piModel: 'unknown' };
+  return { ...state, device, experience, method: usesVirtualenvPreset(device) ? 'virtualenv' : state.method, channel: usesAlphaPreset(device) ? 'alpha' : state.channel, extraSkills: experience === 'hub' && state.method === 'containers' ? false : state.extraSkills, speech: 'auto', homeassistant: experience === 'hub' ? false : state.homeassistant, llmMode: experience === 'hub' ? 'off' : state.llmMode, memory: ['mark1', 'mark2', 'devkit'].includes(device) ? 'under8' : 'unknown', cpu: ['mark1', 'mark2', 'devkit'].includes(device) ? 'arm64' : 'unknown', piModel: 'unknown' };
 }
 /** Validate all external/shared choices before producing shell or YAML. @param {object} state @returns {object} */
 export function validateState(state) {

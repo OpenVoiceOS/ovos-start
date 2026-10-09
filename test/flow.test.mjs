@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { DEFAULTS, buildYaml, encodePreset, decodePreset } from '../dist/scenario.mjs';
 import { devicesForExperience, hardwareCardsForExperience, platformTarget, chooseExperience, applySkillDefaults, chooseHardware, chooseSpeech, chooseCapability } from '../dist/flow.mjs';
 
-test('changing speech or hardware releases the local-only alpha requirement', () => {
+test('changing speech or hardware returns to the Alpha default', () => {
   const local = chooseSpeech({...DEFAULTS, device:'computer', cpu:'avx2', memory:'8plus'}, 'local');
   assert.equal(local.channel,'alpha');
-  assert.equal(chooseSpeech(local,'public').channel,'testing');
-  assert.equal(chooseSpeech(local,'auto').channel,'testing');
-  assert.equal(chooseHardware(local,'mark1').channel,'testing');
+  assert.equal(chooseSpeech(local,'public').channel,'alpha');
+  assert.equal(chooseSpeech(local,'auto').channel,'alpha');
+  assert.equal(chooseHardware(local,'mark1').channel,'alpha');
   assert.equal(chooseHardware(local,'mark2').channel,'alpha');
   assert.equal(chooseSpeech({...local,device:'mac'},'public').channel,'alpha');
 });
@@ -28,6 +28,8 @@ test('two card choices produce a validated recipe for all twenty-five supported 
       const recipe = chooseHardware(purpose, device);
       assert.equal(recipe.experience, experience);
       assert.equal(recipe.device, device);
+      assert.equal(recipe.channel, 'alpha');
+      assert.match(buildYaml(recipe), /^channel: alpha$/m);
       assert.deepEqual(decodePreset(encodePreset(recipe)), recipe);
       assert.match(buildYaml(recipe), experience === 'hub' ? /profile: server/ : /profile: ovos/);
       if (['mark2', 'devkit'].includes(device)) { assert.equal(recipe.channel, 'alpha'); assert.equal(recipe.method, 'virtualenv'); }
@@ -39,7 +41,7 @@ test('changing a purpose clears incompatible hardware without losing language', 
   for (const device of ['mark1', 'mark2', 'devkit']) {
     const enclosed = chooseHardware({ ...DEFAULTS, locale: 'fr-fr' }, device);
     const hub = chooseExperience(enclosed, 'hub');
-    assert.equal(hub.device, null); assert.equal(hub.channel, 'testing'); assert.equal(hub.locale, 'fr-fr');
+    assert.equal(hub.device, null); assert.equal(hub.channel, 'alpha'); assert.equal(hub.locale, 'fr-fr');
   }
   const hub = chooseExperience(DEFAULTS, 'hub');
   const server = chooseHardware(hub, 'server');
@@ -61,8 +63,24 @@ test('previously published v1 links still restore the exact installer choices', 
   assert.equal(restored.locale, 'fr-fr');
   assert.equal(restored.device, 'pi');
   assert.equal(restored.speech, 'auto');
+  assert.equal(restored.channel, 'testing');
   assert.equal(restored.homeassistant, false);
   assert.deepEqual(decodePreset(encodePreset(restored)), restored);
+});
+
+test('explicit Testing choices survive compatible hardware, purpose and speech edits', () => {
+  const selected = {...DEFAULTS, device:'computer', channel:'testing'};
+  for (const device of ['pi','computer','mark1','jetson','server','windows','other']) {
+    const state=device==='server'?chooseExperience(selected,'hub'):selected;
+    assert.equal(chooseHardware(state,device).channel,'testing');
+  }
+  for (const experience of ['ready','tinker','hub']) {
+    assert.equal(chooseExperience(selected,experience).channel,'testing');
+  }
+  for (const speech of ['auto','public']) {
+    assert.equal(chooseSpeech(selected,speech).channel,'testing');
+  }
+  assert.equal(chooseHardware(selected,'mac').channel,'alpha');
 });
 
 test('computer and unlisted-device routing never guesses an unknown OS', () => {

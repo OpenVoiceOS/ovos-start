@@ -27,7 +27,7 @@ if(process.env.OVOS_RELAY_ROOT){
  }
 }
 
-const now=1800000000,setup=issueSetup({...DEFAULTS,device:'computer'},now),token='A'.repeat(22),writeToken='b'.repeat(64);
+const now=1800000000,setup=issueSetup({...DEFAULTS,device:'computer',channel:'testing'},now),token='A'.repeat(22),writeToken='b'.repeat(64);
 const launchUrl=`${INSTALL_LINK_ORIGIN}/s/${token}`;
 assert.equal(setup.code,responses.code);assert.equal(writeToken,responses.writeToken);
 const actualBootstrap=Buffer.from(responses.bootstrap);
@@ -108,12 +108,16 @@ exit "$result"
  const launcher='#!/bin/sh\nprintf "%s\\n" "$@" > "$ARGUMENTS"\n[ -t 0 ] || exit 90\nprintf "OVOS_TEST_LAUNCHER_READY\\n"\nIFS= read -r answer || exit 91\nprintf "%s" "$answer" > "$MARKER"\nexit "$LAUNCH_EXIT"\n';
  return {dir,marker,args,
   calls(){return existsSync(log)?readFileSync(log,'utf8').trim().split('\n'):[];},
-  run(content,{outerExit=0,innerExit=0,innerBody=launcher,launchExit=0,artifact=setup,capability=token,download=false,pty=false}={}){
+  run(content,{outerExit=0,innerExit=0,innerBody=launcher,launchExit=0,artifact=setup,capability=token,download=false,pty=false,input}={}){
    for(const path of [marker,args,log])rmSync(path,{force:true});
    writeFileSync(outer,content);writeFileSync(inner,innerBody);
    const env={...process.env,PATH:bin+':'+process.env.PATH,TMPDIR:dir,OUTER_BODY:outer,INNER_BODY:inner,OUTER_EXIT:String(outerExit),INNER_EXIT:String(innerExit),LAUNCH_EXIT:String(launchExit),CURL_LOG:log,MARKER:marker,ARGUMENTS:args,EXPECTED_PIN:RELAY_LAUNCHER_URL,EXPECTED_OUTER:launchUrl};
    const command=download?buildSetupScript(artifact,now,capability):buildShortCommand(artifact,now,capability);
-   const options={input:'hello\n',encoding:'utf8',env,timeout:15000,maxBuffer:1024*1024};
+   // Early syntax failures do not consume stdin. Writing a dummy reply can race
+   // their exit and produce EPIPE in spawnSync before assertions see the result.
+   // Only read-specific download cases need input; the PTY helper supplies its own.
+   const options={encoding:'utf8',env,timeout:15000,maxBuffer:1024*1024,
+    ...(input===undefined?{stdio:['ignore','pipe','pipe']}:{input})};
    const result=pty?spawnSync(process.env.PYTHON||'python3',['-c',ptyHelper,shell.path,command],options):spawnSync(shell.path,['-c',command],{...options,detached:true});
    assert.equal(result.error,undefined,result.error?.message);
    assert.equal(result.signal,null,'shell must exit normally');
@@ -216,6 +220,17 @@ for(const shell of shells){
   }finally{f.close();}
  });
 
+ test(`${shell.name}: noninteractive downloads get EOF unless input is explicitly supplied`,()=>{
+  const f=fixture(shell);try{
+   const body='(\nif IFS= read -r reply; then printf "%s" "$reply"; exit 7; fi\nexit 0\n)';
+   const empty=f.run(body,{download:true});
+   assert.equal(empty.status,0);assert.equal(empty.stdout,'');assert.equal(empty.stderr,'');
+   const supplied=f.run(body,{download:true,input:'explicit reply\n'});
+   assert.equal(supplied.status,7);assert.equal(supplied.stdout,'explicit reply');assert.equal(supplied.stderr,'');
+   assert.deepEqual(f.calls(),['outer']);
+  }finally{f.close();}
+ });
+
  test(`${shell.name}: downloads reject failed or incomplete transfers and always remove private files`,()=>{
   const f=fixture(shell);try{
    const cleaned=()=>assert.deepEqual(readdirSync(f.dir).filter(name=>name.startsWith('ovos-start.')),[]);
@@ -230,7 +245,7 @@ for(const shell of shells){
     assert.deepEqual(f.calls(),['outer']);assert.equal(existsSync(f.args),false);cleaned();
    }
    for(const status of [0,7,130,143]){
-    const result=f.run(`(\nread reply\nprintf "%s" "$reply"\nexit ${status}\n)`,{download:true});
+    const result=f.run(`(\nread reply\nprintf "%s" "$reply"\nexit ${status}\n)`,{download:true,input:'hello\n'});
     assert.equal(result.status,status);assert.equal(result.stdout,'hello');assert.equal(result.stderr,'');cleaned();
    }
   }finally{f.close();}

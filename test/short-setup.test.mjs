@@ -11,6 +11,17 @@ const issuedAt=1800000000;
 const artifact=issueSetup(base,issuedAt), token='L'.repeat(22);
 const launcher=process.env.OVOS_LAUNCHER_ROOT?join(process.env.OVOS_LAUNCHER_ROOT,'v2.sh'):null;
 
+test('new compact commands encode Alpha while saved Testing choices remain Testing', () => {
+  assert.equal(decodeRecipeCode(issueSetup(base,issuedAt).code,{now:issuedAt}).channel,'alpha');
+  const testing={...base,channel:'testing'};
+  for (const fragment of [`#setup=${issueSetup(testing,issuedAt).code}`,`#${encodePreset(testing)}`]) {
+    const restored=readSetupSession(fragment,issuedAt);
+    assert.equal(restored.state.channel,'testing');
+    assert.match(buildYaml(restored.state),/^channel: testing$/m);
+    assert.equal(decodeRecipeCode(issueSetup(restored.state,issuedAt).code,{now:issuedAt}).channel,'testing');
+  }
+});
+
 test('short commands use only the bound relay capability and remain one line', () => {
   const state = { ...base, locale: 'fr-fr', speech: 'public', homeassistant: true, llmMode: 'online', extraSkills: true };
   const setup = issueSetup(state,issuedAt);
@@ -91,9 +102,9 @@ test('exact one-hour deadline blocks copied commands and script downloads withou
 });
 
 test('legacy links recover choices but cannot produce a runnable command until new issuance',()=>{
-  for(const fragment of ['#setup=2400-00KZ',`#${encodePreset(base)}`]){
+  for(const [fragment,expected] of [['#setup=2400-00KZ',{...base,channel:'testing'}],[`#${encodePreset(base)}`,base]]){
     const legacy=readSetupSession(fragment,issuedAt);
-    assert.deepEqual(legacy.state,base);assert.equal(setupStatus(legacy,issuedAt).kind,'legacy');
+    assert.deepEqual(legacy.state,expected);assert.equal(setupStatus(legacy,issuedAt).kind,'legacy');
     assert.throws(()=>buildShortCommand(legacy,issuedAt));
     assert.throws(()=>buildSetupScript(legacy,issuedAt));
     assert.equal(issueSetup(legacy.state,issuedAt).expiresAt,issuedAt+3600);

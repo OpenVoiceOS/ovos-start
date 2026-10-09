@@ -13,10 +13,11 @@ import {preparationFor} from '../dist/preparation.mjs';
 import {liveWizardUrl} from '../dist/preview.mjs';
 import {icon,deviceIcon} from '../dist/icons.mjs';
 import {translateMessage} from '../dist/i18n.mjs';
+import {sudoPasswordNotice} from '../dist/terminal-notice.mjs';
 const source=readFileSync(new URL('../dist/app.mjs',import.meta.url),'utf8');
 /** Load production renderers with actual domain modules and controlled state. @returns {object} View scope. */
 function views(){
- const c=vm.createContext({prerequisiteGate:new PrerequisiteGate(),manualCopyFor:null,installTracker:{session:null},prerequisitesView,previewOnly:false,liveWizardUrl,...scenario,...flow,...journey,...recommendations,...handoff,...short,preparationFor,icon,deviceIcon,
+ const c=vm.createContext({prerequisiteGate:new PrerequisiteGate(),manualCopyFor:null,installTracker:{session:null},prerequisitesView,previewOnly:false,liveWizardUrl,...scenario,...flow,...journey,...recommendations,...handoff,...short,preparationFor,icon,deviceIcon,sudoPasswordNotice,
  state:{...scenario.DEFAULTS,device:'pi'},answered:new Set(['telemetry']),telemetrySelection:scenario.DEFAULTS.telemetry,step:'piModel',devicePane:'cards',unlistedDevice:false,platformUnsure:false,detailsOpen:false,setupSession:null,shareUrl:()=>'',launchToken:()=> 'L'.repeat(22),});
  const names=['escape','intro','card','answerCard','deviceView','platformView','experienceView','capabilityView','preparationView','detailsView','prerequisitePageView','reviewOptionsView','setupEditorView','manualCopyReady','resultView','tweakView','telemetryView'];
  const declarations=names.map(name=>source.match(new RegExp(`^function ${name}\\([^\\n]*\\) \\{[\\s\\S]*?^\\}`,'m'))?.[0]);
@@ -202,7 +203,7 @@ test('processor cards use familiar names and lookup hints; features remain in op
  const result=recommendations.speechEligibility({...scenario.DEFAULTS,device:'computer',memory:'8plus',cpu:'avx2'});assert.equal(result.eligible,true);assert.match(result.reason,/may work.*may use online services/);
 });
 
-test('install handoff shows the sudo password hint beside paste instructions before optional help',()=>{
+test('every device handoff shows one password notice after the paste instruction and before optional help',()=>{
  const c=views();
  for(const device of Object.keys(scenario.DEVICES)){
   c.state.device=device;acceptPreparation(c);const html=c.resultView();
@@ -210,12 +211,15 @@ test('install handoff shows the sudo password hint beside paste instructions bef
   assert.match(primary,/Install <em>OVOS\.<\/em>/);
   assert.equal((primary.match(/data-install-action/g)||[]).length,1);
   assert.equal((primary.match(/data-paste-title/g)||[]).length,1);
-  const paste=primary.match(/<li data-handoff-step="paste"[\s\S]*?<\/li>/)[0];
-  assert.equal((paste.match(/If Terminal asks for your sudo password, enter your device password\. Nothing appears while you type\./g)||[]).length,1);
-  assert.ok(paste.indexOf('If Terminal asks')>paste.indexOf('data-paste-title'));
+  assert.equal(primary.split(sudoPasswordNotice(device)).length-1,1);
+  assert.ok(primary.indexOf(sudoPasswordNotice(device))>primary.indexOf('data-paste-title'));
   assert.match(primary,/data-install-waiting hidden/);
   assert.doesNotMatch(primary,/After a restart|24 hours|Follow the steps|No device logs/);
-  if(device==='windows')assert.match(primary,/Open Ubuntu in WSL2, paste and press Enter/);
+  if(device==='windows'){
+   assert.match(primary,/Open Ubuntu in WSL2, paste and press Enter/);
+   assert.match(primary,/Type the password you set for Ubuntu, then press Enter/);
+   assert.doesNotMatch(primary,/password you use to sign in to your device/);
+  }
   else assert.ok(primary.includes(`Open Terminal on your ${scenario.DEVICES[device].name}, paste and press Enter.`));
   assert.match(html,/<summary>Installation help<\/summary>[\s\S]*After a restart[\s\S]*data-progress-privacy/);
   assert.doesNotMatch(html,/install-followup/);

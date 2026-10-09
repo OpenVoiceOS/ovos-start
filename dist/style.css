@@ -841,7 +841,13 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 
 .install-dashboard.is-installed>.post-install-guide{border-top:0;padding-top:0;margin-top:24px}.post-install-guide .voice-check-wait{font-size:14px;line-height:1.6;color:var(--muted);margin:-8px 0 20px}
 .audio-check-reminder{display:block;margin-top:4px}
-.sudo-password-hint{display:block;margin-top:6px;color:var(--ink)}
+.sudo-notice{display:flex;align-items:flex-start;gap:12px;padding:18px 20px;margin:20px 0;background:var(--requirement-bg);color:var(--requirement-ink);border:1px solid var(--requirement-border);border-inline-start:3px solid var(--requirement-accent);border-radius:14px;text-align:left}
+.sudo-notice>.ui-icon{width:24px;height:24px;flex:none;margin-top:1px;color:var(--requirement-accent)}
+.sudo-notice>div{min-width:0}
+.sudo-notice strong{display:block;font-size:17px;font-weight:650;line-height:1.5;color:inherit}
+.sudo-notice p{margin:4px 0 0;font-size:15px;line-height:1.6;color:inherit}
+@media(max-width:540px){.sudo-notice{padding:16px 14px;gap:10px}.sudo-notice>.ui-icon{width:22px;height:22px}.sudo-notice strong{font-size:16px}}
+@media(forced-colors:active){.sudo-notice{background:Canvas;color:CanvasText;border-color:CanvasText}.sudo-notice>.ui-icon{color:CanvasText}}
 .installation-completed-steps{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px;margin:0;padding:24px 30px;text-align:left}
 .installation-current+.installation-completed-steps{border-top:1px solid var(--line)}
 .installation-completed-steps li{display:flex;align-items:center;gap:10px;min-width:0;font-size:15px;line-height:1.5;color:var(--ink)}.installation-completed-steps .ui-icon{width:21px;height:21px;flex:none;color:var(--install-done)}

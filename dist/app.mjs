@@ -20,6 +20,7 @@ import { InstallTracker, CHECK_COMMAND, INSTALLED_STATES } from './install-progr
 import { isPreviewContext, liveWizardUrl } from './preview.mjs';
 import { preserveProgressInteraction } from './progress-interaction.mjs';
 import { progressView, waitingView, timingView } from './post-install.mjs';
+import { sudoPasswordNotice } from './terminal-notice.mjs';
 
 
 const IDEAS = {
@@ -399,8 +400,9 @@ function resultView() {
           <button class="button install-copy" data-install-action ${previewOnly||!prerequisiteGate.ready(state.device)?'disabled':''}>${icon('copy')}<span>Copy install command</span></button><span class="code-expiry" data-code-expiry role="status" data-prerequisite-required></span>
           <div class="command-fallback" ${manualCopyReady()?'':'hidden'}><label class="sr-only" for="install-command">Your one-line install command</label><textarea class="command" id="install-command" readonly spellcheck="false" rows="3" data-no-translate>${manualCopyReady()?escape(buildShortCommand(setupSession,undefined,launchToken())):''}</textarea></div>
         </div></li>
-        <li data-handoff-step="paste"><span class="handoff-number" aria-hidden="true">2</span><div class="handoff-action-body paste-step"><strong>Paste on your device</strong><p data-paste-title>${state.device==='windows'?'Open Ubuntu in WSL2, paste and press Enter.':`Open Terminal on your ${DEVICES[state.device].name}, paste and press Enter.`}</p><p>If Terminal asks for your sudo password, enter your device password. Nothing appears while you type.</p></div></li>
+        <li data-handoff-step="paste"><span class="handoff-number" aria-hidden="true">2</span><div class="handoff-action-body paste-step"><strong>Paste on your device</strong><p data-paste-title>${state.device==='windows'?'Open Ubuntu in WSL2, paste and press Enter.':`Open Terminal on your ${DEVICES[state.device].name}, paste and press Enter.`}</p></div></li>
       </ol>
+      ${sudoPasswordNotice(state.device)}
       <section data-install-waiting hidden aria-label="Installation progress"></section>
       <details class="install-help-short handoff-help"><summary>Installation help</summary>
         <div data-prerequisite-required ${!prerequisiteGate.ready(state.device)?'hidden':''}><p>${state.device==='windows'?'Open Ubuntu in WSL2 on your Windows PC, then paste the command. Use Ubuntu, not PowerShell.':`Open Terminal on your ${DEVICES[state.device].name}. If it has no screen, connect to it with SSH from another computer, then paste the command there.`}</p>

@@ -125,13 +125,12 @@ test('compact device instructions beat broader placeholder templates in every lo
  }
 });
 
-test('every locale explains the possible sudo password prompt',()=>{
- const hint='If Terminal asks for your sudo password, enter your device password. Nothing appears while you type.';
- for(const locale of UI_LOCALES){
-  const catalog=read(locale);assert.ok(catalog[hint],locale);
-  assert.equal(translateMessage(hint,catalog),catalog[hint]);
-  assert.match(catalog[hint],/sudo/,locale);
-  if(locale!=='en-us')assert.notEqual(catalog[hint],hint,locale);
+test('every locale explains the possible password prompt, login password and invisible typing',()=>{
+ const messages=['Terminal may ask for your password','Type the password you use to sign in to your device, then press Enter.','You may not see any characters as you type. This is normal.','Type the password you set for Ubuntu, then press Enter.'];
+ for(const locale of UI_LOCALES)for(const message of messages){
+  const catalog=read(locale);assert.ok(catalog[message],locale);
+  assert.equal(translateMessage(message,catalog),catalog[message]);
+  if(locale!=='en-us')assert.notEqual(catalog[message],message,locale);
  }
 });
 

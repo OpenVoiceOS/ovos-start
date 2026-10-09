@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-09 - Motive: Document durable audio-check results and the compatible database migration.
+Last Edit: Codex - 2026-10-09 - Motive: Document durable audio results and confirmed installation milestones.
 
 # Host the wizard API
 
@@ -22,7 +22,7 @@ Use a dedicated service account. Its database directory must be owned by that ac
 
 [`deploy/ovos-start-api.service`](../deploy/ovos-start-api.service) supplies the systemd service: the dedicated `ovos-start` user, private state directory, automatic restart and a 256 MiB memory limit. It reads `/etc/ovos-start/api.env`, runs `/opt/ovos-start/current/server/node-server.mjs` using `/opt/ovos-start/node/bin/node`, and keeps the application filesystem read-only. The runtime and `current` symlinks should be managed by root. Enable it only after the runtime, application files and private environment are in place.
 
-[`openDatabase`](../server/node-database.mjs) applies the relay's five migrations in a transaction and records their checksums. Restarting does not replay them. It rejects changed migrations, symlinks and a public state directory. SQLite uses WAL, full synchronous writes and a one-second busy timeout. Back up the live database using SQLite's backup facilities; copying only the main file while WAL is active is insufficient.
+[`openDatabase`](../server/node-database.mjs) applies the relay's six migrations in a transaction and records their checksums. Restarting does not replay them. It rejects changed migrations, symlinks and a public state directory. SQLite uses WAL, full synchronous writes and a one-second busy timeout. Back up the live database using SQLite's backup facilities; copying only the main file while WAL is active is insufficient.
 
 ## API contract
 
@@ -41,6 +41,14 @@ The service-only relay routes `/v1/sessions` and `/v1/session` are inaccessible 
 Generate a 32-byte browser credential with `crypto.getRandomValues`, retain it in the wizard's first-party storage, and send its lowercase hex encoding in `Authorization: Bearer ...`. Send JSON and use `credentials: 'omit'`. The server derives an opaque owner using HMAC; a different browser credential cannot read another owner's install. Do not include this credential in share links, exported recipes or commands. Clearing browser storage loses access to that browser's earlier progress. The public frontend never receives `RELAY_ADMIN_KEY` or the installer write token.
 
 Cross-site cookies are unnecessary. CORS allows only configured wizard origins. It is not a replacement for bearer authentication. Requests are capped at 1 KiB and have bounded HTTP timeouts. Rate limits allow 180 requests per client address and 1,200 globally per minute, plus 10 new sessions per address and 60 globally per minute. At most 2,000 session rows can be stored; the durable row limit survives process restarts, and expired rows are pruned as new sessions are created. Minute counters reset with the process. Restore/status operations do not consume the new-session quota.
+
+### Confirmed installation milestones
+
+`completedSteps` contains only received completion facts: `packages_installed`, `audio_configured`, `components_installed` and `services_started`. The first three are fixed installer callbacks after successful, allowlisted Ansible checkpoints. `services_started` comes exclusively from the existing `services_ready` callback after the launcher checks the expected processes. There is no direct `services_started` event, arbitrary task name or task output in the API.
+
+Receipts are accepted once installation has started (`rank >= 3`) and never regress its existing status or the unchanged `phase` range 0–4. Late facts can be added after installation or voice readiness, including a late successful services check. Failed and cancelled runs retain their received facts but reject subsequent callbacks. Installation success alone does not imply every optional step ran; missing facts remain absent. Speaker and microphone results are separate from these setup milestones.
+
+[`0005_completed_steps.sql`](../server/relay/drizzle/0005_completed_steps.sql) adds a constrained four-bit field with an empty default. Only old rows currently at `services_ready` receive the service bit during migration; historical `voice_ready` rows have no record proving a separate services callback and remain empty. [`transition`](../server/relay/server/worker.mjs) accumulates facts using the same capability authentication, update limits and compare-and-swap writes as other events. The API tests cover migration from both old schemas, concurrent receipts, rejected freeform metadata, retained facts after failure and persistence across restart.
 
 ### Speaker and microphone checks
 

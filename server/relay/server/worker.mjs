@@ -7,11 +7,13 @@ import { errorReportUrl } from './report-link.mjs';
 export const TTL_SECONDS = 86400;
 const ranks = Object.freeze({started:1,downloading:2,installing:3,installed:4,services_ready:5,voice_ready:6});
 const phases=Object.freeze({stage_system:1,stage_packages:2,stage_services:3,stage_finalize:4});
+const completions=Object.freeze({packages_installed:1,audio_configured:2,components_installed:4});
+const completedSteps=Object.freeze({...completions,services_started:8});
 const checks=Object.freeze({
   audio_checking:['audio_status','checking'],audio_passed:['audio_status','passed'],audio_failed:['audio_status','failed'],
   microphone_checking:['microphone_status','checking'],microphone_passed:['microphone_status','passed'],microphone_failed:['microphone_status','failed'],
 });
-export const EVENTS = Object.freeze([...Object.keys(ranks),...Object.keys(phases),...Object.keys(checks),'needs_attention','failed','cancelled']);
+export const EVENTS = Object.freeze([...Object.keys(ranks),...Object.keys(phases),...Object.keys(completions),...Object.keys(checks),'needs_attention','failed','cancelled']);
 const encoder = new TextEncoder();
 const hex = bytes => [...new Uint8Array(bytes)].map(byte=>byte.toString(16).padStart(2,'0')).join('');
 
@@ -77,7 +79,7 @@ export async function body(request) {
 /** Return owner-scoped progress and an optional report link, never logs or capabilities. @param {object} row @returns {object} */
 function view(row) {
   const errorUrl=row.status==='failed'?errorReportUrl(row.error_url):null;
-  return {id:row.id,status:row.status,attention:Boolean(row.attention),audioStatus:row.audio_status,microphoneStatus:row.microphone_status,createdAt:row.created_at,startedAt:row.started_at,installedAt:row.installed_at,phase:row.phase,progressRank:row.rank,updatedAt:row.updated_at,expiresAt:row.expires_at,...(errorUrl?{errorUrl}:{})};
+  return {id:row.id,status:row.status,attention:Boolean(row.attention),audioStatus:row.audio_status,microphoneStatus:row.microphone_status,completedSteps:Object.entries(completedSteps).filter(([,bit])=>row.completed_steps&bit).map(([step])=>step),createdAt:row.created_at,startedAt:row.started_at,installedAt:row.installed_at,phase:row.phase,progressRank:row.rank,updatedAt:row.updated_at,expiresAt:row.expires_at,...(errorUrl?{errorUrl}:{})};
 }
 
 /** Apply monotonic milestones, preserving truthful install and voice boundaries. @param {object} row @param {string} event @returns {object|null} */
@@ -86,6 +88,11 @@ export function transition(row,event) {
   if(['failed','cancelled'].includes(row.status))return null;
   const phase=row.phase||0;
   const audio={audio_status:row.audio_status||'pending',microphone_status:row.microphone_status||'pending'};
+  const facts={completed_steps:row.completed_steps||0};
+  if(Object.hasOwn(completions,event)){
+    if(row.rank<3)return null;
+    return {status:row.status,rank:row.rank,attention:row.attention,phase,...audio,completed_steps:facts.completed_steps|completions[event]};
+  }
   if(Object.hasOwn(checks,event)){
     if(row.rank<4)return null;
     const [field,status]=checks[event];
@@ -93,22 +100,27 @@ export function transition(row,event) {
     if(status==='passed'&&audio[field]!=='checking'&&audio[field]!=='passed')return null;
     audio[field]=status;
     if(event==='audio_checking')audio.microphone_status='pending';
-    return {status:row.status,rank:row.rank,attention:Number(Object.values(audio).includes('failed')),phase,...audio};
+    return {status:row.status,rank:row.rank,attention:Number(Object.values(audio).includes('failed')),phase,...audio,...facts};
   }
   if(Object.hasOwn(phases,event)){
     if(row.rank>3||phases[event]<phase)return null;
-    return {status:'installing',rank:3,attention:0,phase:phases[event],...audio};
+    return {status:'installing',rank:3,attention:0,phase:phases[event],...audio,...facts};
   }
-  if(event==='failed'||event==='cancelled')return row.rank<4?{status:event,rank:row.rank,attention:0,phase,...audio}:null;
+  if(event==='failed'||event==='cancelled')return row.rank<4?{status:event,rank:row.rank,attention:0,phase,...audio,...facts}:null;
   if(event==='needs_attention'){
     if(row.rank<4)return null;
     for(const field of Object.keys(audio))if(audio[field]==='checking')audio[field]='pending';
-    return {status:row.status,rank:row.rank,attention:1,phase,...audio};
+    return {status:row.status,rank:row.rank,attention:1,phase,...audio,...facts};
+  }
+  // A late successful process check adds its receipt without undoing voice readiness.
+  if(event==='services_ready'){
+    facts.completed_steps|=completedSteps.services_started;
+    if(row.rank>=5)return {status:row.status,rank:row.rank,attention:row.attention,phase,...audio,...facts};
   }
   const rank=ranks[event];
   if(rank<row.rank||(rank>=5&&row.rank<4))return null;
   if(event==='voice_ready')audio.audio_status=audio.microphone_status='passed';
-  return {status:event,rank,attention:rank>row.rank||event==='voice_ready'?0:row.attention,phase,...audio};
+  return {status:event,rank,attention:rank>row.rank||event==='voice_ready'?0:row.attention,phase,...audio,...facts};
 }
 
 /** Compare fixed-size secrets without early mismatch exit. @param {string} a @param {string} b @returns {boolean} */
@@ -164,8 +176,8 @@ export async function handle(request,env,now=Math.floor(Date.now()/1000)) {
       if(row.updates>=120)return json({error:'rate_limited'},429);
       const next=transition(row,data.event);
       if(!next)return json({accepted:false});
-      if(next.status===row.status&&next.attention===row.attention&&next.phase===row.phase&&next.audio_status===row.audio_status&&next.microphone_status===row.microphone_status)return json({accepted:true});
-      const result=await env.DB.prepare("UPDATE installs SET status = ?, rank = ?, attention = ?, phase = ?, audio_status = ?, microphone_status = ?, error_url = ?, installed_at = CASE WHEN ? = 'installed' THEN COALESCE(installed_at, ?) ELSE installed_at END, started_at = COALESCE(started_at, ?), updated_at = ?, updates = updates + 1 WHERE id = ? AND updates = ?").bind(next.status,next.rank,next.attention,next.phase,next.audio_status,next.microphone_status,hasReport?data.errorUrl:null,data.event,now,now,now,row.id,row.updates).run();
+      if(next.status===row.status&&next.attention===row.attention&&next.phase===row.phase&&next.audio_status===row.audio_status&&next.microphone_status===row.microphone_status&&next.completed_steps===row.completed_steps)return json({accepted:true});
+      const result=await env.DB.prepare("UPDATE installs SET status = ?, rank = ?, attention = ?, phase = ?, audio_status = ?, microphone_status = ?, completed_steps = ?, error_url = ?, installed_at = CASE WHEN ? = 'installed' THEN COALESCE(installed_at, ?) ELSE installed_at END, started_at = COALESCE(started_at, ?), updated_at = ?, updates = updates + 1 WHERE id = ? AND updates = ?").bind(next.status,next.rank,next.attention,next.phase,next.audio_status,next.microphone_status,next.completed_steps,hasReport?data.errorUrl:null,data.event,now,now,now,row.id,row.updates).run();
       if(result.meta.changes)return json({accepted:true});
     }
     return json({error:'retry'},409);

@@ -954,5 +954,9 @@
   "Waiting for the voice check.": "A aguardar o teste de voz.",
   "Say the wake word, then ask a question.": "Diz a palavra de ativação e depois faz uma pergunta.",
   "You confirmed OVOS replied.": "Confirmaste que o OVOS respondeu.",
-  "Check your microphone and try the voice question again.": "Verifica o microfone e volta a fazer a pergunta em voz alta."
+  "Check your microphone and try the voice question again.": "Verifica o microfone e volta a fazer a pergunta em voz alta.",
+  "System packages installed": "Pacotes do sistema instalados",
+  "Audio configured": "Áudio configurado",
+  "OVOS components installed": "Componentes do OVOS instalados",
+  "Services started": "Serviços iniciados"
 }

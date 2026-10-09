@@ -1,8 +1,8 @@
 import { STARTER_EXAMPLES } from './starter-examples.mjs';
 
-/** Official guides verified while authoring; recipe values never become URLs. */
+/** Curated resources; recipe values never become URLs. */
 export const GUIDE_LINKS=Object.freeze({
-  skills:'https://openvoiceos.github.io/beta-technical-manual/skill-examples/',
+  skills:'https://andlo.github.io/ovos-klondike-mercantile/',
   homeassistant:'https://openvoiceos.github.io/beta-technical-manual/home-assistant/',
   ai:'https://openvoiceos.github.io/beta-technical-manual/openai-plugin/',
   satellite:'https://openvoiceos.github.io/beta-technical-manual/satellites/',

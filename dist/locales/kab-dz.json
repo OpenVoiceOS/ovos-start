@@ -954,5 +954,9 @@
   "Waiting for the voice check.": "Aṛaǧu n usenqed n taɣect.",
   "Say the wake word, then ask a question.": "Ini awal n usaki, syin efk-d asteqsi.",
   "You confirmed OVOS replied.": "Tsentmeḍ belli OVOS yerra-d.",
-  "Check your microphone and try the voice question again.": "Senqed amikṛufun-ik, syin ɛiwed asteqsi s taɣect."
+  "Check your microphone and try the voice question again.": "Senqed amikṛufun-ik, syin ɛiwed asteqsi s taɣect.",
+  "System packages installed": "Ikemmusen n unagraw ttwasebdeden",
+  "Audio configured": "Amesli yettusɣewwer",
+  "OVOS components installed": "Iferdisen n OVOS ttwasebdeden",
+  "Services started": "Imeẓla bdan"
 }

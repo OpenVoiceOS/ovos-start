@@ -32,6 +32,16 @@ const browserCredential=createBrowserCredential();
 export const CHECK_COMMAND='sh "$HOME/.config/ovos-installer/check-setup.sh"';
 export const INSTALLED_STATES=Object.freeze(['installed','services_ready','voice_ready']);
 const CHECK_STATES=Object.freeze(['pending','checking','passed','failed']);
+const COMPLETED_STEPS=Object.freeze({packages_installed:'System packages installed',audio_configured:'Audio configured',components_installed:'OVOS components installed',services_started:'Services started'});
+
+/** Show only explicit completed tasks; installer phases never imply these receipts.
+ * @param {object} model Tracker state. @returns {Array<object>} Confirmed steps.
+ */
+export function installationReceipts(model) {
+  const received=model.session?.completedSteps;
+  if(!Array.isArray(received))return [];
+  return Object.entries(COMPLETED_STEPS).filter(([id])=>received.includes(id)).map(([id,label])=>({id,label}));
+}
 
 /** Device-reported checks; a correct spoken reply confirms both for older launchers.
  * @param {object} model Tracker state. @returns {Array<object>} Speaker and voice results.
@@ -175,6 +185,7 @@ export class InstallTracker {
     if(!/^[a-f0-9]{32}$/.test(value.id)||!Object.hasOwn(messages,value.status)||!Number.isSafeInteger(value.expiresAt)||!Number.isSafeInteger(value.updatedAt)||!Number.isSafeInteger(value.createdAt)||typeof value.attention!=='boolean')throw new Error('unavailable');
     if(value.phase!==undefined&&(!Number.isInteger(value.phase)||value.phase<0||value.phase>4))throw new Error('unavailable');
     for(const field of ['audioStatus','microphoneStatus'])if(value[field]!==undefined&&!CHECK_STATES.includes(value[field]))throw new Error('unavailable');
+    if(value.completedSteps!==undefined&&(!Array.isArray(value.completedSteps)||value.completedSteps.length>4||new Set(value.completedSteps).size!==value.completedSteps.length||value.completedSteps.some(step=>!Object.hasOwn(COMPLETED_STEPS,step))))throw new Error('unavailable');
     if(data.code&&(typeof value.launchToken!=='string'||value.launchToken.length!==22||!/^[A-Za-z0-9_-]{22}$/.test(value.launchToken)))throw new Error('unavailable');
     if(value.status!=='failed'||!errorReportUrl(value.errorUrl))delete value.errorUrl;
     delete value.writeToken;

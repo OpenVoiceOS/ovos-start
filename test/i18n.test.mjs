@@ -185,6 +185,21 @@ test('final audio checks and distinct result states translate in every locale',(
  }
 });
 
+test('confirmed installation receipts translate in every locale',()=>{
+ const messages=['System packages installed','Audio configured','OVOS components installed','Services started'];
+ for(const locale of UI_LOCALES){
+  const catalog=read(locale);
+  for(const message of messages){
+   assert.ok(Object.hasOwn(catalog,message),`${locale}: ${message}`);
+   assert.ok(catalog[message].trim(),`${locale}: empty receipt message`);
+   assert.equal(translateMessage(message,catalog),catalog[message],`${locale}: ${message}`);
+   if(locale==='en-us')assert.equal(catalog[message],message);
+   else assert.notEqual(catalog[message],message,`${locale}: untranslated receipt message`);
+  }
+  assert.match(catalog['OVOS components installed'],/OVOS/,locale);
+ }
+});
+
 test('prerequisite option labels translate explicitly without changing OS values or language names',async()=>{
  const originalFetch=globalThis.fetch;
  try{

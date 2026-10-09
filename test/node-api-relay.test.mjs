@@ -36,7 +36,7 @@ test('milestones do not regress; install success is separate from service and vo
   const f=fixture(),s=await f.create();
   for(const event of ['started','downloading','installing','installed','services_ready','needs_attention'])assert.equal((await f.call('/v1/events',{event},s.writeToken)).status,200);
   const get=async()=>(await f.call('/v1/session',{id:s.id,owner})).json();
-  assert.deepEqual(await get(),{id:s.id,status:'services_ready',attention:true,audioStatus:'pending',microphoneStatus:'pending',createdAt:now,startedAt:now,installedAt:now,phase:0,progressRank:5,estimate:null,updatedAt:now,expiresAt:now+TTL_SECONDS});
+  assert.deepEqual(await get(),{id:s.id,status:'services_ready',attention:true,audioStatus:'pending',microphoneStatus:'pending',completedSteps:['services_started'],createdAt:now,startedAt:now,installedAt:now,phase:0,progressRank:5,estimate:null,updatedAt:now,expiresAt:now+TTL_SECONDS});
   for(const event of ['started','installing','failed','cancelled'])await f.call('/v1/events',{event},s.writeToken);
   assert.equal((await get()).status,'services_ready');
   await f.call('/v1/events',{event:'voice_ready'},s.writeToken);assert.equal((await get()).status,'voice_ready');assert.equal((await get()).attention,false);
@@ -347,10 +347,80 @@ test('rechecking after voice readiness reports failures and recovery without reg
     const value=await read();assert.equal(value.audioStatus,audioStatus,event);assert.equal(value.microphoneStatus,microphoneStatus,event);
     assert.equal(value.attention,attention,event);assert.equal(value.status,'voice_ready');assert.equal(value.progressRank,6);assert.equal(value.installedAt,now+10);
   }
-  for(const event of ['installed','services_ready','failed','cancelled']){
+  for(const event of ['installed','failed','cancelled']){
     assert.deepEqual(await (await f.call('/v1/events',{event},s.writeToken)).json(),{accepted:false});
   }
   await f.call('/v1/events',{event:'microphone_failed'},s.writeToken);
   await f.call('/v1/events',{event:'voice_ready'},s.writeToken);
   assert.equal((await read()).microphoneStatus,'passed');assert.equal((await read()).attention,false);
+});
+
+test('completion receipts add fixed facts without changing phase or inventing skipped work',async()=>{
+  const f=fixture(),s=await f.create();
+  const read=async()=>(await f.call('/v1/session',{id:s.id,owner})).json();
+  assert.deepEqual(s.completedSteps,[]);
+  for(const event of ['packages_installed','audio_configured','components_installed']){
+    assert.deepEqual(await (await f.call('/v1/events',{event},s.writeToken)).json(),{accepted:false});
+  }
+  await f.call('/v1/events',{event:'stage_packages'},s.writeToken);
+  assert.deepEqual((await read()).completedSteps,[]);
+  // Receipts may arrive out of their typical order and do not imply one another.
+  for(const [event,expected] of [
+    ['components_installed',['components_installed']],
+    ['packages_installed',['packages_installed','components_installed']],
+    ['audio_configured',['packages_installed','audio_configured','components_installed']],
+  ]){
+    assert.deepEqual(await (await f.call('/v1/events',{event},s.writeToken)).json(),{accepted:true});
+    const value=await read();assert.deepEqual(value.completedSteps,expected);assert.equal(value.status,'installing');
+    assert.equal(value.phase,2);assert.equal(value.progressRank,3);assert.equal(value.installedAt,null);
+    const before=f.db.prepare('SELECT updates,updated_at FROM installs').get();
+    await f.call('/v1/events',{event},s.writeToken,now+1);
+    assert.deepEqual(f.db.prepare('SELECT updates,updated_at FROM installs').get(),before);
+  }
+  await f.call('/v1/events',{event:'installed'},s.writeToken);
+  assert.deepEqual((await read()).completedSteps,['packages_installed','audio_configured','components_installed']);
+  const coarse=fixture(),old=await coarse.create();
+  await coarse.call('/v1/events',{event:'installed'},old.writeToken);
+  assert.deepEqual((await (await coarse.call('/v1/session',{id:old.id,owner})).json()).completedSteps,[]);
+});
+
+test('late completion facts preserve successful installs and later audio failures',async()=>{
+  const f=fixture(),s=await f.create();
+  for(const event of ['installed','voice_ready','microphone_failed'])await f.call('/v1/events',{event},s.writeToken);
+  const before=f.db.prepare('SELECT * FROM installs').get();
+  for(const event of ['packages_installed','audio_configured','components_installed','services_ready']){
+    assert.deepEqual(await (await f.call('/v1/events',{event},s.writeToken)).json(),{accepted:true});
+    const value=await (await f.call('/v1/session',{id:s.id,owner})).json();
+    assert.equal(value.status,'voice_ready');assert.equal(value.progressRank,6);assert.equal(value.phase,0);
+    assert.equal(value.installedAt,before.installed_at);assert.equal(value.microphoneStatus,'failed');assert.equal(value.attention,true);
+  }
+  const value=await (await f.call('/v1/session',{id:s.id,owner})).json();
+  assert.deepEqual(value.completedSteps,['packages_installed','audio_configured','components_installed','services_started']);
+});
+
+test('failed and cancelled installs preserve received facts and reject late receipts',async()=>{
+  for(const terminal of ['failed','cancelled']){
+    const f=fixture(),s=await f.create();
+    for(const event of ['installing','packages_installed',terminal])await f.call('/v1/events',{event},s.writeToken);
+    for(const event of ['audio_configured','components_installed','services_ready']){
+      assert.deepEqual(await (await f.call('/v1/events',{event},s.writeToken)).json(),{accepted:false});
+    }
+    const value=await (await f.call('/v1/session',{id:s.id,owner})).json();
+    assert.equal(value.status,terminal);assert.deepEqual(value.completedSteps,['packages_installed']);
+  }
+});
+
+test('completion facts remain allowlisted, capability-only and atomic under concurrent updates',async()=>{
+  const f=fixture(),s=await f.create();await f.call('/v1/events',{event:'installing'},s.writeToken);
+  assert.equal((await f.call('/v1/events',{event:'packages_installed'},owner)).status,401);
+  for(const data of [{event:'services_started'},{event:'packages_installed',task:'private path'},{event:'audio_configured',completedSteps:['components_installed']}]){
+    assert.equal((await f.call('/v1/events',data,s.writeToken)).status,400);
+  }
+  const replies=await Promise.all(['packages_installed','audio_configured','components_installed'].map(event=>f.call('/v1/events',{event},s.writeToken)));
+  for(const response of replies)assert.deepEqual(await response.json(),{accepted:true});
+  assert.equal(f.db.prepare('SELECT completed_steps FROM installs').get().completed_steps,7);
+  assert.equal(f.db.prepare('SELECT updates FROM installs').get().updates,4);
+  assert.equal((await f.call('/v1/session',{id:s.id,owner:'c'.repeat(64)})).status,410);
+  f.db.prepare('UPDATE installs SET updates=120').run();
+  assert.equal((await f.call('/v1/events',{event:'packages_installed'},s.writeToken)).status,429);
 });

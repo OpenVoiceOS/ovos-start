@@ -836,17 +836,25 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 
 .install-dashboard.is-installed>.post-install-guide{border-top:0;padding-top:0;margin-top:24px}.post-install-guide .voice-check-wait{font-size:14px;line-height:1.6;color:var(--muted);margin:-8px 0 20px}
 .audio-check-reminder{display:block;margin-top:4px}
-.audio-check-results{list-style:none;padding:0;margin:22px 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.audio-result{display:grid;grid-template-columns:28px minmax(0,1fr);align-content:start;gap:10px 12px;padding:18px;border:1px solid var(--line);border-radius:14px;background:var(--paper);min-width:0}
-.audio-result-symbol{color:var(--muted);display:flex;padding-top:1px}.audio-result-symbol>.ui-icon{width:25px;height:25px}
-.audio-result-copy h3{font-size:16px;line-height:1.45;margin:0;font-weight:650}.post-install-guide .audio-result-copy p{font-size:14px;color:var(--muted);line-height:1.55;margin:5px 0 0}
-.audio-result-status{grid-column:2;display:inline-flex;align-items:center;gap:6px;justify-self:start;font-size:13px;line-height:1.5;font-weight:600;color:var(--muted);padding:4px 9px;border-radius:7px;background:var(--card)}
+.installation-completed-steps{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px;margin:0;padding:24px 30px;text-align:left}
+.installation-completed-steps li{display:flex;align-items:center;gap:10px;min-width:0;font-size:15px;line-height:1.5;color:var(--ink)}.installation-completed-steps .ui-icon{width:21px;height:21px;flex:none;color:var(--install-done)}
+.completed-install-details{margin:12px 0 0!important}.completed-install-details .installation-completed-steps,.recovery-history .installation-completed-steps{padding:12px 0 18px}
+@media(max-width:650px){.installation-completed-steps{grid-template-columns:minmax(0,1fr);padding:22px 20px;gap:12px}}
+:root{--audio-pass:#0c7454;--audio-fail:#b12d43;--audio-check:#215ea6;--audio-status-ink:#fff}
+@media(prefers-color-scheme:dark){:root:not([data-theme]){--audio-pass:#72deb1;--audio-fail:#ff98a3;--audio-check:#8ac3ff;--audio-status-ink:#101b22}}
+:root[data-theme="dark"]{--audio-pass:#72deb1;--audio-fail:#ff98a3;--audio-check:#8ac3ff;--audio-status-ink:#101b22}
+.audio-check-results{list-style:none;padding:0;margin:22px 0;display:grid;gap:10px}
+.audio-result{--audio-tone:var(--muted);display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:16px;padding:18px 20px;border:1px solid color-mix(in srgb,var(--audio-tone) 24%,var(--line));border-radius:14px;background:color-mix(in srgb,var(--audio-tone) 6%,var(--card));min-width:0;box-shadow:inset 3px 0 var(--audio-tone)}
+.audio-result-symbol{color:var(--audio-tone);display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:color-mix(in srgb,var(--audio-tone) 12%,var(--card))}.audio-result-symbol>.ui-icon{width:24px;height:24px}
+.audio-result-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px 16px}
+.audio-result-copy h3{font-size:16px;line-height:1.45;margin:0;font-weight:650}.post-install-guide .audio-result-copy p{font-size:14px;color:var(--muted);line-height:1.55;margin:6px 0 0;max-width:38em}
+.audio-result-status{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;font-size:13px;line-height:1.5;font-weight:650;color:var(--audio-tone);padding:4px 10px;border-radius:99px;background:color-mix(in srgb,var(--audio-tone) 10%,var(--card))}
 .audio-result-status>.ui-icon{width:16px;height:16px}
-.audio-result--checking .audio-result-symbol,.audio-result--checking .audio-result-status{color:var(--accent)}
-.audio-result--passed{border-color:color-mix(in srgb,var(--install-done) 35%,var(--line))}.audio-result--passed .audio-result-symbol,.audio-result--passed .audio-result-status,.audio-checks-passed .voice-check-symbol{color:var(--install-done)}
-.audio-result--failed{border-color:color-mix(in srgb,var(--ack-pending) 55%,var(--line))}.audio-result--failed .audio-result-symbol,.audio-result--failed .audio-result-status{color:var(--ack-pending)}
-.audio-checks-passed .audio-check-results{margin-bottom:0}
-@media(max-width:600px){.audio-check-results{grid-template-columns:minmax(0,1fr)}.audio-result{padding:16px}.audio-result-status{font-size:14px}}
+.audio-result--checking{--audio-tone:var(--audio-check)}.audio-result--passed{--audio-tone:var(--audio-pass)}.audio-result--failed{--audio-tone:var(--audio-fail)}
+.audio-result--passed .audio-result-status,.audio-result--failed .audio-result-status{color:var(--audio-status-ink);background:var(--audio-tone)}
+.audio-checks-passed .voice-check-symbol{color:var(--audio-pass);background:color-mix(in srgb,var(--audio-pass) 12%,var(--card))}.audio-checks-passed .audio-check-results{margin-bottom:0}
+@media(max-width:600px){.audio-result{padding:16px;gap:12px;align-items:start}.audio-result-symbol{margin-top:1px}.audio-result-heading{align-items:flex-start}.audio-result-copy h3{font-size:16px}}
+@media(forced-colors:active){.audio-result{border-color:CanvasText;box-shadow:none}.audio-result-status{border:1px solid CanvasText}.audio-result-symbol{outline:1px solid CanvasText}}
 
 /* Two concrete actions: copy here, then paste on the actual OVOS device. */
 .handoff-actions{list-style:none;margin:24px 0 0;padding:24px 0 0;border-top:1px solid var(--line);display:grid;gap:20px}

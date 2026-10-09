@@ -954,5 +954,9 @@
   "Waiting for the voice check.": "वॉइस की जाँच का इंतज़ार है।",
   "Say the wake word, then ask a question.": "वेक वर्ड बोलें, फिर एक सवाल पूछें।",
   "You confirmed OVOS replied.": "आपने पुष्टि की कि OVOS ने जवाब दिया।",
-  "Check your microphone and try the voice question again.": "माइक्रोफ़ोन जाँचें और सवाल फिर से बोलकर पूछें।"
+  "Check your microphone and try the voice question again.": "माइक्रोफ़ोन जाँचें और सवाल फिर से बोलकर पूछें।",
+  "System packages installed": "सिस्टम पैकेज इंस्टॉल हो गए",
+  "Audio configured": "ऑडियो सेट अप हो गया",
+  "OVOS components installed": "OVOS के घटक इंस्टॉल हो गए",
+  "Services started": "सेवाएँ शुरू हो गईं"
 }

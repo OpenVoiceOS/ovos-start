@@ -25,6 +25,10 @@ test('waiting stays in the handoff; actual installation replaces it with progres
  assert.match(region.innerHTML,/audio-result--passed" data-audio-result="audio"/);
  model.session.microphoneStatus='failed';c.updateInstallProgress();
  assert.match(region.innerHTML,/audio-result--failed" data-audio-result="microphone"/);
+ model={session:{status:'installing',phase:2,completedSteps:['packages_installed']}};c.updateInstallProgress();
+ assert.match(region.innerHTML,/System packages installed/);assert.doesNotMatch(region.innerHTML,/Audio configured/);
+ model.session.completedSteps.push('audio_configured');c.updateInstallProgress();
+ assert.match(region.innerHTML,/Audio configured/);
  for(const status of ['failed','cancelled']){model={session:{status}};c.updateInstallProgress();assert.equal(card.hidden,true);assert.equal(region.hidden,false);assert.match(region.innerHTML,/install-recovery/);assert.equal(setup.hidden,true);assert.equal(navigation.hidden,true);assert.equal(trivia.hidden,true);assert.equal(heading.textContent,status==='failed'?'Installation stopped':'Installation cancelled');}
  model={session:{status:'failed'}};c.updateInstallProgress();assert.doesNotMatch(region.innerHTML,/data-copy-report/);
  model={session:{status:'failed',errorUrl:'https://paste.uoi.io/report123'}};c.updateInstallProgress();assert.match(region.innerHTML,/data-copy-report/);

@@ -954,5 +954,9 @@
   "Waiting for the voice check.": "Ahots-probaren zain.",
   "Say the wake word, then ask a question.": "Esan aktibazio-hitza eta, ondoren, egin galdera bat.",
   "You confirmed OVOS replied.": "OVOSek erantzun duela berretsi duzu.",
-  "Check your microphone and try the voice question again.": "Egiaztatu mikrofonoa eta egin berriro galdera ahoz."
+  "Check your microphone and try the voice question again.": "Egiaztatu mikrofonoa eta egin berriro galdera ahoz.",
+  "System packages installed": "Sistemako paketeak instalatuta",
+  "Audio configured": "Audioa konfiguratuta",
+  "OVOS components installed": "OVOS osagaiak instalatuta",
+  "Services started": "Zerbitzuak abiarazita"
 }

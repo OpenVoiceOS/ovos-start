@@ -1,5 +1,5 @@
 /** Immutable, reviewed launcher; never accept a download URL from a request. */
-export const LAUNCHER_URL='https://raw.githubusercontent.com/OpenVoiceOS/ovos-start-launcher/a3209f200b32666ae2aeb2b7258bdb381fc5d487/v2.sh';
+export const LAUNCHER_URL='https://raw.githubusercontent.com/OpenVoiceOS/ovos-start-launcher/c846aaa40b1ce755c0fccbfde60af55b39d819c3/v2.sh';
 
 /** Produce one atomic shell compound command. No truncated prefix can execute.
  * @param {string} code Timestamped recipe. @param {string} writeToken Callback capability.

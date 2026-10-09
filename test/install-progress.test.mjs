@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {InstallTracker,progressCopy,guideKind,VOICE_EXAMPLES,CHECK_COMMAND,DEMOS,installationStages,installationMilestones,installationTiming,installationUpdate,audioChecks} from '../dist/install-progress.mjs';
+import {InstallTracker,progressCopy,guideKind,VOICE_EXAMPLES,CHECK_COMMAND,DEMOS,installationStages,installationMilestones,installationTiming,installationUpdate,audioChecks,installationReceipts} from '../dist/install-progress.mjs';
 import {progressView,timingView} from '../dist/post-install.mjs';
 import {DEFAULTS,DEVICES} from '../dist/scenario.mjs';
 import {issueSetup,buildShortCommand,buildSetupScript,readSetupSession} from '../dist/short-setup.mjs';
@@ -329,6 +329,36 @@ test('tracker rejects unknown check values and accepts legacy absent fields',asy
  for(const field of ['audioStatus','microphoneStatus'])for(const value of ['success','<script>',null,1,{}]){
   const tracker=new InstallTracker({fetcher:async()=>reply({...session,[field]:value}),schedule:()=>1,cancel(){}});
   assert.equal(await tracker.connect('code'),null);assert.equal(tracker.error,'unavailable');tracker.stop();
+ }
+});
+
+test('completed task receipts stay factual across progress, failure and completion',()=>{
+ const completedSteps=['packages_installed','components_installed'];
+ for(const status of ['installing','failed','installed','services_ready','voice_ready']){
+  const model={session:{...session,status,phase:4,progressRank:status==='installing'?3:4,completedSteps}};
+  assert.deepEqual(installationReceipts(model).map(step=>step.id),completedSteps);
+  const html=progressView(model,base);
+  assert.match(html,/System packages installed/);assert.match(html,/OVOS components installed/);
+  assert.doesNotMatch(html,/Audio configured|Services started/);
+  if(status==='installing')assert.doesNotMatch(html,/class="installation-stages/);
+ }
+ for(const status of ['installing','installed','voice_ready']){
+  assert.deepEqual(installationReceipts({session:{status,phase:4}}),[]);
+  assert.doesNotMatch(progressView({session:{...session,status,phase:4}},base),/data-completed-step/);
+ }
+ const all=progressView({session:{...session,status:'services_ready',completedSteps:[...completedSteps,'audio_configured','services_started']}},base);
+ assert.match(all,/Audio configured/);assert.match(all,/Services started/);
+ assert.match(all,/<details class="install-help-short completed-install-details"/);
+});
+
+test('tracker validates task receipts and permits older sessions without them',async()=>{
+ for(const completedSteps of [null,'packages_installed',{},['unknown'],['packages_installed','packages_installed'],['__proto__']]){
+  const tracker=new InstallTracker({fetcher:async()=>reply({...session,completedSteps}),schedule:()=>1,cancel(){}});
+  assert.equal(await tracker.connect('code'),null);assert.equal(tracker.error,'unavailable');tracker.stop();
+ }
+ for(const fields of [{},{completedSteps:[]},{completedSteps:['audio_configured','services_started']}]){
+  const tracker=new InstallTracker({fetcher:async()=>reply({...session,...fields}),schedule:()=>1,cancel(){}});
+  assert.ok(await tracker.connect('code'));tracker.stop();
  }
 });
 

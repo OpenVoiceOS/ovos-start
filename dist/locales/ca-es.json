@@ -954,5 +954,9 @@
   "Waiting for the voice check.": "Esperant la prova de veu.",
   "Say the wake word, then ask a question.": "Digues la paraula d’activació i després fes una pregunta.",
   "You confirmed OVOS replied.": "Has confirmat que OVOS ha respost.",
-  "Check your microphone and try the voice question again.": "Comprova el micròfon i torna a fer la pregunta en veu alta."
+  "Check your microphone and try the voice question again.": "Comprova el micròfon i torna a fer la pregunta en veu alta.",
+  "System packages installed": "Paquets del sistema instal·lats",
+  "Audio configured": "Àudio configurat",
+  "OVOS components installed": "Components d’OVOS instal·lats",
+  "Services started": "Serveis iniciats"
 }

@@ -1,4 +1,4 @@
-Last Edit: Codex (GPT-6) - 2026-10-09 - Motive: Document separate device audio results, retries and bounded post-install tracking.
+Last Edit: Codex (GPT-6) - 2026-10-09 - Motive: Document confirmed completed work, separate device audio results and bounded retries.
 
 # Installation follow-up
 
@@ -15,6 +15,23 @@ These results may change after an earlier `voice_ready` receipt, allowing **Run 
 [`InstallTracker.queue`](../dist/install-progress.mjs) polls active checks every five seconds, reduces polling to every 30 seconds after confirmed voice success, and retries connection errors every 15 seconds. It stops off-screen, on failed or cancelled attempts, and at the existing 24-hour session deadline. A later check therefore updates the same page without extending tracking or silently starting another installation. [`0004_audio_checks.sql`](../server/relay/drizzle/0004_audio_checks.sql) adds constrained result columns, starts unconfirmed sessions at pending and backfills earlier `voice_ready` rows as passed. Existing owner authorization and accepted-event limits remain unchanged; see [self-hosting](self-hosting.md).
 
 Validation is covered by [state and polling tests](../test/install-progress.test.mjs), [same-milestone rendering tests](../test/progress-placement.test.mjs), [API and migration tests](../test/node-api.test.mjs), [relay transition tests](../test/node-api-relay.test.mjs) and [12-catalog translation checks](../test/i18n.test.mjs). Browser previews simulate the results; they do not install OVOS or access a microphone. New device events require a fresh command using the updated launcher; an already-running older launcher retains its combined result.
+
+### Confirmed completed work
+
+[`installationReceipts`](../dist/install-progress.mjs) displays only the fixed identifiers received in `session.completedSteps`: **System packages installed**, **Audio configured**, **OVOS components installed** and **Services started**. These are additional completion receipts, separate from the existing phase 0–4 indication of current work. A later phase or successful installation does not invent an earlier receipt. Missing, skipped or unsupported reports remain absent; all four labels are translated in the 12 UI catalogs.
+
+The launcher's Python [`CallbackModule.completion`](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/ansible_progress.py) recognizes explicit successful upstream checkpoints by role, task filename and task name:
+
+| Receipt | Successful boundary |
+| --- | --- |
+| `packages_installed` | Virtualenv `venv.yml`: **Copy Python requirements.txt files**, after system packages and GUI preparation; containers `common.yml`: **Start docker service** |
+| `audio_configured` | Sound `install.yml`: **Resolve ALSA default backend for .asoundrc**, followed by a successful timezone-role task; an observed sound-role failure suppresses this receipt |
+| `components_installed` | Virtualenv `venv.yml`: completed **Install Open Voice OS in Python venv** requirements loop; containers `composer.yml`: **Deploy docker-compose stack** |
+| `services_started` | Existing device checker `services_ready` receipt after the expected service processes are running |
+
+The first three callback events require executed successful work: check mode, all-skipped loops, failed loop items and nonzero command results do not qualify. Successful idempotent tasks do qualify because the required state is already present. Unknown upstream task metadata produces less detail instead of a guessed checkmark. **Audio configured** describes setup, while the separate speaker and microphone questions still establish whether the user hears a sound and receives a reply. The service receipt comes from the checker's process check, not merely a successful service-configuration task; there is no direct `services_started` callback.
+
+[`transition`](../server/relay/server/worker.mjs) accepts the first three completion events once installation has reached rank 3, without changing the current status, phase or audio result. A later `services_ready` event can add its receipt without undoing `voice_ready` or audio attention. Receipts accumulate and remain available after a stopped install; failed or cancelled sessions reject further writes. [`0005_completed_steps.sql`](../server/relay/drizzle/0005_completed_steps.sql) adds a constrained 0–15 bit mask and backfills only rows currently at `services_ready`. Historical `voice_ready` rows do not prove that a separate process check occurred, so they receive no invented receipt. Owner authorization, optimistic concurrency, the 120 accepted-event limit and the 24-hour deadline are unchanged. Browser validation rejects unknown or duplicate receipt identifiers. See the [API contract](self-hosting.md) and the [launcher checkpoint tests](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/test/test_ansible_progress.py).
 
 ## Version 0.59.0: LED eyes and clearer progress
 

@@ -954,5 +954,9 @@
   "Waiting for the voice check.": "Waiting for the voice check.",
   "Say the wake word, then ask a question.": "Say the wake word, then ask a question.",
   "You confirmed OVOS replied.": "You confirmed OVOS replied.",
-  "Check your microphone and try the voice question again.": "Check your microphone and try the voice question again."
+  "Check your microphone and try the voice question again.": "Check your microphone and try the voice question again.",
+  "System packages installed": "System packages installed",
+  "Audio configured": "Audio configured",
+  "OVOS components installed": "OVOS components installed",
+  "Services started": "Services started"
 }

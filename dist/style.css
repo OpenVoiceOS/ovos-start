@@ -636,16 +636,17 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .install-card .paste-step{display:block;margin:16px 0 0}
 .install-card .paste-step p{font-size:16px;line-height:1.6;margin:0;color:var(--ink)}
 .install-waiting{display:flex;align-items:center;flex-wrap:wrap;gap:14px;margin-top:20px;padding:16px;border:1px solid var(--line);border-radius:14px;color:var(--muted);font-size:1rem;line-height:1.5}
-.install-waiting.is-waiting{border-color:color-mix(in srgb,var(--accent) 48%,var(--line));background:color-mix(in srgb,var(--accent) 7%,var(--card))}
+.install-waiting.is-waiting{justify-content:center;flex-wrap:nowrap;border-color:color-mix(in srgb,var(--accent) 48%,var(--line));background:color-mix(in srgb,var(--accent) 7%,var(--card))}
 .waiting-indicator{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border-radius:50%;background:var(--soft);color:var(--accent)}
 .waiting-indicator .ui-icon{width:24px;height:24px}
 .waiting-title{display:block;color:var(--ink);font-size:1rem;font-weight:650;line-height:1.4}
 .install-waiting>span[role="status"]{flex:1;min-width:0}
+.install-waiting.is-waiting>span[role="status"]{flex:0 1 auto}
 .install-waiting.is-waiting .waiting-indicator{flex-basis:40px;width:40px;height:40px;background:none}
 .install-waiting .text-button{font-size:14px;margin-left:auto}
 .handoff-help{border-top:1px solid var(--line);padding-top:14px;margin-top:20px}
 .handoff-help h3{font-size:16px;margin:20px 0 0}.handoff-help .text-button{font-size:14px;margin-top:12px}
-@media(max-width:540px){.install-target{flex-wrap:wrap}.install-target .code-expiry{max-width:130px}.install-waiting{gap:12px;padding:14px}.install-waiting .text-button{flex-basis:100%;margin-left:56px;text-align:left}}
+@media(max-width:540px){.install-target{flex-wrap:wrap}.install-target .code-expiry{max-width:130px}.install-waiting{gap:12px;padding:14px}.install-waiting.is-waiting{flex-direction:column;text-align:center}.install-waiting .text-button{flex-basis:100%;margin-left:56px;text-align:left}}
 
 .keep-open-hint{display:block;font-size:14px;line-height:1.5;color:var(--muted);margin-top:3px}
 

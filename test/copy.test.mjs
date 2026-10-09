@@ -131,7 +131,7 @@ test('missing launch capability never exposes or copies the longer fallback, and
  assert.equal(h.button.disabled,false);assert.match(h.button.innerHTML,/Copy install command/);
  assert.deepEqual(h.toasts,['Could not prepare your install command. Please try again.']);
  const pending=h.context.copy('command');await new Promise(resolve=>setImmediate(resolve));
- assert.equal(h.writes.length,1);assert.equal(h.writes[0],'curl -qfsS -m120 https://installer.openvoiceos.pt/s/'+token+' | sh');assert.ok(h.writes[0].length<80);
+ assert.equal(h.writes.length,1);assert.equal(h.writes[0],'curl -qfsS -m120 https://installer.openvoiceos.org/s/'+token+' | sh');assert.ok(h.writes[0].length<=80);
  h.resolve();await pending;assert.equal(h.classes.has('copied'),true);
  h.context.updateExpiry();assert.equal(h.manual.hidden,true);assert.equal(h.command.value,'');
 });

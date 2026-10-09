@@ -1,17 +1,17 @@
-Last Edit: Codex - 2026-10-09 - Motive: Document durable audio results and confirmed installation milestones.
+Last Edit: Codex - 2026-10-09 - Motive: Move public wizard and installer links to openvoiceos.org.
 
 # Host the wizard API
 
 The frontend can use static hosting. The API runs one Node 24 LTS process with a private SQLite database; it does not need Docker or npm packages at runtime. Installation still happens on the user's device.
 
-Run `node server/node-server.mjs` from the repository root. The listener binds to `127.0.0.1:8787`; publish it through an HTTPS reverse proxy or Cloudflare Tunnel. The progress API hostname is `https://start-api.smartgic.io`. Copied commands and downloaded setup scripts use `https://installer.openvoiceos.pt`, an HTTPS alias to the same service and database. Debian 13's standard Node package is version 20, so install a maintained Node 24 runtime separately.
+Run `node server/node-server.mjs` from the repository root. The listener binds to `127.0.0.1:8787`; publish it through an HTTPS reverse proxy or Cloudflare Tunnel. The progress API hostname is `https://start-api.smartgic.io`. Copied commands and downloaded setup scripts use `https://installer.openvoiceos.org`, an HTTPS alias to the same service and database. Debian 13's standard Node package is version 20, so install a maintained Node 24 runtime separately.
 
 Configure these values in a private service environment file, never in frontend assets:
 
 | Variable | Value |
 | --- | --- |
 | `PUBLIC_ORIGIN` | `https://start-api.smartgic.io` |
-| `ALLOWED_ORIGINS` | `https://start.openvoiceos.pt,https://openvoiceos.github.io` |
+| `ALLOWED_ORIGINS` | `https://start.openvoiceos.org,https://openvoiceos.github.io` |
 | `RELAY_ADMIN_KEY` | A new 32-byte random secret encoded as 64 lowercase hexadecimal characters |
 | `DATABASE_PATH` | Absolute filename; defaults to `/var/lib/ovos-start/installs.sqlite` |
 | `PORT` | Loopback port; defaults to `8787` |
@@ -62,9 +62,11 @@ Only a loopback proxy may provide `CF-Connecting-IP`, and that header affects th
 
 ## Migration and verification
 
-The install-download origin and progress origin are independent. [`INSTALL_LINK_ORIGIN`](../dist/short-setup.mjs) uses `https://installer.openvoiceos.pt` only for copied commands and downloaded setup scripts. [`INSTALL_API_URL`](../dist/install-progress.mjs), the launcher's callback URL and `PUBLIC_ORIGIN` remain on `https://start-api.smartgic.io`. Both hostnames must reach this same service and SQLite database. The download alias needs no browser CORS or CSP allowance because curl, not the browser, fetches it.
+The install-download origin and progress origin are independent. [`INSTALL_LINK_ORIGIN`](../dist/short-setup.mjs) uses `https://installer.openvoiceos.org` only for copied commands and downloaded setup scripts. [`INSTALL_API_URL`](../dist/install-progress.mjs), the launcher's callback URL and `PUBLIC_ORIGIN` remain on `https://start-api.smartgic.io`. Both hostnames must reach this same service and SQLite database. The download alias needs no browser CORS or CSP allowance because curl, not the browser, fetches it.
 
 Provision routing and a valid HTTPS certificate for the alias before publishing it in the wizard. A DNS CNAME alone does not provide a certificate for the alias. Check `/healthz` and a freshly issued `/s/<capability>` through both hostnames: each download must return the same bootstrap without redirecting.
+
+When changing the wizard domain, update `ALLOWED_ORIGINS` and the GitHub Pages custom domain together. Browser ownership credentials stay in the original site's storage; saved setup links carry choices, not access to an earlier installation. Keep the previous origin allowed while its outstanding installations finish their 24-hour reporting window.
 
 If the progress API itself moves, update `PUBLIC_ORIGIN`, the browser URL/CSP and the launcher's callback URL together, then publish a matching launcher revision and update the pin in [`launch.mjs`](../server/relay/server/launch.mjs). Keep the previous relay available for outstanding installs through their 24-hour reporting window. Existing databases are not imported automatically.
 
@@ -74,12 +76,12 @@ Use `node --test test/node-api*.test.mjs` for ownership isolation, CORS, payload
 
 ## Website and DNS
 
-GitHub Pages publishes the frontend from the `dev` branch of `OpenVoiceOS/ovos-start` through [the deployment workflow](../.github/workflows/pages.yml). Its custom domain is `start.openvoiceos.pt`; HTTPS enforcement is enabled in the repository’s Pages settings. Only `dist/client` is uploaded.
+GitHub Pages publishes the frontend from the `dev` branch of `OpenVoiceOS/ovos-start` through [the deployment workflow](../.github/workflows/pages.yml). Its custom domain is `start.openvoiceos.org`; HTTPS enforcement is enabled in the repository’s Pages settings. Only `dist/client` is uploaded.
 
 | Record | Target | Settings |
 | --- | --- | --- |
-| CNAME `start.openvoiceos.pt` | `openvoiceos.github.io` | TTL 300, DNS only |
+| CNAME `start.openvoiceos.org` | `openvoiceos.github.io` | TTL 300, DNS only |
 | CNAME `start-api.smartgic.io` | `961cc898-6447-4079-adff-0bc3e74386e1.cfargotunnel.com` | Cloudflare proxied, automatic TTL |
-| CNAME `installer.openvoiceos.pt` | `start-api.smartgic.io` | TTL 3600; Cloudflare custom hostname with validated HTTPS |
+| CNAME `installer.openvoiceos.org` | `start-api.smartgic.io` | TTL 3600; Cloudflare custom hostname with validated HTTPS |
 
 The `ovos-start-api` tunnel runs as `cloudflared-ovos-start.service` on `agh01.home.lan`. It forwards approved hostnames to `http://127.0.0.1:8787`, with a final 404 rule for every other hostname. The branded download alias must route to this same origin after its HTTPS certificate is validated. The existing tunnel service has separate configuration and credentials.

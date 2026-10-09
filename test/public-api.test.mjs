@@ -87,9 +87,9 @@ test('copied and downloaded commands use the branded alias while browser trackin
   const setup=issueSetup({...DEFAULTS,device:'computer'},issuedAt);
   const command=buildShortCommand(setup,issuedAt,session.launchToken);
   const download=buildSetupScript(setup,issuedAt,session.launchToken);
-  assert.equal(INSTALL_LINK_ORIGIN,'https://installer.openvoiceos.pt');
-  assert.equal(command,`curl -qfsS -m120 https://installer.openvoiceos.pt/s/${session.launchToken} | sh`);
-  assert.ok(download.includes(`'https://installer.openvoiceos.pt/s/${session.launchToken}'`));
+  assert.equal(INSTALL_LINK_ORIGIN,'https://installer.openvoiceos.org');
+  assert.equal(command,`curl -qfsS -m120 https://installer.openvoiceos.org/s/${session.launchToken} | sh`);
+  assert.ok(download.includes(`'https://installer.openvoiceos.org/s/${session.launchToken}'`));
   assert.ok(!command.includes('start-api.smartgic.io')&&!download.includes('start-api.smartgic.io'));
   assert.equal(INSTALL_API_URL,'https://start-api.smartgic.io/api/install');
 });

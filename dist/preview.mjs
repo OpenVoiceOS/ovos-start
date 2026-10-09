@@ -1,4 +1,4 @@
-export const LIVE_WIZARD_ORIGIN='https://start.openvoiceos.pt';
+export const LIVE_WIZARD_ORIGIN='https://start.openvoiceos.org';
 
 /** Local and explicitly simulated pages must never offer executable installs.
  * @param {{hostname:string,protocol:string}} location Browser location.

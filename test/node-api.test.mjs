@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
-import { mkdtempSync, rmSync, statSync, writeFileSync, mkdirSync, symlinkSync, chmodSync, readdirSync, copyFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, statSync, writeFileSync, mkdirSync, symlinkSync, chmodSync, readdirSync, copyFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { request as httpRequest } from 'node:http';
@@ -48,6 +48,23 @@ test('configuration accepts only exact HTTPS origins and a private 256-bit key',
   for (const key of ['', 'not-a-key', 'a'.repeat(63), 'A'.repeat(64)]) assert.throws(() => configuration({ ...env, RELAY_ADMIN_KEY: key }));
   for (const port of [0, -1, 65536, 'x']) assert.throws(() => configuration({ ...env, PORT: port }));
   assert.equal(configuration(env).port, 8787);
+});
+
+test('the shipped API configuration accepts the current wizard origin and keeps the existing API origin', async t => {
+  const env = Object.fromEntries(readFileSync(new URL('../.env.example', import.meta.url), 'utf8').trim().split('\n').map(line => {
+    const separator = line.indexOf('='); return [line.slice(0, separator), line.slice(separator + 1)];
+  }));
+  const deployment = configuration({ ...env, RELAY_ADMIN_KEY: secret });
+  assert.equal(deployment.publicOrigin, 'https://start-api.smartgic.io');
+  assert.deepEqual([...deployment.allowedOrigins], ['https://start.openvoiceos.org', 'https://openvoiceos.github.io']);
+  const f = fixture(t), api = createApi(f.store, deployment, () => now);
+  const response = await api(new Request(deployment.publicOrigin + '/api/install', {
+    method: 'POST', headers: { Origin: 'https://start.openvoiceos.org', 'Content-Type': 'application/json', Authorization: `Bearer ${browser}` },
+    body: JSON.stringify({ code }),
+  }), '127.0.0.1');
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('access-control-allow-origin'), 'https://start.openvoiceos.org');
+  assert.match((await response.json()).launchToken, /^[A-Za-z0-9_-]{22}$/);
 });
 
 test('browser capabilities isolate installs without cookies or platform identity headers', async t => {

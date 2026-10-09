@@ -49,7 +49,10 @@ test('published output contains bundled entries and intended assets, never incid
     assert.match(app,/data:image\/jpeg;base64/);
     const html=await readFile(join(client,'index.html'),'utf8');
     for(const file of ['app.mjs','theme.js','style.css']){assert.ok(html.includes('./'+file));assert.ok((await readFile(join(client,file))).length>0);}
-    assert.equal(await readFile(join(client,'CNAME'),'utf8'),'start.openvoiceos.pt\n');
+    assert.equal(await readFile(join(client,'CNAME'),'utf8'),'start.openvoiceos.org\n');
+    assert.match(html,/<link rel="canonical" href="https:\/\/start\.openvoiceos\.org\/">/);
+    assert.match(html,/<meta property="og:url" content="https:\/\/start\.openvoiceos\.org\/">/);
+    assert.doesNotMatch(html+app,/(?:start|installer)\.openvoiceos\.pt/,'published assets cannot send users to the retired domains');
     const policy=html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)">/)?.[1];
     assert.ok(policy,'static hosting receives a CSP without relying on API response headers');
     assert.match(policy,/(?:^|; )connect-src 'self' https:\/\/start-api\.smartgic\.io(?:;|$)/);
@@ -59,7 +62,7 @@ test('published output contains bundled entries and intended assets, never incid
     assert.match(html,/<meta name="referrer" content="no-referrer">/);
     assert.ok(!app.includes('oai-authenticated-user-id')&&!app.includes('RELAY_ADMIN_KEY'));
     assert.ok(!app.includes('goldyfruit.chatgpt.site'));
-    assert.ok(app.includes('https://installer.openvoiceos.pt'),'published commands use the branded install origin');
+    assert.ok(app.includes('https://installer.openvoiceos.org'),'published commands use the branded install origin');
     assert.ok(app.includes('https://start-api.smartgic.io/api/install'),'published browser tracking retains the API origin');
     await assert.rejects(readFile(join(output,'server/index.js')),{code:'ENOENT'});
   }finally{await rm(root,{recursive:true,force:true});}

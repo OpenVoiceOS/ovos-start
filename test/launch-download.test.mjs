@@ -257,6 +257,8 @@ test('localhost, loopback, file and explicit simulation are distinct from a live
  for(const hostname of ['localhost','review.localhost','127.0.0.1','127.1.2.3','[::1]'])assert.equal(isPreviewContext({hostname,protocol:'http:'}),true);
  assert.equal(isPreviewContext({hostname:'',protocol:'file:'}),true);
  assert.equal(isPreviewContext({hostname:'preview.example',protocol:'https:'},'simulated'),true);
- assert.equal(isPreviewContext({hostname:'start.openvoiceos.pt',protocol:'https:'}),false);
+ assert.equal(isPreviewContext({hostname:'start.openvoiceos.org',protocol:'https:'}),false);
  const url=new URL(liveWizardUrl({...setup,launchToken:token}));assert.equal(url.hash,'#setup='+setup.code);assert.ok(!url.href.includes(token));
+ assert.equal(url.origin,'https://start.openvoiceos.org','preview handoff preserves the recipe on the current wizard domain');
+ assert.equal(liveWizardUrl(null),'https://start.openvoiceos.org/');
 });

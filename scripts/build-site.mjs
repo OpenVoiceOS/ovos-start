@@ -28,7 +28,7 @@ export async function buildSite({source=resolve('dist'),output=resolve('dist')}=
   await rm(join(client,'theme.mjs'));
   const css=await transform(await readFile(join(source,'style.css'),'utf8'),{loader:'css',minify:true,legalComments:'inline'});
   await writeFile(join(client,'style.css'),css.code);
-  await writeFile(join(client,'CNAME'),'start.openvoiceos.pt\n');
+  await writeFile(join(client,'CNAME'),'start.openvoiceos.org\n');
   await writeFile(join(client,'.nojekyll'),'');
   return browser.metafile;
 }

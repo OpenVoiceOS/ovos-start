@@ -1,14 +1,14 @@
-Last Edit: Codex - 2026-10-09 - Motive: Pin the launcher with Raspberry Pi tuning enabled for Pi-based devices.
+Last Edit: Codex - 2026-10-09 - Motive: Move public wizard and installer links to openvoiceos.org.
 
 # One-hour installation links
 
-Launcher 2.6.0 is pinned to immutable commit `09638d68820a4bfafd3ffb9f38b219e2d7007bd1`. It fetches `ovos-installer/main` for every device and speech choice, verifies the fetched commit and stops if that fetch fails. The launcher pin does not freeze the installer branch. Its automatically uploaded failure-report URL is delivered with the failure event; [report recovery](install-progress.md) documents the UI and privacy boundary.
+Launcher 2.7.0 is pinned to immutable commit `c846aaa40b1ce755c0fccbfde60af55b39d819c3`. It fetches `ovos-installer/main` for every device and speech choice, verifies the fetched commit and stops if that fetch fails. The launcher pin does not freeze the installer branch. Its automatically uploaded failure-report URL is delivered with the failure event; [report recovery](install-progress.md) documents the UI and privacy boundary.
 
 ## Manual recovery after clipboard failure (0.54.1)
 
 There is no command disclosure control. [`manualCopyReady`](../dist/app.mjs) requires a failed clipboard attempt bound to the current recipe, accepted prerequisites, an unexpired setup and its launch token. [`updateManualCopy`](../dist/app.mjs) otherwise hides and clears the plain readonly field. Pending and successful copying never reveal it. Clipboard denial or an unavailable clipboard API selects the current command for manual copying. Newer requests invalidate older clipboard outcomes. Sharing, downloading and reload do not enable the fallback. [Copy tests](../test/copy.test.mjs) and [callback tests](../test/progress-placement.test.mjs) verify these boundaries.
 
-The wizard copies a short `curl … | sh` command for tracked installations. [`buildShortCommand`](../dist/short-setup.mjs) validates the recipe and fixed 22-character capability, then downloads from `https://installer.openvoiceos.pt/s/<capability>`. This branded HTTPS alias reaches the same relay and database as `start-api.smartgic.io`; browser progress requests and launcher callbacks keep the existing API hostname. No third-party shortener is used. The browser requires a current capability; failed session creation asks for a retry and never exposes the longer untracked command. [`buildSetupScript`](../dist/short-setup.mjs) uses the same branded alias and keeps its private-file full-download guard inside the downloadable file. [Hosting instructions](self-hosting.md) cover alias routing and certificate validation.
+The wizard copies a short `curl … | sh` command for tracked installations. [`buildShortCommand`](../dist/short-setup.mjs) validates the recipe and fixed 22-character capability, then downloads from `https://installer.openvoiceos.org/s/<capability>`. This branded HTTPS alias reaches the same relay and database as `start-api.smartgic.io`; browser progress requests and launcher callbacks keep the existing API hostname. No third-party shortener is used. The browser requires a current capability; failed session creation asks for a retry and never exposes the longer untracked command. [`buildSetupScript`](../dist/short-setup.mjs) uses the same branded alias and keeps its private-file full-download guard inside the downloadable file. [Hosting instructions](self-hosting.md) cover alias routing and certificate validation.
 
 ## Preview isolation
 

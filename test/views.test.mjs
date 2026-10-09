@@ -211,8 +211,8 @@ test('install handoff shows the sudo password hint beside paste instructions bef
   assert.equal((primary.match(/data-install-action/g)||[]).length,1);
   assert.equal((primary.match(/data-paste-title/g)||[]).length,1);
   const paste=primary.match(/<li data-handoff-step="paste"[\s\S]*?<\/li>/)[0];
-  assert.equal((paste.match(/You may be asked for your sudo password\./g)||[]).length,1);
-  assert.ok(paste.indexOf('You may be asked')>paste.indexOf('data-paste-title'));
+  assert.equal((paste.match(/If Terminal asks for your sudo password, enter your device password\. Nothing appears while you type\./g)||[]).length,1);
+  assert.ok(paste.indexOf('If Terminal asks')>paste.indexOf('data-paste-title'));
   assert.match(primary,/data-install-waiting hidden/);
   assert.doesNotMatch(primary,/After a restart|24 hours|Follow the steps|No device logs/);
   if(device==='windows')assert.match(primary,/Open Ubuntu in WSL2, paste and press Enter/);

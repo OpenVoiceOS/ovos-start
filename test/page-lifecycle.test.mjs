@@ -14,20 +14,20 @@ const session={id:'b'.repeat(32),launchToken:'L'.repeat(22),status:'installing',
  * @param {string} step Mounted screen. @returns {Promise<object>} Lifecycle fixture.
  */
 async function fixture(step='review'){
-  const timers=new Map(),events={},requests=[];let serial=0,renders=0,updates=0;
+  const timers=new Map(),events={},requests=[];let serial=0,renders=0,updates=0,triviaStops=0;
   const tracker=new InstallTracker({fetcher:async(url,options)=>{requests.push(JSON.parse(options.body));return Response.json(session);},
     schedule:fn=>{timers.set(++serial,fn);return serial;},cancel:id=>timers.delete(id)});
   await tracker.connect('unchanged-recipe');
   const setupSession=Object.freeze({code:'unchanged-recipe',expiresAt:1800003600});
   vm.runInNewContext(handlers,{window:{addEventListener:(name,callback)=>{events[name]=callback;}},
-    step,setupSession,installTracker:tracker,stopWelcomeEyes:null,welcomePlayback:null,
+    step,setupSession,installTracker:tracker,triviaRotation:{stop(){triviaStops++;}},stopWelcomeEyes:null,welcomePlayback:null,
     render(){renders++;},updateExpiry(){updates++;}});
-  return {tracker,timers,events,requests,setupSession,get renders(){return renders;},get updates(){return updates;}};
+  return {tracker,timers,events,requests,setupSession,get renders(){return renders;},get updates(){return updates;},get triviaStops(){return triviaStops;}};
 }
 
 test('Back restores progress polling for the existing recipe without extending expiry',async()=>{
   const f=await fixture();
-  f.events.pagehide();assert.equal(f.tracker.active,false);assert.equal(f.timers.size,0);
+  f.events.pagehide();assert.equal(f.tracker.active,false);assert.equal(f.timers.size,0);assert.equal(f.triviaStops,1);
   f.events.pageshow({persisted:true});f.events.pageshow({persisted:true});
   await new Promise(setImmediate);
   assert.equal(f.tracker.active,true);assert.equal(f.timers.size,1);
@@ -39,7 +39,7 @@ test('Back restores progress polling for the existing recipe without extending e
 test('ordinary loads and unrelated restored screens do not start installation requests',async()=>{
   for(const step of ['review','welcome','device']){
     const f=await fixture(step);f.events.pagehide();f.events.pageshow({persisted:false});
-    assert.equal(f.tracker.active,false);assert.equal(f.renders,0);
+    assert.equal(f.tracker.active,false);assert.equal(f.renders,0);assert.equal(f.triviaStops,1);
     if(step!=='review'){
       f.events.pageshow({persisted:true});await new Promise(setImmediate);
       assert.equal(f.requests.length,1);assert.equal(f.timers.size,0);

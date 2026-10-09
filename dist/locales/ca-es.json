@@ -958,5 +958,10 @@
   "System packages installed": "Paquets del sistema instal·lats",
   "Audio configured": "Àudio configurat",
   "OVOS components installed": "Components d’OVOS instal·lats",
-  "Services started": "Serveis iniciats"
+  "Services started": "Serveis iniciats",
+  "If Terminal asks for your sudo password, enter your device password. Nothing appears while you type.": "Si el Terminal et demana la contrasenya de sudo, introdueix la contrasenya del dispositiu. No es mostra res mentre escrius.",
+  "Pause trivia": "Pausa les curiositats",
+  "Resume trivia": "Reprèn les curiositats",
+  "Installing <em>OVOS</em>": "Instal·lant <em>OVOS</em>",
+  "<em>OVOS</em> is installed": "<em>OVOS</em> està instal·lat"
 }

@@ -958,5 +958,10 @@
   "System packages installed": "Ikemmusen n unagraw ttwasebdeden",
   "Audio configured": "Amesli yettusɣewwer",
   "OVOS components installed": "Iferdisen n OVOS ttwasebdeden",
-  "Services started": "Imeẓla bdan"
+  "Services started": "Imeẓla bdan",
+  "If Terminal asks for your sudo password, enter your device password. Nothing appears while you type.": "Ma yessuter Terminal awal uffir n sudo, sekcem awal uffir n yibenk-ik. Ulac ara d-ibanen mi ara tettaruḍ.",
+  "Pause trivia": "Ḥbes timussniwin",
+  "Resume trivia": "Kemmel timussniwin",
+  "Installing <em>OVOS</em>": "Asebded n <em>OVOS</em>",
+  "<em>OVOS</em> is installed": "<em>OVOS</em> yettusebded"
 }

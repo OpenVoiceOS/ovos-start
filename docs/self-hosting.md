@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-09 - Motive: Move public wizard and installer links to openvoiceos.org.
+Last Edit: Codex - 2026-10-09 - Motive: Preserve existing wizard sessions during the public domain transition.
 
 # Host the wizard API
 
@@ -11,7 +11,7 @@ Configure these values in a private service environment file, never in frontend 
 | Variable | Value |
 | --- | --- |
 | `PUBLIC_ORIGIN` | `https://start-api.smartgic.io` |
-| `ALLOWED_ORIGINS` | `https://start.openvoiceos.org,https://openvoiceos.github.io` |
+| `ALLOWED_ORIGINS` | `https://start.openvoiceos.org,https://start.openvoiceos.pt,https://openvoiceos.github.io` |
 | `RELAY_ADMIN_KEY` | A new 32-byte random secret encoded as 64 lowercase hexadecimal characters |
 | `DATABASE_PATH` | Absolute filename; defaults to `/var/lib/ovos-start/installs.sqlite` |
 | `PORT` | Loopback port; defaults to `8787` |
@@ -66,7 +66,7 @@ The install-download origin and progress origin are independent. [`INSTALL_LINK_
 
 Provision routing and a valid HTTPS certificate for the alias before publishing it in the wizard. A DNS CNAME alone does not provide a certificate for the alias. Check `/healthz` and a freshly issued `/s/<capability>` through both hostnames: each download must return the same bootstrap without redirecting.
 
-When changing the wizard domain, update `ALLOWED_ORIGINS` and the GitHub Pages custom domain together. Browser ownership credentials stay in the original site's storage; saved setup links carry choices, not access to an earlier installation. Keep the previous origin allowed while its outstanding installations finish their 24-hour reporting window.
+The example keeps both wizard origins allowed during the transition. Apply it before changing the GitHub Pages custom domain so already-open `https://start.openvoiceos.pt` tabs can still restore and poll their installations. Keep the previous origin allowed until its outstanding sessions have expired: each has a 24-hour reporting window from session creation, not from the domain change or deployment. Retire the old wizard before removing its origin from the runtime configuration and example. Browser ownership credentials stay in the original site's storage; saved setup links carry choices, not access to an earlier installation.
 
 If the progress API itself moves, update `PUBLIC_ORIGIN`, the browser URL/CSP and the launcher's callback URL together, then publish a matching launcher revision and update the pin in [`launch.mjs`](../server/relay/server/launch.mjs). Keep the previous relay available for outstanding installs through their 24-hour reporting window. Existing databases are not imported automatically.
 

@@ -641,7 +641,7 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .waiting-indicator .ui-icon{width:24px;height:24px}
 .waiting-title{display:block;color:var(--ink);font-size:1rem;font-weight:650;line-height:1.4}
 .install-waiting>span[role="status"]{flex:1;min-width:0}
-.install-waiting.is-waiting .waiting-indicator{flex-basis:80px;width:80px;border-radius:0;background:none}
+.install-waiting.is-waiting .waiting-indicator{flex-basis:40px;width:40px;height:40px;background:none}
 .install-waiting .text-button{font-size:14px;margin-left:auto}
 .handoff-help{border-top:1px solid var(--line);padding-top:14px;margin-top:20px}
 .handoff-help h3{font-size:16px;margin:20px 0 0}.handoff-help .text-button{font-size:14px;margin-top:12px}
@@ -804,10 +804,12 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .stage-label{font-size:16px;line-height:1.5;overflow-wrap:anywhere}
 .stage-current .stage-symbol{color:var(--accent);background:var(--soft);border-color:transparent}.stage-current .stage-label{color:var(--ink);font-weight:650}
 .stage-complete .stage-symbol{color:var(--install-done);background:color-mix(in srgb,var(--install-done) 10%,var(--card));border-color:transparent}.stage-complete .stage-label{color:var(--ink)}
-.installation-current{display:flex;align-items:center;gap:26px;padding:32px 30px;background:linear-gradient(110deg,var(--soft),transparent)}
-.installation-current>span{color:var(--accent);padding-top:2px;flex:none}.installation-current .ui-icon{width:23px;height:23px}
-.installation-current h2{font-size:19px;line-height:1.4;margin:0;font-weight:600}.installation-current p{font-size:15px;color:var(--muted);margin:7px 0 0;line-height:1.6}
-.installation-current>div{min-width:0}.installation-stages--detailed .stage-label{font-size:14px;overflow-wrap:normal}
+.installation-current{display:flex;align-items:center;gap:20px;padding:28px 30px;background:linear-gradient(110deg,var(--soft),var(--card) 80%)}
+.installation-current h2{font-size:20px;line-height:1.4;margin:0;font-weight:600}.installation-current p{font-size:15px;color:var(--muted);margin:5px 0 0;line-height:1.6}
+.installation-current>div{flex:1;min-width:0}.installation-stages--detailed .stage-label{font-size:14px;overflow-wrap:normal}
+.installation-current--attention{background:var(--requirement-bg)}
+.installation-current--attention h2{color:var(--requirement-ink)}
+.installation-current--attention .mark1-eye{--eye-led:var(--requirement-accent)}
 .installation-meta{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:18px 30px;border-top:1px solid var(--line)}
 .installation-meta:has(.installation-timing:empty):not(:has(.connection-badge)){display:none}
 .installation-meta .installation-timing{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;flex:1}
@@ -822,7 +824,7 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 @media(max-width:540px){.installation-stages{padding:26px 12px}.stage-symbol{width:40px;height:40px}.installation-stages li+li:before{top:20px;left:calc(-50% + 27px);width:calc(100% - 54px)}.stage-label{font-size:14px}.installation-current{padding:20px;gap:10px}.installation-current h2{font-size:18px}.installation-meta{padding:16px 20px}.installation-meta .installation-timing{gap:10px}.installation-meta .timing-estimate{flex-basis:100%}}
 @media(max-width:420px){.installation-stages{display:flex;flex-direction:column;gap:18px;padding:22px 20px}.installation-stages li{flex-direction:row;gap:12px;text-align:left}.installation-stages li+li:before{top:-18px;left:19px;width:2px;height:18px}.stage-label{font-size:16px;overflow-wrap:normal}.stage-symbol{flex:none}}
 @media(max-width:650px){.installation-stages--detailed{display:flex;flex-direction:column;gap:14px;padding:22px 20px}.installation-stages--detailed li{flex-direction:row;gap:12px;text-align:left}.installation-stages--detailed .stage-symbol{width:32px;height:32px;flex:none}.installation-stages--detailed .stage-symbol>.ui-icon{width:17px;height:17px}.installation-stages--detailed li+li:before{top:-14px;left:15px;width:2px;height:14px}.installation-stages--detailed .stage-label{font-size:15px}.installation-current{gap:18px}.timing-update{margin-left:0}}
-@media(max-width:380px){.installation-current{align-items:flex-start;flex-direction:column;gap:14px}}
+@media(max-width:380px){.installation-current{align-items:flex-start;gap:14px}}
 
 /* Completed installation hands off to verification, rather than a second checklist. */
 .installation-receipt{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;padding:0 0 22px;border-bottom:1px solid var(--line)}
@@ -837,6 +839,7 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .install-dashboard.is-installed>.post-install-guide{border-top:0;padding-top:0;margin-top:24px}.post-install-guide .voice-check-wait{font-size:14px;line-height:1.6;color:var(--muted);margin:-8px 0 20px}
 .audio-check-reminder{display:block;margin-top:4px}
 .installation-completed-steps{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px;margin:0;padding:24px 30px;text-align:left}
+.installation-current+.installation-completed-steps{border-top:1px solid var(--line)}
 .installation-completed-steps li{display:flex;align-items:center;gap:10px;min-width:0;font-size:15px;line-height:1.5;color:var(--ink)}.installation-completed-steps .ui-icon{width:21px;height:21px;flex:none;color:var(--install-done)}
 .completed-install-details{margin:12px 0 0!important}.completed-install-details .installation-completed-steps,.recovery-history .installation-completed-steps{padding:12px 0 18px}
 @media(max-width:650px){.installation-completed-steps{grid-template-columns:minmax(0,1fr);padding:22px 20px;gap:12px}}
@@ -1062,13 +1065,15 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 @media(prefers-reduced-motion:reduce){.telemetry-track,.telemetry-track::after{transition:none}}
 @media(forced-colors:active){.telemetry-switch input{opacity:1;position:static;accent-color:auto}.telemetry-track{display:none}}
 
-/* Mark I's paired LED eyes: only the light travels; the rings stay still. */
-.mark1-eyes{display:block;flex:none;width:104px;height:44px;overflow:visible;fill:none;stroke:none}
-.mark1-eyes--compact{width:72px;height:32px}
-.mark1-eye-base{fill:#101b28;stroke:#334d65;stroke-width:1}
-.mark1-led{fill:none;stroke:#75dbf2;stroke-width:4.5;stroke-linecap:butt;opacity:.85}
-.mark1-led:nth-child(3n){stroke:#85baff}
-.mark1-eyes--animated .mark1-led{animation:mark1-led-chase 2.4s linear infinite}
+/* One stationary Mark I eye; a gentle light chase never represents a percentage. */
+svg.mark1-eye{--eye-led:var(--accent);display:block;flex:none;width:56px;height:56px;overflow:visible;fill:none;stroke:none}
+svg.mark1-eye--compact{width:40px;height:40px}
+.mark1-eye-face{fill:var(--paper);stroke:color-mix(in srgb,var(--accent) 25%,var(--line));stroke-width:1}
+.mark1-led{fill:var(--eye-led);stroke:none;opacity:.5}
+svg.mark1-eye--animated{--eye-led:#138298}
+.mark1-eye--animated .mark1-led{animation:mark1-led-chase 2.4s ease-in-out infinite}
+:root[data-theme="dark"] .mark1-eye--animated{--eye-led:#6edeea}
+@media(prefers-color-scheme:dark){:root:not([data-theme]) .mark1-eye--animated{--eye-led:#6edeea}}
 .mark1-led:nth-child(1){animation-delay:-2.4s}
 .mark1-led:nth-child(2){animation-delay:-2.2s}
 .mark1-led:nth-child(3){animation-delay:-2s}
@@ -1083,8 +1088,8 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .mark1-led:nth-child(12){animation-delay:-.2s}
 @keyframes mark1-led-chase{
   0%,100%{opacity:1}
-  16%{opacity:.85}
-  42%,80%{opacity:.2}
+  18%{opacity:.75}
+  48%,82%{opacity:.25}
 }
-@media(prefers-reduced-motion:reduce){.mark1-eyes--animated .mark1-led{animation:none;opacity:1}}
-@media(forced-colors:active){.mark1-eye-base{fill:Canvas;stroke:CanvasText}.mark1-eyes .mark1-led{stroke:Highlight;opacity:1}.mark1-eyes--animated .mark1-led{animation:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.mark1-eye--animated .mark1-led{animation:none;opacity:1}}
+@media(forced-colors:active){.mark1-eye-face{fill:Canvas;stroke:CanvasText}.mark1-eye .mark1-led{fill:Highlight;opacity:1}.mark1-eye--animated .mark1-led{animation:none;opacity:1}}

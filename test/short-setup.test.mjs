@@ -22,6 +22,18 @@ test('new compact commands encode Alpha while saved Testing choices remain Testi
   }
 });
 
+test('new compact recipes share installer statistics while saved opt-outs survive restoration and renewal', () => {
+  assert.equal(decodeRecipeCode(artifact.code,{now:issuedAt}).telemetry,true);
+  const optedOut={...base,telemetry:false};
+  for(const fragment of [`#setup=${issueSetup(optedOut,issuedAt).code}`,`#${encodePreset(optedOut)}`]){
+    const restored=readSetupSession(fragment,issuedAt);
+    assert.equal(restored.state.telemetry,false);
+    assert.equal(decodeRecipeCode(issueSetup(restored.state,issuedAt+3600).code,{now:issuedAt+3600}).telemetry,false);
+    assert.match(buildYaml(restored.state),/^share_telemetry: false$/m);
+    assert.match(buildYaml(restored.state),/^share_usage_telemetry: false$/m);
+  }
+});
+
 test('short commands use only the bound relay capability and remain one line', () => {
   const state = { ...base, locale: 'fr-fr', speech: 'public', homeassistant: true, llmMode: 'online', extraSkills: true };
   const setup = issueSetup(state,issuedAt);
@@ -102,7 +114,7 @@ test('exact one-hour deadline blocks copied commands and script downloads withou
 });
 
 test('legacy links recover choices but cannot produce a runnable command until new issuance',()=>{
-  for(const [fragment,expected] of [['#setup=2400-00KZ',{...base,channel:'testing'}],[`#${encodePreset(base)}`,base]]){
+  for(const [fragment,expected] of [['#setup=2400-00KZ',{...base,channel:'testing',telemetry:false}],[`#${encodePreset(base)}`,base]]){
     const legacy=readSetupSession(fragment,issuedAt);
     assert.deepEqual(legacy.state,expected);assert.equal(setupStatus(legacy,issuedAt).kind,'legacy');
     assert.throws(()=>buildShortCommand(legacy,issuedAt));

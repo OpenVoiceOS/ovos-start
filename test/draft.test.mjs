@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEFAULTS,selectDevice} from '../dist/scenario.mjs';
 import {issueSetup,setupStatus} from '../dist/short-setup.mjs';
-import {DRAFT_KEY,readDraft,writeDraft,validateDraft,canResumeDraft} from '../dist/draft.mjs';
+import {DRAFT_KEY,readDraft,writeDraft,validateDraft,canResumeDraft,normalizeRoute,DRAFT_STEPS} from '../dist/draft.mjs';
 
 /** In-memory storage with the browser Storage contract. @returns {object} Store. */
 function storage(){const data=new Map();return {getItem:key=>data.get(key)||null,setItem:(key,value)=>data.set(key,value)};}
@@ -48,7 +48,35 @@ test('metadata allowlist excludes arbitrary fields and retains an edit baseline'
 });
 
 test('review and active edit baselines must match their issued recipe',()=>{
- const state=selectDevice(DEFAULTS,'pi'),different={...state,telemetry:true},code=issueSetup(state).code;
+ const state=selectDevice(DEFAULTS,'pi'),different={...state,telemetry:!state.telemetry},code=issueSetup(state).code;
  assert.throws(()=>validateDraft(draft({state:different,routes:[{step:'review'}],issuedFragment:'#setup='+code})),/matching/);
  assert.throws(()=>validateDraft(draft({state,routes:[{step:'skills',editing:true,editSnapshot:different}],issuedFragment:'#setup='+code})),/baseline/);
+});
+
+
+test('telemetry drafts resume the explicit question without inferring an answer from a saved value',()=>{
+ assert.ok(DRAFT_STEPS.includes('telemetry'));
+ for(const telemetry of [false,true]){
+  const state={...selectDevice(DEFAULTS,'computer'),telemetry},store=storage();
+  const value=draft({state,confirmedState:state,routes:[{step:'telemetry'}],answered:['language','device','prepare','speech']});
+  assert.equal(writeDraft(store,value),true);
+  const restored=readDraft(store);
+  assert.equal(restored.state.telemetry,telemetry);assert.equal(restored.routes[0].step,'telemetry');
+  assert.equal(restored.answered.includes('telemetry'),false);
+  assert.equal(normalizeRoute(restored.routes[0],restored.state).step,'telemetry');
+ }
+});
+
+test('legacy release-picker routes remain readable but always redirect to the current fallback',()=>{
+ const state={...selectDevice(DEFAULTS,'computer'),channel:'testing'};
+ const reviewed=validateDraft(draft({state,confirmedState:state,routes:[{step:'channel',editing:true,editSnapshot:state}],issuedFragment:'#setup='+issueSetup(state).code}));
+ const route=normalizeRoute(reviewed.routes[0],reviewed.state,true);
+ assert.equal(route.step,'review');assert.equal(route.editing,false);assert.equal(route.editSnapshot,null);
+ assert.equal(reviewed.state.channel,'testing','Route normalization does not rewrite saved choices');
+ for(const device of ['computer','mac','mark2','server']){
+  const selected=selectDevice(DEFAULTS,device);
+  assert.equal(normalizeRoute({step:'channel'},selected,false).step,'prepare',device);
+  assert.equal(normalizeRoute({step:'channel'},selected,true).step,'review',device);
+ }
+ assert.equal(normalizeRoute({step:'channel'},DEFAULTS,false).step,'device');
 });

@@ -4,7 +4,7 @@ export const RECIPE_QUESTIONS = ['language','guidance','purpose','device','speec
 /** Return the next single decision, skipping voice-only features on headless hubs. @param {string} question @param {object} state @returns {string} */
 export function nextQuestion(question, state) {
   if (['piModel','memory','cpu'].includes(question)) return afterCapability(question,state);
-  const next = { welcome:'language', language: 'device', guidance: 'purpose', purpose: 'device', device: 'prepare', prepare: state.experience === 'hub' ? 'review' : firstCapability(state), speech: 'review', skills: 'review', homeassistant: 'review', llm: 'review' };
+  const next = { welcome:'language', language: 'device', guidance: 'purpose', purpose: 'device', device: 'prepare', prepare: state.experience === 'hub' ? 'telemetry' : firstCapability(state), speech: 'telemetry', telemetry: 'review', skills: 'review', homeassistant: 'review', llm: 'review' };
   if (!Object.hasOwn(next, question)) throw new Error('Unknown question.');
   return next[question];
 }

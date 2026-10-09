@@ -1005,3 +1005,35 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .prerequisite-system-help .command-block{margin:14px 0}
 .prerequisite-help .command-block{margin:10px 0 18px}
 @media(max-width:540px){.command-block{grid-template-columns:minmax(0,1fr);gap:0}.command-copy{justify-self:end}.command-block pre{padding:8px}}
+
+/* Installation diagnostics remain editable until the visitor continues. */
+.telemetry-step{max-width:780px;margin-inline:auto}
+.install-card.telemetry-panel{padding:0;background:none;border:0;border-radius:0}
+.telemetry-card{padding:24px 26px;background:var(--card);border:1px solid var(--line);border-radius:18px}
+.telemetry-choice{display:flex;align-items:center;gap:18px;cursor:pointer;line-height:1.5}
+.telemetry-symbol{display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:14px;background:var(--soft);color:var(--accent)}
+.telemetry-symbol .ui-icon{width:23px;height:23px}
+.telemetry-copy{display:grid;gap:5px;flex:1;min-width:0}
+.telemetry-copy strong{font-size:18px;font-weight:600}
+.telemetry-copy>span{font-size:14px;color:var(--muted)}
+.telemetry-control{display:flex;align-items:center;gap:12px;margin-left:auto;flex:none}
+.telemetry-control>[data-telemetry-state]{font-size:14px;font-weight:600;min-width:24px;text-align:right;color:var(--muted)}
+.telemetry-switch{position:relative;display:inline-flex;align-items:center;flex:none;width:56px;height:44px}
+.telemetry-switch input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:inherit}
+.telemetry-track{position:relative;width:56px;height:32px;border:2px solid var(--muted);border-radius:20px;background:var(--paper);pointer-events:none;transition:background .2s,border-color .2s}
+.telemetry-track::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+.telemetry-switch input:checked+.telemetry-track{border-color:var(--accent);background:var(--accent)}
+.telemetry-switch input:checked+.telemetry-track::after{transform:translateX(24px);background:var(--paper)}
+.telemetry-track::before{content:"";position:absolute;inset:-6px;border-radius:24px;background:color-mix(in srgb,var(--ack-pending) 18%,transparent);box-shadow:0 0 16px 5px color-mix(in srgb,var(--ack-pending) 32%,transparent);opacity:.35;animation:acknowledge-breathe 2.8s ease-in-out infinite;pointer-events:none}
+.telemetry-switch input:focus-visible+.telemetry-track{outline:2px solid var(--accent);outline-offset:6px}
+.telemetry-links{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px;margin-top:20px}
+.telemetry-links a{display:inline-flex;align-items:center;gap:8px;min-height:32px;font-size:14px;text-underline-offset:4px}
+.telemetry-links .ui-icon{width:17px;height:17px;flex:none}
+.telemetry-links a>.ui-icon:last-child{transform:rotate(-45deg)}
+.telemetry-dashboard{color:var(--accent);font-weight:600;text-decoration:none}
+.telemetry-dashboard:hover{text-decoration:underline}
+.telemetry-details{color:var(--muted)}
+.telemetry-continue{display:flex;margin-top:24px;margin-left:auto}
+@media(max-width:540px){.telemetry-card{padding:20px}.telemetry-choice{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px}.telemetry-symbol{display:none}.telemetry-copy strong{font-size:16px}.telemetry-control{gap:8px}.telemetry-copy>span{font-size:13px}.telemetry-links{gap:8px}.telemetry-continue{width:100%;justify-content:center}}
+@media(prefers-reduced-motion:reduce){.telemetry-track,.telemetry-track::after{transition:none}.telemetry-track::before{animation:none;transform:none;opacity:.35}}
+@media(forced-colors:active){.telemetry-switch input{opacity:1;position:static;accent-color:auto}.telemetry-track{display:none}}

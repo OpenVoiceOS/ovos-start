@@ -76,7 +76,7 @@ function harness({state=recipe(),step='language',suggestedLocale='en-us'}={}){
   });
   for(const name of ['welcomeView','languageView','guidanceView','experienceView','deviceView',
     'preparationView','speechView','speechResultView','skillsView','homeAssistantView','aiView','resultView',
-    'capabilityView','tweakView'])context[name]=()=>`${context.step}:${context.state.locale}`;
+    'capabilityView','tweakView','telemetryView'])context[name]=()=>`${context.step}:${context.state.locale}`;
   vm.runInContext(['render','go','selectLanguage','restore'].map(declaration).join('\n\n'),context,{filename:appUrl.pathname});
   return {context,main,notice,loads,renders,toasts,get ui(){return ui;}};
 }

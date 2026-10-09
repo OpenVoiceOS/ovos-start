@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-09 - Motive: Make Alpha the default while preserving saved release choices.
+Last Edit: Codex - 2026-10-09 - Motive: Keep release selection internal and explain the telemetry approval step.
 
 # Adaptive setup contract
 
@@ -16,7 +16,15 @@ Device details precede speech choices through [`firstCapability` / `afterCapabil
 
 [`recommend`, `speechEligibility`, `localModelGuidance`](../dist/recommendations.mjs) explain their recommendation. New users start with everyday skills; experts and the tinkering purpose start empty. [`applySkillDefaults`](../dist/flow.mjs) preserves explicitly chosen/restored bundles when profile preferences change and reapplies defaults only when they were inferred. Optional connections remain opt-in.
 
-[`DEFAULTS`](../dist/scenario.mjs) starts every new setup on Alpha. [`selectDevice`](../dist/scenario.mjs), [`chooseExperience` and `chooseSpeech`](../dist/flow.mjs) retain the selected channel when hardware, purpose or speech changes; hardware and local-speech requirements still enforce Alpha where needed. Existing links and drafts keep their saved Testing choice. The release picker lists Alpha first and offers Testing on compatible setups. [Flow regressions](../test/flow.test.mjs) and [saved-code regressions](../test/short-setup.test.mjs) verify these rules.
+[`finish`](../dist/app.mjs) sets `channel: alpha` when issuing a wizard recipe. Release selection and release wording are absent from the interface. Legacy recipes still decode unchanged so their installation status remains accessible; completing their preparation or editing their setup creates an Alpha recipe. [Navigation regressions](../test/navigation.test.mjs) cover the handoff while [saved-code regressions](../test/short-setup.test.mjs) protect the frozen encoding.
+
+## Installation diagnostics
+
+Every new journey, including a headless hub, visits [`telemetryView`](../dist/app.mjs) before installation. A compact switch row links directly to the [public installation statistics](https://telemetry.smartgic.io/ovos-installer/dashboard/) and the [installer's collected-data documentation](https://github.com/OpenVoiceOS/ovos-installer/blob/main/docs/telemetry.md). The toggle starts on, and a visitor can switch it off before Continue. Its red breathing outline respects reduced-motion preferences and keyboard focus.
+
+[`confirmTelemetry`](../dist/app.mjs) commits that choice; merely opening a shared recipe does not complete this step. Copy, script download and retry paths require its completion. Changing the choice regenerates the immutable recipe so YAML and the device command agree. Same-browser drafts retain an accepted choice; a separate reinstall starts with the default enabled toggle and requires review again. Existing installation progress remains available.
+
+The choice maps to `share_telemetry`; `share_usage_telemetry` remains false. Installation diagnostics include system, hardware and setup information plus a country lookup. They do not enable ongoing voice-usage reporting and are separate from failure-report uploads. [Journey](../test/journey.test.mjs), [navigation](../test/navigation.test.mjs), [copy](../test/copy.test.mjs) and [scenario](../test/scenario.test.mjs) regressions cover these boundaries.
 
 ## Speech evidence and limits
 

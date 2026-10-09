@@ -5,9 +5,10 @@ import { DEFAULTS, DEVICES, LANGUAGES, allowedExperiences, selectDevice, validat
 /** Return a fresh complete configuration. @param {object} overrides @returns {object} */
 function setup(overrides = {}) { return { ...DEFAULTS, device: 'pi', ...overrides }; }
 
-test('default recipe uses upstream keys and opts out of telemetry and tuning', () => {
+test('default recipe shares installer statistics while voice usage and tuning remain off', () => {
+  assert.equal(DEFAULTS.telemetry, true);
   const yaml = buildYaml(setup());
-  for (const line of ['uninstall: false', 'method: virtualenv', 'channel: alpha', 'profile: ovos', '  skills: true', '  gui: false', '  homeassistant: false', '  llm: false', 'raspberry_pi_tuning: false', 'share_telemetry: false', 'share_usage_telemetry: false']) assert.ok(yaml.split('\n').includes(line));
+  for (const line of ['uninstall: false', 'method: virtualenv', 'channel: alpha', 'profile: ovos', '  skills: true', '  gui: false', '  homeassistant: false', '  llm: false', 'raspberry_pi_tuning: false', 'share_telemetry: true', 'share_usage_telemetry: false']) assert.ok(yaml.split('\n').includes(line));
   assert.ok(!yaml.includes('locale:') && !yaml.includes('hardware:'));
 });
 
@@ -57,11 +58,13 @@ test('all device, experience and language combinations round-trip as validated r
   assert.equal(checked, 300);
 });
 
-test('optional choices round-trip and only explicit diagnostics opt-in is exported', () => {
-  const state = setup({ method: 'containers', channel: 'alpha', extraSkills: true, telemetry: true });
-  assert.deepEqual(decodePreset(encodePreset(state)), state);
-  assert.match(buildYaml(state), /share_telemetry: true/);
-  assert.match(buildYaml(state), /share_usage_telemetry: false/);
+test('optional choices preserve either installer-statistics answer and never enable voice usage', () => {
+  for (const telemetry of [false, true]) {
+    const state = setup({ method: 'containers', channel: 'alpha', extraSkills: true, telemetry });
+    assert.deepEqual(decodePreset(encodePreset(state)), state);
+    assert.match(buildYaml(state), new RegExp(`^share_telemetry: ${telemetry}$`, 'm'));
+    assert.match(buildYaml(state), /^share_usage_telemetry: false$/m);
+  }
 });
 
 test('malformed, ambiguous, prototype and injection choices fail closed', () => {

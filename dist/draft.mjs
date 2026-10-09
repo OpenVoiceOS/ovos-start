@@ -1,5 +1,5 @@
 import {canExploreLocal,firstCapability,afterCapability} from './journey.mjs';
-import { DEFAULTS, DEVICES, usesVirtualenvPreset, usesAlphaPreset, validateState } from './scenario.mjs';
+import { DEFAULTS, DEVICES, usesVirtualenvPreset, validateState } from './scenario.mjs';
 import { readSetupSession, sameSetupChoices } from './short-setup.mjs';
 
 export const DRAFT_KEY = 'ovos.wizard.draft.v1';
@@ -85,7 +85,7 @@ export function normalizeRoute(route,state,reviewed=false) {
     if(!canExploreLocal(state)||!path.includes(step))step='speech';
   }
   if(step==='method'&&(usesVirtualenvPreset(state.device)||state.speech==='local'))step=fallback;
-  if(step==='channel'&&(usesAlphaPreset(state.device)||state.speech==='local'))step=fallback;
+  if(step==='channel')step=fallback;
   if(step==='review'&&!reviewed)step=state.device?(state.experience==='hub'?'prepare':'speech'):'device';
   return {...route,step,...step==='review'?{editing:false,editSnapshot:null}:{}};
 }

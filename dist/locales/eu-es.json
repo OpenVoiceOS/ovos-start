@@ -922,7 +922,7 @@
   "Help improve <em>OVOS.</em>": "Lagundu <em>OVOS</em> hobetzen.",
   "Help us focus on the devices and systems you use.": "Lagundu gure lana erabiltzen dituzun gailu eta sistemetara bideratzen.",
   "Share setup statistics": "Partekatu instalazio-estatistikak",
-  "Optional. Share device, system and installation details.": "Aukerakoa. Partekatu gailuari, sistemari eta instalazioari buruzko datuak.",
+  "Optional. Device and setup statistics. No names or voice recordings.": "Aukerakoa. Gailuaren eta instalazioaren estatistikak. Izenik eta ahots-grabaziorik gabe.",
   "What is shared?": "Zer datu partekatzen dira?",
   "Uses a Python environment; no GUI.": "Python ingurune bat erabiltzen du, interfaze grafikorik gabe.",
   "Includes the screen interface.": "Pantailako interfazea barne dakar.",

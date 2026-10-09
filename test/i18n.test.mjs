@@ -161,7 +161,7 @@ test('Mac support and explicit acknowledgement are translated consistently in ev
 });
 
 test('the telemetry switch and explanation are translated in every offered language',()=>{
- const messages=['Help improve <em>OVOS.</em>','Help us focus on the devices and systems you use.','Share setup statistics','Optional. Share device, system and installation details.','What is shared?','View installation statistics','On','Off'];
+ const messages=['Help improve <em>OVOS.</em>','Help us focus on the devices and systems you use.','Share setup statistics','Optional. Device and setup statistics. No names or voice recordings.','What is shared?','View installation statistics','On','Off'];
  for(const locale of UI_LOCALES){
   const catalog=read(locale);
   for(const message of messages){

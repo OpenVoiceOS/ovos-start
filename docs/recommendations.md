@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-09 - Motive: Keep release selection internal and explain the telemetry approval step.
+Last Edit: Codex - 2026-10-09 - Motive: Keep the statistics toggle on without a glow and describe its payload accurately.
 
 # Adaptive setup contract
 
@@ -20,7 +20,7 @@ Device details precede speech choices through [`firstCapability` / `afterCapabil
 
 ## Installation diagnostics
 
-Every new journey, including a headless hub, visits [`telemetryView`](../dist/app.mjs) before installation. A compact switch row links directly to the [public installation statistics](https://telemetry.smartgic.io/ovos-installer/dashboard/) and the [installer's collected-data documentation](https://github.com/OpenVoiceOS/ovos-installer/blob/main/docs/telemetry.md). The toggle starts on, and a visitor can switch it off before Continue. Its red breathing outline respects reduced-motion preferences and keyboard focus.
+Every new journey, including a headless hub, visits [`telemetryView`](../dist/app.mjs) before installation. A compact switch row links directly to the [public installation statistics](https://telemetry.smartgic.io/ovos-installer/dashboard/) and the [installer's collected-data documentation](https://github.com/OpenVoiceOS/ovos-installer/blob/main/docs/telemetry.md). The toggle starts on, and a visitor can switch it off before Continue. The row states that setup statistics include no names or voice recordings. It does not promise full anonymity: the country lookup exposes an IP address, as explained by the linked installer documentation. The switch has no decorative glow or pulsing animation; its keyboard focus outline remains visible.
 
 [`confirmTelemetry`](../dist/app.mjs) commits that choice; merely opening a shared recipe does not complete this step. Copy, script download and retry paths require its completion. Changing the choice regenerates the immutable recipe so YAML and the device command agree. Same-browser drafts retain an accepted choice; a separate reinstall starts with the default enabled toggle and requires review again. Existing installation progress remains available.
 

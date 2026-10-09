@@ -922,7 +922,7 @@
   "Help improve <em>OVOS.</em>": "Ajuda a melhorar o <em>OVOS.</em>",
   "Help us focus on the devices and systems you use.": "Ajuda-nos a dar prioridade aos dispositivos e sistemas que usas.",
   "Share setup statistics": "Partilhar estatísticas de instalação",
-  "Optional. Share device, system and installation details.": "Opcional. Partilha dados do dispositivo, sistema e instalação.",
+  "Optional. Device and setup statistics. No names or voice recordings.": "Opcional. Estatísticas do dispositivo e da instalação. Sem nomes nem gravações de voz.",
   "What is shared?": "Que dados são partilhados?",
   "Uses a Python environment; no GUI.": "Usa um ambiente Python, sem interface gráfica.",
   "Includes the screen interface.": "Inclui a interface de ecrã.",

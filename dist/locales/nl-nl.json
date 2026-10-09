@@ -922,7 +922,7 @@
   "Help improve <em>OVOS.</em>": "Help <em>OVOS</em> verbeteren.",
   "Help us focus on the devices and systems you use.": "Help ons prioriteit te geven aan de apparaten en systemen die je gebruikt.",
   "Share setup statistics": "Installatiestatistieken delen",
-  "Optional. Share device, system and installation details.": "Vrijwillig. Deel gegevens over apparaat, systeem en installatie.",
+  "Optional. Device and setup statistics. No names or voice recordings.": "Vrijwillig. Statistieken over apparaat en installatie. Geen namen of spraakopnamen.",
   "What is shared?": "Welke gegevens worden gedeeld?",
   "Uses a Python environment; no GUI.": "Gebruikt een Python-omgeving, zonder grafische interface.",
   "Includes the screen interface.": "Inclusief de scherminterface.",

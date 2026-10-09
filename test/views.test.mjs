@@ -45,7 +45,7 @@ test('telemetry has one on-by-default toggle switch, an explanation and optional
  let html=c.telemetryView();
  assert.equal((html.match(/role="switch"/g)||[]).length,1);
  assert.match(html,/<input[^>]*data-telemetry-confirm[^>]*checked/);
- assert.match(html,/Help us focus on the devices and systems/);assert.match(html,/Optional\. Share device, system and installation details/);
+ assert.match(html,/Help us focus on the devices and systems/);assert.match(html,/Optional\. Device and setup statistics\. No names or voice recordings\./);
  assert.match(html,/href="https:\/\/telemetry\.smartgic\.io\/ovos-installer\/dashboard\/"/);
  assert.match(html,/data-telemetry-state aria-hidden="true">On/);
  assert.match(html,/docs\/telemetry\.md/);assert.match(html,/aria-describedby="telemetry-optional"/);
@@ -54,8 +54,9 @@ test('telemetry has one on-by-default toggle switch, an explanation and optional
  assert.doesNotMatch(html,/<input[^>]*checked/);
  assert.doesNotMatch(html,/data-telemetry-continue[^>]*disabled/);
  const css=readFileSync(new URL('../dist/style.css',import.meta.url),'utf8');
- assert.match(css,/\.telemetry-track::before[^}]*var\(--ack-pending\)[^}]*acknowledge-breathe/);
- assert.match(css,/@media\(prefers-reduced-motion:reduce\)[\s\S]*\.telemetry-track::before\{animation:none/);
+ assert.doesNotMatch(css,/\.telemetry[^{}]*\{[^}]*\b(?:animation|box-shadow)\s*:/);
+ assert.doesNotMatch(css,/\.telemetry-track::before/);
+ assert.match(css,/\.telemetry-switch input:focus-visible\+\.telemetry-track\{outline:2px solid var\(--accent\)/);
 });
 test('prepared shared recipes cannot expose commands before telemetry review',()=>{
  const c=views();acceptPreparation(c);c.setupSession=short.issueSetup(c.state);c.answered.delete('telemetry');

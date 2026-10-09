@@ -305,7 +305,7 @@ function telemetryView() {
       <div class="telemetry-card">
         <label class="telemetry-choice">
           <span class="telemetry-symbol" aria-hidden="true">${icon('favorite')}</span>
-          <span class="telemetry-copy"><strong id="telemetry-label">Share setup statistics</strong><span id="telemetry-optional">Optional. Share device, system and installation details.</span></span>
+          <span class="telemetry-copy"><strong id="telemetry-label">Share setup statistics</strong><span id="telemetry-optional">Optional. Device and setup statistics. No names or voice recordings.</span></span>
           <span class="telemetry-control"><span data-telemetry-state aria-hidden="true">${telemetrySelection?'On':'Off'}</span><span class="telemetry-switch"><input type="checkbox" role="switch" data-telemetry-confirm aria-labelledby="telemetry-label" aria-describedby="telemetry-optional" ${telemetrySelection?'checked':''}><span class="telemetry-track" aria-hidden="true"></span></span></span>
         </label>
         <div class="telemetry-links"><a class="telemetry-dashboard" href="https://telemetry.smartgic.io/ovos-installer/dashboard/" target="_blank" rel="noopener noreferrer">${icon('globe')}<span>View installation statistics</span>${icon('arrow')}</a><a class="telemetry-details" href="https://github.com/OpenVoiceOS/ovos-installer/blob/main/docs/telemetry.md" target="_blank" rel="noopener noreferrer">What is shared?${icon('arrow')}</a></div>

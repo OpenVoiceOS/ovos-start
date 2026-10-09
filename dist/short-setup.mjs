@@ -4,7 +4,7 @@ import { validateState, decodePreset } from './scenario.mjs';
 /** Public launcher validates the code's one-hour start deadline on the target. */
 export const LAUNCHER_URL = 'https://raw.githubusercontent.com/OpenVoiceOS/ovos-start-launcher/c846aaa40b1ce755c0fccbfde60af55b39d819c3/v2.sh';
 /** Branded download alias; browser progress and launcher callbacks keep their API origin. */
-export const INSTALL_LINK_ORIGIN = 'https://installer.openvoiceos.pt';
+export const INSTALL_LINK_ORIGIN = 'https://installer.openvoiceos.org';
 
 /** Issue one immutable command artifact shared by display, copy, links and downloads.
  * @param {object} state Recipe choices. @param {number} now Unix seconds.

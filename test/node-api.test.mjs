@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
-import { mkdtempSync, rmSync, statSync, writeFileSync, mkdirSync, symlinkSync, chmodSync, readdirSync, copyFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, statSync, writeFileSync, mkdirSync, symlinkSync, chmodSync, readdirSync, copyFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { request as httpRequest } from 'node:http';
@@ -48,6 +48,55 @@ test('configuration accepts only exact HTTPS origins and a private 256-bit key',
   for (const key of ['', 'not-a-key', 'a'.repeat(63), 'A'.repeat(64)]) assert.throws(() => configuration({ ...env, RELAY_ADMIN_KEY: key }));
   for (const port of [0, -1, 65536, 'x']) assert.throws(() => configuration({ ...env, PORT: port }));
   assert.equal(configuration(env).port, 8787);
+});
+
+test('the shipped API configuration preserves old wizard sessions during the domain transition', async t => {
+  const env = Object.fromEntries(readFileSync(new URL('../.env.example', import.meta.url), 'utf8').trim().split('\n').map(line => {
+    const separator = line.indexOf('='); return [line.slice(0, separator), line.slice(separator + 1)];
+  }));
+  const deployment = configuration({ ...env, RELAY_ADMIN_KEY: secret });
+  const currentWizard = 'https://start.openvoiceos.org', previousWizard = 'https://start.openvoiceos.pt';
+  assert.equal(deployment.publicOrigin, 'https://start-api.smartgic.io');
+  const f = fixture(t);
+  const post = (api, origin, data, token = browser) => api(new Request(deployment.publicOrigin + '/api/install', {
+    method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  }), '127.0.0.1');
+  const before = createApi(f.store, { ...deployment, allowedOrigins: new Set([previousWizard]) }, () => now);
+  const issued = await post(before, previousWizard, { code });
+  assert.equal(issued.status, 200);
+  const previousSession = await issued.json();
+  const api = createApi(f.store, deployment, () => now + 60);
+  for (const origin of [previousWizard, currentWizard]) {
+    const preflight = await api(new Request(deployment.publicOrigin + '/api/install', {
+      method: 'OPTIONS', headers: { Origin: origin, 'Access-Control-Request-Method': 'POST', 'Access-Control-Request-Headers': 'authorization,content-type' },
+    }), '127.0.0.1');
+    assert.equal(preflight.status, 204);
+    assert.equal(preflight.headers.get('access-control-allow-origin'), origin);
+  }
+  for (const data of [{ code }, { id: previousSession.id }]) {
+    const response = await post(api, previousWizard, data);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('access-control-allow-origin'), previousWizard);
+    assert.equal((await response.json()).id, previousSession.id);
+  }
+  const response = await post(api, currentWizard, { code }, other);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('access-control-allow-origin'), currentWizard);
+  const currentSession = await response.json();
+  assert.notEqual(currentSession.id, previousSession.id);
+  assert.match(currentSession.launchToken, /^[A-Za-z0-9_-]{22}$/);
+  const currentRead = await post(api, currentWizard, { id: currentSession.id }, other);
+  assert.equal(currentRead.status, 200);
+  assert.equal((await currentRead.json()).id, currentSession.id);
+  for (const origin of [previousWizard, currentWizard]) {
+    assert.equal((await post(api, origin, { id: previousSession.id }, other)).status, 410);
+  }
+  for (const origin of ['https://start.openvoiceos.pt.evil.test', 'https://start.openvoiceos.org.evil.test']) {
+    const denied = await post(api, origin, { id: previousSession.id });
+    assert.equal(denied.status, 403);
+    assert.equal(denied.headers.get('access-control-allow-origin'), null);
+  }
 });
 
 test('browser capabilities isolate installs without cookies or platform identity headers', async t => {

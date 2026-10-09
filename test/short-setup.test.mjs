@@ -139,5 +139,5 @@ test('saved Intel Mac recipes remain editable but cannot produce commands or exe
   assert.throws(()=>buildSetupScript(setup,issuedAt,token),/Apple Silicon.*macOS 15/);
  }
  const supported=issueSetup({...base,device:'mac',channel:'alpha',cpu:'arm64'},issuedAt);
- assert.match(buildShortCommand(supported,issuedAt,token),/installer.openvoiceos.pt/);
+ assert.match(buildShortCommand(supported,issuedAt,token),/installer.openvoiceos.org/);
 });

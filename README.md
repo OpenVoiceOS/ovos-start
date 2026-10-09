@@ -1,8 +1,8 @@
-<!-- Last Edit: Codex - 2026-10-08 - Motive: Simplify getting started and explain the two Start repositories. -->
+<!-- Last Edit: Codex - 2026-10-09 - Motive: Move public wizard and installer links to openvoiceos.org. -->
 
 # OVOS Start
 
-**[Open the wizard](https://start.openvoiceos.pt/)**
+**[Open the wizard](https://start.openvoiceos.org/)**
 
 A guided setup for [OpenVoiceOS](https://www.openvoiceos.org/). Choose your device and voice options, follow installation progress, then check your speaker and microphone.
 

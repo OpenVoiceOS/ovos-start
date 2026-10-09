@@ -59,6 +59,8 @@ test('published output contains bundled entries and intended assets, never incid
     assert.match(html,/<meta name="referrer" content="no-referrer">/);
     assert.ok(!app.includes('oai-authenticated-user-id')&&!app.includes('RELAY_ADMIN_KEY'));
     assert.ok(!app.includes('goldyfruit.chatgpt.site'));
+    assert.ok(app.includes('https://installer.openvoiceos.pt'),'published commands use the branded install origin');
+    assert.ok(app.includes('https://start-api.smartgic.io/api/install'),'published browser tracking retains the API origin');
     await assert.rejects(readFile(join(output,'server/index.js')),{code:'ENOENT'});
   }finally{await rm(root,{recursive:true,force:true});}
 });

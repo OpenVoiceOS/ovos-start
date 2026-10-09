@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-08 - Motive: Fix links after moving repositories to OpenVoiceOS.
+Last Edit: Codex - 2026-10-09 - Motive: Document the branded installer download origin and unchanged tracking API.
 
 # One-hour installation links
 
@@ -8,7 +8,7 @@ Launcher 2.4.2 is pinned by immutable commit. Its automatically uploaded failure
 
 There is no command disclosure control. [`manualCopyReady`](../dist/app.mjs) requires a failed clipboard attempt bound to the current recipe, accepted prerequisites, an unexpired setup and its launch token. [`updateManualCopy`](../dist/app.mjs) otherwise hides and clears the plain readonly field. Pending and successful copying never reveal it. Clipboard denial or an unavailable clipboard API selects the current command for manual copying. Newer requests invalidate older clipboard outcomes. Sharing, downloading and reload do not enable the fallback. [Copy tests](../test/copy.test.mjs) and [callback tests](../test/progress-placement.test.mjs) verify these boundaries.
 
-The wizard copies a short `curl … | sh` command for tracked installations. [`buildShortCommand`](../dist/short-setup.mjs#L70) validates the recipe and fixed22-character capability, then targets the approved relay. No third-party shortener is used. The browser requires a current capability; failed session creation asks for a retry and never exposes the longer untracked command. [`buildSetupScript`](../dist/short-setup.mjs#L82) deliberately keeps its private-file full-download guard inside the downloadable file.
+The wizard copies a short `curl … | sh` command for tracked installations. [`buildShortCommand`](../dist/short-setup.mjs) validates the recipe and fixed 22-character capability, then downloads from `https://installer.openvoiceos.pt/s/<capability>`. This branded HTTPS alias reaches the same relay and database as `start-api.smartgic.io`; browser progress requests and launcher callbacks keep the existing API hostname. No third-party shortener is used. The browser requires a current capability; failed session creation asks for a retry and never exposes the longer untracked command. [`buildSetupScript`](../dist/short-setup.mjs) uses the same branded alias and keeps its private-file full-download guard inside the downloadable file. [Hosting instructions](self-hosting.md) cover alias routing and certificate validation.
 
 ## Preview isolation
 

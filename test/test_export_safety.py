@@ -43,7 +43,7 @@ def test_export_cleans_private_downloads(
     fake.write_text(f"#!{sys.executable}\n" + '''import json, os, pathlib, signal, sys
 args=sys.argv[1:]
 assert args[:7]==['-qfsS','--proto','=https','--connect-timeout','15','-m','120']
-assert args[7]=='https://start-api.smartgic.io/s/'+'L'*22
+assert args[7]=='https://installer.openvoiceos.pt/s/'+'L'*22
 assert args[8]=='-o' and len(args)==10
 target=pathlib.Path(args[9]); case=os.environ['EXPORT_CASE']
 body='printf ran > "$EXPORT_MARKER"\\nexit '+('17' if case=='child-failure' else '0')+'\\n'

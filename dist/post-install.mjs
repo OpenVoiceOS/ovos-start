@@ -91,6 +91,14 @@ function audioChecksView(model) {
     ${!model.error?'<p class="voice-check-wait">Keep this page open for the check result.</p>':''}${checkCommandView(model.session?.attention?'Run the check again':'Terminal already closed?')}</section>`;
 }
 
+/** Render a reviewed phrase without translating it or losing its requirement.
+ * @param {object} example Reviewed skill phrase. @param {string} locale Assistant language.
+ * @returns {string} Noninteractive spoken example and any relevant requirement.
+ */
+function spokenExampleView(example,locale) {
+  return `<blockquote lang="${escape(locale)}" data-no-translate>“${escape(example.phrase)}”</blockquote>${example.kind==='weather'?'<p class="example-hint">Weather needs internet and a configured location.</p>':''}`;
+}
+
 /** Curated examples stay optional until voice is confirmed; hubs get pairing guidance.
  * @param {object} state Confirmed recipe. @param {boolean} verified Voice check passed.
  * @returns {string} Readable examples or an appropriate skill/language starting point.
@@ -101,7 +109,8 @@ function gettingStartedView(state,verified) {
   const examples=starterExamples(state);
   if(!examples.length)return `<section class="onboarding-start"><span class="onboarding-symbol" aria-hidden="true">${icon('globe')}</span><div><h2>Examples for your language</h2><p>Choose a skill that supports your language and use its example phrases.</p><a class="text-button" data-progress-focus="guide-language" href="${GUIDE_LINKS.skills}" target="_blank" rel="noopener noreferrer">Find skills</a></div></section>`;
   const symbols={time:'schedule',date:'calendar',timer:'timer',weather:'cloud'};
-  const content=`<div class="example-intro"><p class="example-wake-word">Say “Hey Mycroft”</p><p>Wait for the listening sound, then ask.</p><p class="details-note">Your own wake word? Use that instead.</p></div><ul class="voice-example-grid" role="list">${examples.map(example=>`<li class="voice-example"><span class="voice-example-symbol" aria-hidden="true">${icon(symbols[example.kind])}</span><div><span class="voice-example-label">${example.label}</span><blockquote lang="${escape(state.locale)}" data-no-translate>“${escape(example.phrase)}”</blockquote>${example.kind==='weather'?'<p class="example-hint">Weather needs internet and a configured location.</p>':''}</div></li>`).join('')}</ul>`;
+  const [first,...more]=examples;
+  const content=`<div class="first-question"><p class="example-wake-word">Say “Hey Mycroft”</p><p class="example-listen">Wait for the listening sound, then ask.</p><div class="voice-example-featured">${spokenExampleView(first,state.locale)}</div><p class="details-note">Your own wake word? Use that instead.</p></div>${more.length?`<div class="more-questions"><h3>More to try</h3><ul class="voice-example-grid" role="list">${more.map(example=>`<li class="voice-example"><span class="voice-example-symbol" aria-hidden="true">${icon(symbols[example.kind])}</span><div>${spokenExampleView(example,state.locale)}</div></li>`).join('')}</ul></div>`:''}`;
   const heading=`<span class="onboarding-symbol" aria-hidden="true">${icon('voice')}</span><span class="examples-disclosure-title"><span class="examples-title">Try asking</span>${verified?'':'<span class="examples-subtitle">After your voice check</span>'}</span>`;
   return verified?`<section class="voice-examples" aria-label="Try asking"><h2 class="examples-heading">${heading}</h2><div class="examples-disclosure-content">${content}</div></section>`:`<details class="voice-examples-preview" data-progress-disclosure="examples"><summary data-progress-focus="examples-summary">${heading}<span class="examples-disclosure-action"><span class="examples-show">Show examples</span><span class="examples-hide">Hide examples</span>${icon('expand_more')}</span></summary><div class="examples-disclosure-content">${content}</div></details>`;
 }

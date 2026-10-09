@@ -1,4 +1,4 @@
-Last Edit: Codex (GPT-6) - 2026-10-09 - Motive: Document the single LED eye, responsive task layout and attention priority.
+Last Edit: Codex (GPT-6) - 2026-10-09 - Motive: Document centered waiting feedback on desktop and mobile.
 
 # Installation follow-up
 
@@ -35,7 +35,7 @@ The first three callback events require executed successful work: check mode, al
 
 ## Version 0.61.0: one LED eye and clearer progress
 
-[`progressView`](../dist/post-install.mjs) puts the current task beside one compact Mark I-style LED eye. [`mark1Eye`](../dist/mark1-eye.mjs) draws one local SVG ring with 12 round LEDs. The face stays still while brightness moves gently around the ring, without implying a completion percentage. Its 56-pixel size (40 pixels while waiting) leaves more room for the task text, including on phones. Light and dark themes use distinct LED colors and the surrounding panel follows the page theme. No image, font or external request is needed.
+[`progressView`](../dist/post-install.mjs) puts the current task beside one compact Mark I-style LED eye. [`mark1Eye`](../dist/mark1-eye.mjs) draws one local SVG ring with 12 round LEDs. The face stays still while brightness moves gently around the ring, without implying a completion percentage. Its 56-pixel size (40 pixels while waiting) leaves more room for the task text, including on phones. Version 0.61.1 centers the waiting eye and message as a compact group; on phones, the eye sits above centered copy. Error and retry panels retain their action layout. Light and dark themes use distinct LED colors and the surrounding panel follows the page theme. No image, font or external request is needed.
 
 Only healthy waiting/working states animate. Reconnection, expired tracking and required attention stop the animation; installed/stopped views retain their existing guidance. When attention is required, the current task is replaced by a single highlighted Terminal instruction. Clearing attention restores the reported task and animation. The decorative eye is hidden from assistive technology; the adjacent polite live region announces the instruction. Reduced-motion and forced-color preferences disable animation, with system colors used in forced-color mode.
 

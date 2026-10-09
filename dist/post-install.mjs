@@ -1,7 +1,7 @@
 import { errorReportUrl } from './report-link.mjs';
 import { icon, deviceIcon } from './icons.mjs';
 import { CHECK_COMMAND, DEMOS, guideKind, progressCopy, installationMilestones, installationStages, installationTiming, installationUpdate, audioChecks, installationReceipts } from './install-progress.mjs';
-import { mark1Eyes } from './mark1-eyes.mjs';
+import { mark1Eye } from './mark1-eye.mjs';
 import { DEVICES } from './scenario.mjs';
 import { starterExamples, nextSteps, GUIDE_LINKS } from './post-install-content.mjs';
 
@@ -17,7 +17,7 @@ const keepOpenHint='<span class="keep-open-hint">Keep this page open to follow t
 export function waitingView(model) {
   const title=model.error?progressCopy(model).title:'Waiting for your device';
   const active=!model.error&&!model.session?.attention&&model.session?.status==='waiting';
-  return `<div class="install-waiting ${active?'is-waiting':''}"><span class="waiting-indicator" aria-hidden="true">${active?mark1Eyes({compact:true}):icon(model.error?'refresh':'schedule')}</span><span role="status" aria-live="polite" aria-atomic="true"><strong class="waiting-title">${escape(title)}</strong>${!model.error&&model.session?keepOpenHint:''}</span>${model.error&&model.error!=='expired'?'<button class="text-button" data-progress-focus="refresh" data-progress-retry>Check progress again</button>':''}</div>`;
+  return `<div class="install-waiting ${active?'is-waiting':''}"><span class="waiting-indicator" aria-hidden="true">${active?mark1Eye({compact:true}):icon(model.error?'refresh':'schedule')}</span><span role="status" aria-live="polite" aria-atomic="true"><strong class="waiting-title">${escape(title)}</strong>${!model.error&&model.session?keepOpenHint:''}</span>${model.error&&model.error!=='expired'?'<button class="text-button" data-progress-focus="refresh" data-progress-retry>Check progress again</button>':''}</div>`;
 }
 
 /** Small timing surface updated independently so polling preserves focus.
@@ -111,6 +111,8 @@ export function progressView(model,state,{preview=false,prerequisitesReady=true}
   const stages=installationStages(model),receipts=completedStepsView(model);
   const current=installationMilestones(model).find(step=>step.state==='current');
   const detailed=working&&model.session?.phase>0?current:null;
+  const attention=!model.error&&model.session?.attention;
+  const task=attention?phase:detailed?{title:detailed.label,description:detailed.description}:phase;
   const headline=model.error==='expired'?copy.title:working?'Installing OVOS':copy.installed&&!copy.complete?'OVOS is installed':phase.title;
   return `<div class="install-progress install-dashboard ${copy.installed?'is-installed':''} ${reconnecting?'is-reconnecting':''}">
     <header class="installation-heading"><p class="progress-device">${deviceIcon(state.device)}<span>${escape(DEVICES[state.device]?.name||'OVOS')}</span></p>
@@ -118,12 +120,12 @@ export function progressView(model,state,{preview=false,prerequisitesReady=true}
     ${copy.installed?'<p class="rerun-wizard-note" id="rerun-wizard-note">Your choices are kept. Review them before installing again.</p>':''}
     ${copy.installed||working?'':`<p class="progress-description">${phase.description}</p>`}</header>
     ${copy.installed?`<div class="installation-receipt"><span class="installation-confirmed">${icon('check')}<span>Installation complete</span></span>${installationReceipts(model).some(step=>step.id==='services_started')?`<span class="installation-confirmed">${icon('check')}<span>Services started</span></span>`:''}<div class="installation-timing" data-install-timing>${timingView(model)}</div></div>`:`<section class="installation-flow" aria-label="${model.error?'Last confirmed progress':'Installation progress'}">
-      ${working?`<div class="installation-current" role="status" aria-live="polite" aria-atomic="true">${mark1Eyes({animated:active})}<div><h2>${detailed?detailed.label:phase.title}</h2><p>${detailed?detailed.description:phase.description}</p></div></div>`:''}
+      ${working?`<div class="installation-current${attention?' installation-current--attention':''}" role="status" aria-live="polite" aria-atomic="true">${mark1Eye({animated:active})}<div><h2>${task.title}</h2><p>${task.description}</p></div></div>`:''}
       ${receipts||`<ol class="installation-stages ${stages.length===5?'installation-stages--detailed':''}" aria-live="polite" aria-atomic="true">${stages.map(stage=>`<li class="stage-${stage.state}" ${stage.state==='current'?'aria-current="step"':''}><span class="stage-symbol" aria-hidden="true">${stage.state==='complete'?icon('check'):icon(stage.icon)}</span><span class="stage-label">${stage.label}</span><span class="sr-only">${stage.state==='complete'?'Completed':stage.state==='current'?(model.error?'Last confirmed progress':'In progress'):'Not reached'}</span></li>`).join('')}</ol>`}
       <div class="installation-meta"><div class="installation-timing" data-install-timing>${timingView(model)}</div>${reconnecting?`<span class="connection-badge is-reconnecting">${icon('refresh')}<span>Reconnecting…</span></span>`:''}</div>
     </section>`}
     ${active?`<p class="installation-instruction">${icon('terminal')}<span>Keep this page open. Follow any prompts in Terminal.${kind!=='hub'?'<span class="audio-check-reminder">At the end, answer the speaker and microphone questions in Terminal.</span>':''}</span></p>`:''}
-    ${model.error&&copy.description?`<div class="connection-notice"><p>${copy.description}</p>${reconnecting?'<button class="button button-secondary progress-retry" data-progress-focus="refresh" data-progress-retry>'+icon('refresh')+'<span>Try again</span></button>':''}</div>`:model.session?.attention&&!copy.installed?`<p class="progress-description">${phase.description}</p>`:''}
+    ${model.error&&copy.description?`<div class="connection-notice"><p>${copy.description}</p>${reconnecting?'<button class="button button-secondary progress-retry" data-progress-focus="refresh" data-progress-retry>'+icon('refresh')+'<span>Try again</span></button>':''}</div>`:model.session?.attention&&!copy.installed&&!working?`<p class="progress-description">${phase.description}</p>`:''}
     ${!copy.installed&&working?`<details class="install-help-short" data-progress-disclosure="check"><summary data-progress-focus="check-summary">After a restart</summary><p>Open Terminal on your device and run this check. It checks services and helps you test your voice.</p><button class="text-button" data-progress-focus="copy-check" data-copy-check>Copy check command</button><textarea id="post-check-command" data-progress-focus="check-field" aria-label="Check sound and microphone" class="command check-command" readonly rows="2" data-no-translate>${escape(CHECK_COMMAND)}</textarea></details>`:''}
     ${copy.installed&&receipts?`<details class="install-help-short completed-install-details" data-progress-disclosure="history"><summary data-progress-focus="history-summary">Installation details</summary>${receipts}</details>`:''}
     ${copy.installed?`<div class="post-install-guide">

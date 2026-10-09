@@ -202,7 +202,7 @@ test('install handoff omits the report notice without leaving a broken copy-butt
 test('preview handoff is labelled, disables install exports and links only choices to production',()=>{
  const c=views();c.previewOnly=true;c.setupSession=short.issueSetup(c.state);acceptPreparation(c);
  const html=c.resultView();assert.match(html,/Preview only — no installation will run/);
- assert.ok(html.includes('https://ovos-start-wizard.goldyfruit.chatgpt.site/#setup='+c.setupSession.code));
+ assert.ok(html.includes('https://start.openvoiceos.pt/#setup='+c.setupSession.code));
  assert.match(html,/data-install-action disabled/);assert.match(html,/data-download="script" disabled/);
  assert.match(html,/id="install-command"[^>]*><\/textarea>/);assert.doesNotMatch(html,/curl -[a-zA-Z]/);
 });

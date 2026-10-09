@@ -1,0 +1,35 @@
+[Unit]
+Description=OVOS Start installation API
+After=network.target
+
+[Service]
+Type=simple
+User=ovos-start
+Group=ovos-start
+WorkingDirectory=/opt/ovos-start/current
+EnvironmentFile=/etc/ovos-start/api.env
+ExecStart=/opt/ovos-start/node/bin/node --max-old-space-size=128 /opt/ovos-start/current/server/node-server.mjs
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=20s
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+ReadWritePaths=/var/lib/ovos-start
+LimitNOFILE=1024
+TasksMax=64
+MemoryHigh=192M
+MemoryMax=256M
+
+[Install]
+WantedBy=multi-user.target

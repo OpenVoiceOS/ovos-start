@@ -50,7 +50,8 @@ test('pending checks expose optional future examples while failures expose no on
   const html=progressView(model(status),state);assert.match(html,/Voice check pending/);
   const summary=html.match(/<details class="voice-examples-preview"[^>]*><summary[^>]*>([\s\S]*?)<\/summary>/)?.[1];
   assert.ok(summary,'examples use a native disclosure');
-  assert.match(summary,/Things to try after the voice check/);
+  assert.match(summary,/Try asking/);
+  assert.match(summary,/After your voice check/);
   assert.match(summary,/class="examples-show">Show examples/);
   assert.match(summary,/class="examples-hide">Hide examples/);
   assert.match(summary,/class="examples-disclosure-action"/);
@@ -71,10 +72,27 @@ test('hub guide uses a verified pairing URL and never asks the server to listen'
 });
 
 test('onboarding chrome is translated in every catalog while source phrases stay separate',()=>{
- const keys=['Try a few things','Things to try after the voice check','Show examples','Hide examples','Time','Date','Timer','Weather','Next steps','Examples for your language','Weather needs internet and a configured location.'];
+ const keys=['Try asking','After your voice check','Say “Hey Mycroft”','Wait for the listening sound, then ask.','Show examples','Hide examples','Time','Date','Timer','Weather','Next steps','Examples for your language','Weather needs internet and a configured location.'];
  for(const locale of UI_LOCALES){
   const catalog=JSON.parse(readFileSync(new URL(`../dist/locales/${locale}.json`,import.meta.url),'utf8'));
   for(const key of keys){assert.ok(catalog[key],`${locale}: ${key}`);assert.equal(translateMessage(key,catalog),catalog[key]);}
   for(const card of nextSteps(state))for(const key of [card.title,card.description,card.action])assert.ok(catalog[key],`${locale}: ${key}`);
+ }
+});
+
+test('spoken examples are a noninteractive list with decorative icons and one relevant requirement',()=>{
+ for(const locale of UI_LOCALES){
+  const recipe={...state,locale},examples=starterExamples(recipe),html=progressView(model('voice_ready'),recipe);
+  if(!examples.length){assert.doesNotMatch(html,/voice-example-grid/);continue;}
+  const list=html.match(/<ul class="voice-example-grid" role="list">([\s\S]*?)<\/ul>/)?.[1];
+  assert.ok(list,locale);
+  assert.equal((list.match(/<li class="voice-example">/g)||[]).length,examples.length);
+  assert.equal((list.match(/class="voice-example-symbol" aria-hidden="true"/g)||[]).length,examples.length);
+  assert.doesNotMatch(list,/<button|<a\b|tabindex=|undefined/,'phrases are spoken examples, not clickable controls');
+  assert.equal((list.match(/Weather needs internet and a configured location\./g)||[]).length,examples.some(item=>item.kind==='weather')?1:0);
+  assert.doesNotMatch(html,/Some skills need internet or extra setup\./);
+  assert.match(html,/Say “Hey Mycroft”/);
+  assert.match(html,/Wait for the listening sound, then ask\./);
+  assert.match(html,/Your own wake word\? Use that instead\./);
  }
 });

@@ -1,0 +1,16 @@
+OVOS installation status relay
+
+The server, vendor recipe codec and four SQLite migrations in this directory
+are copied from ovos-install-status, commit
+89eee176ba71b80a522cd1d249f61e12286b1188 (version 1.4.1).
+
+Original project: OpenVoiceOS installation wizard contributors.
+License: Apache-2.0; see the repository's LICENSE file.
+
+The Node transport, browser authentication and SQLite adapter are separate
+files in server/node-*.mjs. Existing capability lifetimes, status transitions,
+report URL validation and SQL bindings remain in the original relay modules.
+
+Migration change: server/launch.mjs pins launcher commit
+c2e81097a0dcd33f9dc6747c969466e1cc2c9cbb from
+OpenVoiceOS/ovos-start-launcher, which reports to start-api.smartgic.io.

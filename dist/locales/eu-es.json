@@ -913,5 +913,9 @@
   "Installation report": "Instalazio-txostena",
   "Installation progress and report links are shown here for 24 hours.": "Instalazioaren aurrerapena eta txostenen estekak hemen erakusten dira 24 orduz.",
   "Show examples": "Erakutsi adibideak",
-  "Hide examples": "Ezkutatu adibideak"
+  "Hide examples": "Ezkutatu adibideak",
+  "Try asking": "Saiatu galdetzen",
+  "After your voice check": "Ahots-probaren ondoren",
+  "Say “Hey Mycroft”": "Esan «Hey Mycroft»",
+  "Wait for the listening sound, then ask.": "Itxaron entzuteko seinaleari, eta galdetu."
 }

@@ -913,5 +913,9 @@
   "Installation report": "Installatierapport",
   "Installation progress and report links are shown here for 24 hours.": "De installatievoortgang en rapportlinks worden hier 24 uur weergegeven.",
   "Show examples": "Voorbeelden tonen",
-  "Hide examples": "Voorbeelden verbergen"
+  "Hide examples": "Voorbeelden verbergen",
+  "Try asking": "Vraag bijvoorbeeld",
+  "After your voice check": "Na je spraaktest",
+  "Say “Hey Mycroft”": "Zeg ‘Hey Mycroft’",
+  "Wait for the listening sound, then ask.": "Wacht op het luistersignaal en stel je vraag."
 }

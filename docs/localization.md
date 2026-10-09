@@ -1,3 +1,5 @@
+Last Edit: Codex - 2026-10-08 - Motive: Fix links after moving repositories to OpenVoiceOS.
+
 # Localization
 
 [`selectLanguage`, `restore`, `localize`](../dist/app.mjs) use the same selected locale for the wizard interface and the assistant recipe. Browser language provides the initial suggestion; a saved setup link takes precedence. Changing the native language selector loads its bundled catalog and updates the current question, navigation, labels and feedback. Back, edit cancellation and reopened setup links retain the appropriate recipe language. There is no translation service or upload of setup data.
@@ -28,7 +30,7 @@ Prefer a whole-message entry when a card needs grammatical restructuring. Such e
 
 ## Maintaining translations
 
-Add messages to `en-us.json` and every other catalog. Preserve `{named}` placeholders, technical names and the meaning of privacy/compatibility notices. Run `npm test`: [`i18n.test.mjs`](../test/i18n.test.mjs) verifies complete key coverage, token/markup validation, whole-description precedence, all full trivia messages, unsplit target-system instructions, compatibility/expiry tokens, source retention, dynamic substitutions, retry behavior and recipe round trips for every language. [`test_export_cleans_private_downloads`](../test/test_export_safety.py) verifies generated installer scripts independently; translation must never alter executable data. The [public launcher documentation](../../ovos-start-launcher/docs/index.md) defines its separate code/expiry contract.
+Add messages to `en-us.json` and every other catalog. Preserve `{named}` placeholders, technical names and the meaning of privacy/compatibility notices. Run `npm test`: [`i18n.test.mjs`](../test/i18n.test.mjs) verifies complete key coverage, token/markup validation, whole-description precedence, all full trivia messages, unsplit target-system instructions, compatibility/expiry tokens, source retention, dynamic substitutions, retry behavior and recipe round trips for every language. [`test_export_cleans_private_downloads`](../test/test_export_safety.py) verifies generated installer scripts independently; translation must never alter executable data. The [public launcher documentation](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/docs/index.md) defines its separate code/expiry contract.
 
 These translations received an AI contextual review, with all twelve locales exercised in the browser through language editing, speech choices and review at phone width. The French guided journey was also inspected from language to handoff. Automated checks and browser rendering are not native-speaker certification. Basque and especially Kabyle still need fluent community review of technical vocabulary and retained trivia; Catalan/Galician regional wording would also benefit from community review. Contribute corrections directly to the relevant catalog; factual trivia sources remain linked in [`PROJECT_FACTS`](../dist/facts.mjs).
 

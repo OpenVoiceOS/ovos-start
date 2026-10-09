@@ -913,5 +913,9 @@
   "Installation report": "Informe de instalación",
   "Installation progress and report links are shown here for 24 hours.": "El progreso de la instalación y los enlaces de los informes se muestran aquí durante 24 horas.",
   "Show examples": "Mostrar ejemplos",
-  "Hide examples": "Ocultar ejemplos"
+  "Hide examples": "Ocultar ejemplos",
+  "Try asking": "Prueba a preguntar",
+  "After your voice check": "Después de la prueba de voz",
+  "Say “Hey Mycroft”": "Di «Hey Mycroft»",
+  "Wait for the listening sound, then ask.": "Espera la señal de escucha y pregunta."
 }

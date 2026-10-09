@@ -43,7 +43,7 @@ def test_export_cleans_private_downloads(
     fake.write_text(f"#!{sys.executable}\n" + '''import json, os, pathlib, signal, sys
 args=sys.argv[1:]
 assert args[:7]==['-qfsS','--proto','=https','--connect-timeout','15','-m','120']
-assert args[7]=='https://ovos-install-status.goldyfruit.chatgpt.site/s/'+'L'*22
+assert args[7]=='https://start-api.smartgic.io/s/'+'L'*22
 assert args[8]=='-o' and len(args)==10
 target=pathlib.Path(args[9]); case=os.environ['EXPORT_CASE']
 body='printf ran > "$EXPORT_MARKER"\\nexit '+('17' if case=='child-failure' else '0')+'\\n'
@@ -65,4 +65,3 @@ sys.exit(28 if case=='failure' else 0)
     assert marker.exists() == (case in ("success", "child-failure"))
     expected = {"success": 0, "child-failure": 17, "interrupt": 130, "terminate": 143}
     assert result.returncode == expected.get(case, 1), result.stderr
-

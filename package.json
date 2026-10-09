@@ -1,15 +1,35 @@
 {
   "name": "ovos-start",
-  "version": "0.55.3",
+  "version": "0.56.2",
   "private": true,
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "start": "python3 -m http.server 4187 --directory dist --bind 127.0.0.1",
-    "build": "node scripts/build-worker.mjs"
+    "build": "node scripts/build-site.mjs",
+    "start:api": "node server/node-server.mjs"
   },
   "devDependencies": {
     "esbuild": "0.28.2"
-  }
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "description": "Web setup wizard for OpenVoiceOS, with device preparation and live installation progress.",
+  "homepage": "https://start.openvoiceos.pt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenVoiceOS/ovos-start.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OpenVoiceOS/ovos-start/issues"
+  },
+  "keywords": [
+    "openvoiceos",
+    "ovos",
+    "voice-assistant",
+    "installation",
+    "setup-wizard"
+  ]
 }

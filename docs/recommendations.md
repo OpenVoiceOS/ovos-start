@@ -1,3 +1,5 @@
+Last Edit: Codex - 2026-10-08 - Motive: Fix links after moving repositories to OpenVoiceOS.
+
 # Adaptive setup contract
 
 ## One question at a time
@@ -6,7 +8,7 @@
 
 Device details precede speech choices through [`firstCapability` / `afterCapability`](../dist/journey.mjs): Pi generation and memory are separate questions. Known Pi/Jetson boards skip CPU identification; general computers and Macs retain their relevant processor questions. Unknown is an answer, never an unfinished field. Unknown or unsupported answers stop the branch at the speech choices, where [`localSpeechOption`](../dist/recommendations.mjs) disables local speech and explains why. Change my device details revisits the questions. An enabled speech choice advances directly; no separate result screen or automatic acceptance remains. Headless hubs skip speech and unsupported integrations. Navigation state is separate from the version-2 recipe.
 
-[`go`, `back`, `cancelEdit`](../dist/app.mjs) retain the actual visited platform/capability screens, preserve answers on Back and restore the prior recipe when edits are cancelled. Editing one review row returns directly to review unless device compatibility needs another decision. [Journey tests](../test/journey.test.mjs) cover these transitions and normalization; [canonical Python terminal fixtures](../../ovos-start-launcher/test/test_launcher.py) verify the maintained target launcher.
+[`go`, `back`, `cancelEdit`](../dist/app.mjs) retain the actual visited platform/capability screens, preserve answers on Back and restore the prior recipe when edits are cancelled. Editing one review row returns directly to review unless device compatibility needs another decision. [Journey tests](../test/journey.test.mjs) cover these transitions and normalization; [canonical Python terminal fixtures](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/test/test_launcher.py) verify the maintained target launcher.
 
 [`browserLanguages`](../dist/recommendations.mjs) filters browser preferences and falls back to `navigator.language` when the list is empty. [`suggestLanguage`](../dist/recommendations.mjs) walks them in preference order, trying an exact locale and then a supported language-family match for each preference. [`languageSource`](../dist/recommendations.mjs) labels exact matches as detected, regional matches as suggested, unmatched English as a starting point, and saved/confirmed selections as chosen.
 
@@ -42,7 +44,7 @@ Everyday skills map to the upstream essential/internet/audio bundles; server exc
 
 Home Assistant connects an existing server. AI fallback connects an existing OpenAI-compatible endpoint, local or online; it does not provision an LLM/Ollama. Smaller devices are directed to a model server on another capable computer. The headless `server` profile does not offer these integrations.
 
-Scenario mode skips upstream's full TUI, so feature flags alone would never collect missing credentials. The [canonical v2 launcher](../../ovos-start-launcher/lib/launcher.sh.in) provides target-terminal code that prompts for URL/key/model, exports `HOMEASSISTANT_URL`, `HOMEASSISTANT_API_KEY`, `LLM_API_URL`, `LLM_API_KEY`, `LLM_MODEL` and explicit voice-friendly LLM defaults. No top-level LLM YAML section overrides that environment. See [ovos-installer: automation](https://github.com/OpenVoiceOS/ovos-installer/blob/cb6b10bdc6feee191d6ed3e58aaa96c854f8c2b1/docs/automation.md).
+Scenario mode skips upstream's full TUI, so feature flags alone would never collect missing credentials. The [canonical v2 launcher](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/launcher.sh.in) provides target-terminal code that prompts for URL/key/model, exports `HOMEASSISTANT_URL`, `HOMEASSISTANT_API_KEY`, `LLM_API_URL`, `LLM_API_KEY`, `LLM_MODEL` and explicit voice-friendly LLM defaults. No top-level LLM YAML section overrides that environment. See [ovos-installer: automation](https://github.com/OpenVoiceOS/ovos-installer/blob/cb6b10bdc6feee191d6ed3e58aaa96c854f8c2b1/docs/automation.md).
 
 Tokens are read as literal data with echo disabled before the prompt. They never enter browser state, URLs, generated YAML or command-line arguments. URLs/models also stay out of shared presets. Validation failures preserve the active scenario. The upstream installer necessarily receives/stores service configuration on the target device.
 
@@ -50,14 +52,14 @@ Tokens are read as literal data with echo disabled before the prompt. They never
 
 The wrapper fetches the exact preview commit into a private temporary checkout and invokes its `setup.sh` through Bash 4+, carrying `RUN_AS` and `RUN_AS_HOME`. It does not run the preview bootstrap that would clone main. Privileged cleanup removes only the known temporary source subtree after setup exits. Existing scenario backups and checkout guards remain.
 
-The canonical Python [`Sandbox` and launcher tests](../../ovos-start-launcher/test/test_launcher.py) exercise target preflight, private prompts and failure propagation using fake installers. No production Python class exists in the wizard.
+The canonical Python [`Sandbox` and launcher tests](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/test/test_launcher.py) exercise target preflight, private prompts and failure propagation using fake installers. No production Python class exists in the wizard.
 
 PR status was rechecked on 2026-10-07: #648 remains draft. Its head now contains changes beyond the wizard’s reviewed pin. This UI-only revision keeps the pinned contract unchanged; it does not claim to implement the latest head’s expanded language/container behavior.
 
 ## Version 0.18: universal 64-bit prerequisite
 
-The wizard requires a 64-bit operating system for every install, independent of speech mode. The [canonical launcher preflight](../../ovos-start-launcher/lib/launcher.sh.in#L27) checks `getconf LONG_BIT` before downloads, privilege escalation or configuration writes. Empty, 32-bit and failed probes stop. This is enforced by the wizard launcher: upstream [method handling](https://github.com/OpenVoiceOS/ovos-installer/blob/main/tui/methods.sh) still contains 32-bit virtualenv behavior, and the [pinned speech guard](https://github.com/OpenVoiceOS/ovos-installer/blob/6ffd465028bac299e5235d619819bfdc734af073/utils/speech.sh#L38-L52) applies its own 64-bit check to local speech.
+The wizard requires a 64-bit operating system for every install, independent of speech mode. The [canonical launcher preflight](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/launcher.sh.in#L27) checks `getconf LONG_BIT` before downloads, privilege escalation or configuration writes. Empty, 32-bit and failed probes stop. This is enforced by the wizard launcher: upstream [method handling](https://github.com/OpenVoiceOS/ovos-installer/blob/main/tui/methods.sh) still contains 32-bit virtualenv behavior, and the [pinned speech guard](https://github.com/OpenVoiceOS/ovos-installer/blob/6ffd465028bac299e5235d619819bfdc734af073/utils/speech.sh#L38-L52) applies its own 64-bit check to local speech.
 
 [`chooseCapability`](../dist/flow.mjs) derives ARM64 hardware capability from selected Pi/Jetson cards after memory is answered; it does not detect or assert the installed OS. Existing saved links remain conservative until their answers are revisited. [`afterCapability`](../dist/journey.mjs) skips the redundant board CPU question. Pi 3/4/400 are named explicitly instead of implying that every earlier Pi is supported. [`compatibility`](../dist/scenario.mjs) states 64-bit in every target handoff.
 
-The canonical Python [`Sandbox` and launcher tests](../../ovos-start-launcher/test/test_launcher.py) exercise target preflight, private prompts and failure propagation using fake installers. No production Python class exists in the wizard.
+The canonical Python [`Sandbox` and launcher tests](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/test/test_launcher.py) exercise target preflight, private prompts and failure propagation using fake installers. No production Python class exists in the wizard.

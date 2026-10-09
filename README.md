@@ -1,23 +1,26 @@
+<!-- Last Edit: Codex - 2026-10-08 - Motive: Simplify getting started and explain the two Start repositories. -->
+
 # OVOS Start
 
-A web wizard that helps you install [OpenVoiceOS](https://www.openvoiceos.org/) on your device.
+**[Open the wizard](https://start.openvoiceos.pt/)**
 
-Choose your device, language, and voice options. The wizard shows you how to prepare your device, then gives you an install command to copy into its terminal. Installation runs on your device, with progress shown in the browser.
+A guided setup for [OpenVoiceOS](https://www.openvoiceos.org/). Choose your device and voice options, follow installation progress, then check your speaker and microphone.
 
-After installation, the wizard guides you through checking your speaker and microphone and suggests things to try. You can run it again to change your setup or reinstall.
+1. Choose your language, device and preferences.
+2. Follow the preparation steps and confirm your device is ready.
+3. Copy the install command into your device's terminal. Keep the wizard open for progress and next steps.
 
-## Run locally
+You can use the wizard again to change your setup or reinstall.
 
-With Node.js, npm, and Python 3 installed:
+## What is in this repository?
 
-```sh
-npm ci
-npm start
-```
+The wizard website and its progress API. GitHub Pages hosts the website; the API and SQLite database run on `agh01`.
 
-Open <http://localhost:4187>. Local previews let you explore the wizard; installation commands are disabled.
+The separate [ovos-start-launcher](https://github.com/OpenVoiceOS/ovos-start-launcher) runs on your device and starts [ovos-installer](https://github.com/OpenVoiceOS/ovos-installer) with your choices.
 
-See the [developer guide](docs/index.md) for tests, production builds, and how the wizard works.
+## Development
+
+See the [developer guide](docs/index.md) to run, build and test the wizard, or [self-hosting](docs/self-hosting.md) to run the API.
 
 ## Sponsorship
 

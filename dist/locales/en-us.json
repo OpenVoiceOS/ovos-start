@@ -913,5 +913,9 @@
   "Installation report": "Installation report",
   "Installation progress and report links are shown here for 24 hours.": "Installation progress and report links are shown here for 24 hours.",
   "Show examples": "Show examples",
-  "Hide examples": "Hide examples"
+  "Hide examples": "Hide examples",
+  "Try asking": "Try asking",
+  "After your voice check": "After your voice check",
+  "Say “Hey Mycroft”": "Say “Hey Mycroft”",
+  "Wait for the listening sound, then ask.": "Wait for the listening sound, then ask."
 }

@@ -1,7 +1,34 @@
 import { errorReportUrl } from './report-link.mjs';
 import { STARTER_EXAMPLES } from './starter-examples.mjs';
 import { DEMO_THUMBNAILS } from './demo-thumbnails.mjs';
-/** Session capabilities never enter recipe links or browser storage. */
+/** Device callback and launch capabilities never enter recipe links or storage. */
+export const INSTALL_API_URL='https://start-api.smartgic.io/api/install';
+const BROWSER_CREDENTIAL_KEY='ovos-start-browser-v1';
+
+/** Keep one browser's status access across reloads without third-party cookies.
+ * Storage-blocked browsers retain access for the lifetime of the current page.
+ * @param {object} options Injectable storage and cryptographic randomness.
+ * @returns {function(): string} Lazy getter for a private 256-bit browser credential.
+ */
+export function createBrowserCredential({getStorage=()=>globalThis.localStorage,randomBytes=bytes=>globalThis.crypto.getRandomValues(bytes)}={}) {
+  let credential;
+  return ()=>{
+    if(credential)return credential;
+    let storage;
+    try {
+      storage=getStorage();
+      const saved=storage?.getItem(BROWSER_CREDENTIAL_KEY);
+      if(typeof saved==='string'&&/^[a-f0-9]{64}$/.test(saved))return credential=saved;
+    } catch { /* Browser privacy settings may disable storage. */ }
+    const bytes=new Uint8Array(32);
+    randomBytes(bytes);
+    credential=Array.from(bytes,byte=>byte.toString(16).padStart(2,'0')).join('');
+    try { storage?.setItem(BROWSER_CREDENTIAL_KEY,credential); } catch { /* Keep the current page working. */ }
+    return credential;
+  };
+}
+
+const browserCredential=createBrowserCredential();
 export const CHECK_COMMAND='sh "$HOME/.config/ovos-installer/check-setup.sh"';
 export const INSTALLED_STATES=Object.freeze(['installed','services_ready','voice_ready']);
 export const VOICE_EXAMPLES=Object.freeze(Object.fromEntries(Object.entries(STARTER_EXAMPLES).filter(([,items])=>items.some(item=>item.kind==='time')).map(([locale,items])=>[locale,items.find(item=>item.kind==='time').phrase])));
@@ -94,14 +121,17 @@ export function guideKind(state) {return state.experience==='hub'?'hub':!state.s
 /** Small cancellable polling client. Durable state lives in the authenticated service. */
 export class InstallTracker {
   /** @param {object} options Injectable browser interfaces for meaningful lifecycle tests. */
-  constructor({fetcher=(...args)=>fetch(...args),onChange=()=>{},schedule=(...args)=>setTimeout(...args),cancel=timer=>clearTimeout(timer),now=()=>Date.now()}={}) {
-    Object.assign(this,{fetcher,onChange,schedule,cancel,now});this.code=null;this.session=null;this.error=null;this.active=false;this.generation=0;this.timer=null;this.pending=null;this.polling=null;this.observedAt=null;
+  constructor({fetcher=(...args)=>fetch(...args),credential=browserCredential,onChange=()=>{},schedule=(...args)=>setTimeout(...args),cancel=timer=>clearTimeout(timer),now=()=>Date.now()}={}) {
+    Object.assign(this,{fetcher,credential,onChange,schedule,cancel,now});this.code=null;this.session=null;this.error=null;this.active=false;this.generation=0;this.timer=null;this.pending=null;this.polling=null;this.observedAt=null;
   }
   /** Current view state. @returns {object} */
   snapshot(){return {code:this.code,session:this.session,error:this.error,observedAt:this.observedAt};}
-  /** Read an authenticated same-origin response, never follow sign-in redirects. @param {object} data @returns {Promise<object>} */
+  /** Authenticate to the fixed public API without cookies or redirects. @param {object} data @returns {Promise<object>} */
   async request(data){
-    const response=await this.fetcher('/api/install',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',redirect:'error',body:JSON.stringify(data),signal:AbortSignal.timeout(10000)});
+    let credential;
+    try { credential=this.credential(); } catch { throw new Error('unavailable'); }
+    if(typeof credential!=='string'||!/^[a-f0-9]{64}$/.test(credential))throw new Error('unavailable');
+    const response=await this.fetcher(INSTALL_API_URL,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+credential},credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',redirect:'error',body:JSON.stringify(data),signal:AbortSignal.timeout(10000)});
     if(!response.ok)throw new Error(response.status===410?'expired':'unavailable');
     const value=await response.json();
     if(!/^[a-f0-9]{32}$/.test(value.id)||!Object.hasOwn(messages,value.status)||!Number.isSafeInteger(value.expiresAt)||!Number.isSafeInteger(value.updatedAt)||!Number.isSafeInteger(value.createdAt)||typeof value.attention!=='boolean')throw new Error('unavailable');

@@ -40,7 +40,7 @@ test('new capability is only in executable artifact, never shared recipe link an
   for(const token of ['$(touch x)','x','a'.repeat(21),'a'.repeat(22)+'\n','a'.repeat(64)])assert.throws(()=>buildShortCommand(artifact,now,token));
   assert.throws(()=>buildShortCommand(artifact,now+3600,session.launchToken));
 });
-test('session restores from server without any browser storage and polling stops off screen',async()=>{
+test('session restores from server without saving install capabilities and polling stops off screen',async()=>{
   const calls=[],timers=new Map();let n=0;const tracker=new InstallTracker({fetcher:async(url,options)=>{calls.push(JSON.parse(options.body));return reply();},schedule:fn=>{timers.set(++n,fn);return n;},cancel:id=>timers.delete(id)});
   await tracker.connect('code');await tracker.connect('code');assert.equal(calls.length,1);assert.equal(timers.size,1);tracker.stop();assert.equal(timers.size,0);
   await tracker.connect('code');assert.equal(timers.size,1);tracker.stop();
@@ -229,7 +229,7 @@ test('installed services never imply verified voice; pending instructions match 
   assert.match(html,/At the first prompt, enter 1 and press Enter/);
   assert.match(html,/Terminal already closed/);assert.match(html,/data-copy-check/);
   assert.doesNotMatch(html,/Your voice check passed|A check needs your attention|installation-stages|activity-spinner/);
-  assert.match(html,/<details class="voice-examples-preview"[^>]*><summary[^>]*>[\s\S]*?Things to try after the voice check[\s\S]*?Show examples[\s\S]*?<\/summary>/);
+  assert.match(html,/<details class="voice-examples-preview"[^>]*><summary[^>]*>[\s\S]*?Try asking[\s\S]*?After your voice check[\s\S]*?Show examples[\s\S]*?<\/summary>/);
   assert.doesNotMatch(html,/<details class="voice-examples-preview"[^>]* open/);
   assert.equal((html.match(/id="post-check-command"/g)||[]).length,1);
   assert.equal(html.includes('Keep this page open for the check result.'),!error);
@@ -239,7 +239,7 @@ test('installed services never imply verified voice; pending instructions match 
 test('voice confirmation reveals the guide and keeps a check-again disclosure',()=>{
  for(const error of [null,'unavailable']){
   const html=progressView({session:{...session,status:'voice_ready'},error},base);
-  assert.match(html,/Your voice check passed/);assert.match(html,/Try a few things/);
+  assert.match(html,/Your voice check passed/);assert.match(html,/Try asking/);
   assert.match(html,/Run the check again/);assert.match(html,/What time is it/);
   assert.doesNotMatch(html,/Voice check pending|At the first prompt|Terminal already closed|installation-stages/);
  }

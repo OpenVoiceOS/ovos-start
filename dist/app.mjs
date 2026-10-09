@@ -2,7 +2,7 @@ import { errorReportUrl } from './report-link.mjs';
 import { loadLocale, applyTranslations, t, uiLocale } from './i18n.mjs';
 import { markOneFace, WELCOME_TEXT, WelcomePlayback, animateEyes } from './welcome.mjs';
 import { ChoiceInputGuard, focusCurrentChoice } from './interaction.mjs';
-import { DEFAULTS, PRESET_SCHEMA, DEVICES, LANGUAGES, usesVirtualenvPreset, validateState, buildYaml, compatibility, encodePreset } from './scenario.mjs';
+import { DEFAULTS, PRESET_SCHEMA, DEVICES, LANGUAGES, usesVirtualenvPreset, usesRaspberryPiTuning, validateState, buildYaml, compatibility, encodePreset } from './scenario.mjs';
 import { suggestLanguage, browserLanguages, languageSource, localeFlag, speechEligibility, localSpeechOption, localModelGuidance } from './recommendations.mjs';
 import { hardwareCardsForExperience, platformTarget, chooseExperience, applySkillDefaults, chooseHardware, chooseSpeech, chooseCapability } from './flow.mjs';
 import { nextQuestion, canExploreLocal, firstCapability, afterCapability, questionChapter, progressStages, canGoBack, RECIPE_QUESTIONS } from './journey.mjs';
@@ -390,6 +390,7 @@ function resultView() {
     <div class="install-card">
       <div class="install-target install-target-summary"><button type="button" class="setup-device" data-edit="device" aria-label="Edit Device: ${escape(DEVICES[state.device].name)}">${deviceIcon(state.device)}<span class="setup-device-copy"><strong>${DEVICES[state.device].name}</strong><span>${LANGUAGES[state.locale]}</span></span></button><button type="button" class="preparation-status" data-review-prerequisites aria-labelledby="preparation-state preparation-review-label" title="Review preparation">${icon('check')}<span id="preparation-state">Tools confirmed</span><span class="sr-only" id="preparation-review-label">Review preparation</span></button></div>
       <ul class="setup-icon-summary" role="list" aria-label="Your setup">${setupSummary(state).filter(choice=>choice.target!=='device').map(choice=>`<li><button class="setup-summary-icon" type="button" data-edit="${choice.target}" aria-label="Edit ${choice.label}: ${escape(choice.value)}"><span class="setup-feature-icon" aria-hidden="true">${icon(choice.icon)}</span><span class="setup-feature-label"><span class="setup-feature-kind">${choice.label}</span><strong>${escape(choice.value)}</strong></span></button></li>`).join('')}</ul>
+      ${usesRaspberryPiTuning(state.device)?'<p class="setup-tuning-note">Raspberry Pi tuning is included.</p>':''}
       <ol class="handoff-actions" data-prerequisite-required ${!prerequisiteGate.ready(state.device)?'hidden':''}>
         <li data-handoff-step="copy" ${prerequisiteGate.ready(state.device)?'aria-current="step"':''}><span class="handoff-number" aria-hidden="true"><span>1</span>${icon('check')}</span><div class="handoff-action-body">
           <button class="button install-copy" data-install-action ${previewOnly||!prerequisiteGate.ready(state.device)?'disabled':''}>${icon('copy')}<span>Copy install command</span></button><span class="code-expiry" data-code-expiry role="status" data-prerequisite-required></span>

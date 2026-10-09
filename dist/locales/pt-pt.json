@@ -928,5 +928,6 @@
   "Includes the screen interface.": "Inclui a interface de ecrã.",
   "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Motores locais: onnx-asr e phoonnx. O processamento de voz local usa um ambiente Python. Os modelos são transferidos durante a instalação. O desempenho varia conforme o dispositivo.",
   "View installation statistics": "Ver estatísticas de instalação",
-  "On": "Ativado"
+  "On": "Ativado",
+  "Raspberry Pi tuning is included.": "Os ajustes de desempenho para Raspberry Pi estão incluídos."
 }

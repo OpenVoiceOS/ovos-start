@@ -1,8 +1,8 @@
-Last Edit: Codex - 2026-10-09 - Motive: Document the branded installer download origin and unchanged tracking API.
+Last Edit: Codex - 2026-10-09 - Motive: Pin the launcher with Raspberry Pi tuning enabled for Pi-based devices.
 
 # One-hour installation links
 
-Launcher 2.5.0 is pinned to immutable commit `40f9fec86e96809ff5a18f08ec156536de84a455`. It fetches `ovos-installer/main` for every device and speech choice, verifies the fetched commit and stops if that fetch fails. The launcher pin does not freeze the installer branch. Its automatically uploaded failure-report URL is delivered with the failure event; [report recovery](install-progress.md) documents the UI and privacy boundary.
+Launcher 2.6.0 is pinned to immutable commit `09638d68820a4bfafd3ffb9f38b219e2d7007bd1`. It fetches `ovos-installer/main` for every device and speech choice, verifies the fetched commit and stops if that fetch fails. The launcher pin does not freeze the installer branch. Its automatically uploaded failure-report URL is delivered with the failure event; [report recovery](install-progress.md) documents the UI and privacy boundary.
 
 ## Manual recovery after clipboard failure (0.54.1)
 

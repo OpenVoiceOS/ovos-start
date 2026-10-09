@@ -1,4 +1,8 @@
-Last Edit: Codex - 2026-10-09 - Motive: Match Mac support and preparation gates to installer main.
+Last Edit: Codex - 2026-10-09 - Motive: Enable Raspberry Pi tuning for Pi-based devices.
+
+## Raspberry Pi tuning
+
+[`usesRaspberryPiTuning`](../dist/scenario.mjs) enables `raspberry_pi_tuning` for Raspberry Pi, Mark I, Mark II and DevKit. [`buildYaml`](../dist/scenario.mjs) and the [launcher](https://github.com/OpenVoiceOS/ovos-start-launcher) derive it from the selected device, including restored setup links. Other devices leave it off. [`resultView`](../dist/app.mjs) shows “Raspberry Pi tuning is included.” above the copy action for those four targets. [Scenario](../test/scenario.test.mjs), [view](../test/views.test.mjs) and [launcher parity](../test/short-setup.test.mjs) tests cover the setting and device changes.
 
 ## Shared behavior across all hardware
 
@@ -141,7 +145,7 @@ Choose the actual target hardware and OS. [`acceptDevice`](../dist/app.mjs) vali
 
 All routes require a supported 64-bit target OS. The launcher checks userland, identity and the Linux/macOS platform before installer execution. The installer then checks accepted distribution IDs, package requirements and applicable hardware restrictions; it does not universally validate the documented distro version floors. Manual browser choices are never described as measured capabilities. No diagnostic-copy/paste or JSON workflow is required. Windows uses Ubuntu/WSL2 with systemd and working microphone/speaker forwarding; Mac requires native Apple Silicon, macOS 15 or later, Homebrew, Bash 4+ and Xcode Command Line Tools.
 
-[`LAUNCHER_URL`](../dist/short-setup.mjs) pins public launcher 2.5.0 at immutable commit `40f9fec86e96809ff5a18f08ec156536de84a455`. The launcher fetches `ovos-installer/main` for every platform and speech choice, then verifies and runs the fetched commit. It does not select an older Mac compatibility branch.
+[`LAUNCHER_URL`](../dist/short-setup.mjs) pins public launcher 2.6.0 at immutable commit `09638d68820a4bfafd3ffb9f38b219e2d7007bd1`. The launcher fetches `ovos-installer/main` for every platform and speech choice, then verifies and runs the fetched commit. It does not select an older Mac compatibility branch.
 
 The checked installer [macos_requirements function](https://github.com/OpenVoiceOS/ovos-installer/blob/f062c0abf8b28e2646078982aa9439d92ce74ae8/utils/common.sh#L1745) rejects new installs on Intel Macs, Rosetta terminals and macOS releases below 15. The wizard follows that supported route. [`PrerequisiteGate.selectDevice` and `supported`](../dist/prerequisites.mjs) revoke acceptance when known Mac processor choices change and block Intel/AVX2 recipes; [`validateLaunch`](../dist/short-setup.mjs) independently refuses their command and script exports. Saved choices still decode so they can be edited. Unknown processor recipes require the explicit Apple Silicon/macOS 15+ acknowledgement. The browser cannot inspect the target OS or Rosetta state; the installer verifies these on the target. No unsupported-Mac override is added by the wizard.
 

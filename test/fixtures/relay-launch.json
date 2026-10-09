@@ -1,9 +1,9 @@
 {
   "source": "server/relay/server/{launch,launch-errors}.mjs; reviewed 2026-10-09",
-  "launcher": "https://raw.githubusercontent.com/OpenVoiceOS/ovos-start-launcher/40f9fec86e96809ff5a18f08ec156536de84a455/v2.sh",
+  "launcher": "https://raw.githubusercontent.com/OpenVoiceOS/ovos-start-launcher/09638d68820a4bfafd3ffb9f38b219e2d7007bd1/v2.sh",
   "code": "4400-00G0-DD4X-406N",
   "writeToken": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-  "bootstrap": "(\nset -eu\nset +x\n# Read the entire pinned launcher before executing it.\novos=$(curl -qfsS --proto '=https' --connect-timeout 15 -m 120 'https://raw.githubusercontent.com/OpenVoiceOS/ovos-start-launcher/40f9fec86e96809ff5a18f08ec156536de84a455/v2.sh') || { printf '%s\\n' 'Could not download the installer. Please try again.' >&2; exit 1; }\n[ -n \"$ovos\" ] || { printf '%s\\n' 'The installer download was empty. Please try again.' >&2; exit 1; }\n# Keep interactive installer prompts on the terminal, not the download pipe.\n[ -r /dev/tty ] && ( : < /dev/tty ) 2>/dev/null || { printf '%s\\n' 'Open Terminal on your OVOS device and paste the command there.' >&2; exit 1; }\nexec sh -c \"$ovos\" -- '4400-00G0-DD4X-406N' --track 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' < /dev/tty\n)",
+  "bootstrap": "(\nset -eu\nset +x\n# Read the entire pinned launcher before executing it.\novos=$(curl -qfsS --proto '=https' --connect-timeout 15 -m 120 'https://raw.githubusercontent.com/OpenVoiceOS/ovos-start-launcher/09638d68820a4bfafd3ffb9f38b219e2d7007bd1/v2.sh') || { printf '%s\\n' 'Could not download the installer. Please try again.' >&2; exit 1; }\n[ -n \"$ovos\" ] || { printf '%s\\n' 'The installer download was empty. Please try again.' >&2; exit 1; }\n# Keep interactive installer prompts on the terminal, not the download pipe.\n[ -r /dev/tty ] && ( : < /dev/tty ) 2>/dev/null || { printf '%s\\n' 'Open Terminal on your OVOS device and paste the command there.' >&2; exit 1; }\nexec sh -c \"$ovos\" -- '4400-00G0-DD4X-406N' --track 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' < /dev/tty\n)",
   "messages": {
     "ca-es": [
       "Aquesta ordre no està disponible o ha caducat. Torna a l’assistent i copia’n una de nova.",

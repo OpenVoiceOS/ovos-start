@@ -32,6 +32,8 @@ export const PRESET_SCHEMA = Object.freeze({ type: 'object', properties: {
 export function allowedExperiences(device) { return device === 'server' ? ['hub'] : ['mark1', 'mark2', 'devkit'].includes(device) ? ['ready', 'tinker'] : ['ready', 'tinker', 'hub']; }
 /** Identify devices requiring the installer screen hardware override. @param {string} device @returns {boolean} */
 export function usesScreenHardware(device) { return ['mark2', 'devkit'].includes(device); }
+/** Include installer tuning for Raspberry Pi-based devices. @param {string} device @returns {boolean} */
+export function usesRaspberryPiTuning(device) { return ['pi', 'mark1', 'mark2', 'devkit'].includes(device); }
 /** Keep the wizard's enclosure presets on the verified Python install path. @param {string} device @returns {boolean} */
 export function usesVirtualenvPreset(device) { return ['mark1', 'mark2', 'devkit', 'mac', 'windows'].includes(device); }
 /** Identify presets constrained to the alpha release. @param {string} device @returns {boolean} */
@@ -69,7 +71,7 @@ export function validateState(state) {
 /** Produce the real installer scenario, with privacy and tuning explicit. @param {object} input @returns {string} */
 export function buildYaml(input) {
   const s = validateState(input);
-  return `# Created with OVOS Start · contract checked 2026-10-06\nuninstall: false\nmethod: ${s.method}\nchannel: ${s.channel}\nprofile: ${EXPERIENCES[s.experience].profile}\n${s.speech === 'auto' ? '' : 'speech_engine: ' + s.speech + '\n'}${usesScreenHardware(s.device) ? `hardware: ${s.device}\n` : ''}features:\n  skills: ${s.skills}\n  extra_skills: ${s.extraSkills}\n  gui: ${usesScreenHardware(s.device)}\n  homeassistant: ${s.homeassistant}\n  llm: ${s.llmMode !== 'off'}\nraspberry_pi_tuning: false\nshare_telemetry: ${s.telemetry}\nshare_usage_telemetry: false\n`;
+  return `# Created with OVOS Start · contract checked 2026-10-06\nuninstall: false\nmethod: ${s.method}\nchannel: ${s.channel}\nprofile: ${EXPERIENCES[s.experience].profile}\n${s.speech === 'auto' ? '' : 'speech_engine: ' + s.speech + '\n'}${usesScreenHardware(s.device) ? `hardware: ${s.device}\n` : ''}features:\n  skills: ${s.skills}\n  extra_skills: ${s.extraSkills}\n  gui: ${usesScreenHardware(s.device)}\n  homeassistant: ${s.homeassistant}\n  llm: ${s.llmMode !== 'off'}\nraspberry_pi_tuning: ${usesRaspberryPiTuning(s.device)}\nshare_telemetry: ${s.telemetry}\nshare_usage_telemetry: false\n`;
 }
 /** Serialize every non-secret recommendation choice into a versioned link. @param {object} input @returns {string} */
 export function encodePreset(input) {

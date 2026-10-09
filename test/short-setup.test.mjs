@@ -105,3 +105,16 @@ test('invalid or backward clocks fail closed instead of silently renewing a comm
   assert.throws(()=>readSetupSession(`#setup=${artifact.code}`,issuedAt-1));
   assert.throws(()=>buildShortCommand(artifact,issuedAt-1));
 });
+
+
+test('saved Intel Mac recipes remain editable but cannot produce commands or executable downloads',()=>{
+ for(const cpu of ['intel-mac','avx2']){
+  const state={...base,device:'mac',channel:'alpha',cpu};
+  const setup=issueSetup(state,issuedAt);
+  assert.equal(readSetupSession(`#setup=${setup.code}`,issuedAt).state.cpu,cpu);
+  assert.throws(()=>buildShortCommand(setup,issuedAt,token),/Apple Silicon.*macOS 15/);
+  assert.throws(()=>buildSetupScript(setup,issuedAt,token),/Apple Silicon.*macOS 15/);
+ }
+ const supported=issueSetup({...base,device:'mac',channel:'alpha',cpu:'arm64'},issuedAt);
+ assert.match(buildShortCommand(supported,issuedAt,token),/installer.openvoiceos.pt/);
+});

@@ -228,3 +228,31 @@ test('all locales contain contextual instructions for the mandatory preparation 
  const keys=['Before you install','Required tools','Choose the system installed on your OVOS device.','Other / I’m not sure','This device requires Debian 13. Install the supported image before continuing.','This Windows setup uses Ubuntu in WSL2. Prepare Ubuntu before continuing.','Check supported systems','This also updates your Arch system.','I’ve installed the required tools on this device.','Show install command','Review preparation','Select your system, install the tools, then confirm below.','Ask your device administrator to install these tools and enable sudo for your account.'];
  for(const locale of UI_LOCALES){const catalog=JSON.parse(readFileSync(new URL(`../dist/locales/${locale}.json`,import.meta.url),'utf8'));for(const key of keys)assert.ok(catalog[key],`${locale}: ${key}`);}
 });
+
+
+test('Mac acknowledgement includes the supported hardware and OS, and known Intel choices cannot unlock installation',()=>{
+ const gate=new PrerequisiteGate();
+ let html=prerequisitesView({device:'mac',cpu:'arm64'},gate);
+ assert.match(html,/Apple Silicon and macOS 15 or later are required/);
+ assert.match(html,/Open Terminal without Rosetta/);
+ assert.match(html,/My Mac uses Apple Silicon and macOS 15 or later; the required tools are installed/);
+ gate.confirm(true);assert.equal(gate.accept('mac'),true);
+ for(const cpu of ['intel-mac','avx2']){
+  html=prerequisitesView({device:'mac',cpu},gate);
+  assert.match(html,/This Mac is not supported/);
+  assert.doesNotMatch(html,/brew install bash|xcode-select --install/);
+  assert.match(html,/data-prerequisite-confirm\s+disabled/);
+  gate.confirm(true);assert.equal(gate.accept('mac'),false,cpu);
+  assert.equal(gate.ready('mac'),false,cpu);
+ }
+ html=prerequisitesView({device:'mac',cpu:'arm64'},gate);
+ assert.equal(gate.confirmed,false,'changing a Mac processor requires a fresh acknowledgement');
+ assert.doesNotMatch(html,/data-prerequisite-confirm\s+disabled/);
+ gate.confirm(true);assert.equal(gate.accept('mac'),true);
+ gate.selectDevice('mac','arm64');assert.equal(gate.ready('mac'),true,'same known hardware retains acknowledgement');
+ html=prerequisitesView({device:'mac',cpu:'unknown'},gate);
+ assert.equal(gate.confirmed,false,'unknown processor still requires the explicit supported-Mac acknowledgement');
+ assert.equal(gate.ready('mac'),false);assert.doesNotMatch(html,/This Mac is not supported/);
+ assert.match(html,/My Mac uses Apple Silicon and macOS 15 or later/);
+ gate.confirm(true);assert.equal(gate.accept('mac'),true);
+});

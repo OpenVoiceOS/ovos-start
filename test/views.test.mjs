@@ -283,3 +283,20 @@ test('readable summary keeps only enabled settings and has no progress connector
   assert.match(row,/<\/button><\/li><\/ul>$/);assert.match(row,/role="list" aria-label="Your setup"/);
  }
 });
+
+
+test('Mac guidance matches current main and changing an accepted recipe to Intel hides install actions',()=>{
+ const c=views();c.state={...scenario.selectDevice(scenario.DEFAULTS,'mac'),cpu:'arm64'};
+ c.setupSession=short.issueSetup(c.state);c.prerequisiteGate.selectDevice('mac','arm64');
+ assert.match(c.platformView(),/Apple Silicon · macOS 15\+/);
+ assert.doesNotMatch(c.platformView(),/Intel or Apple Silicon/);
+ assert.match(c.preparationView(),/Apple Silicon and macOS 15 or later/);
+ assert.match(c.preparationView(),/Open Terminal without Rosetta/);
+ assert.match(c.preparationView(),/blob\/main\/docs\/macos.md/);
+ acceptPreparation(c);assert.match(c.resultView(),/data-install-action/);
+ c.state={...c.state,cpu:'intel-mac'};c.setupSession=short.issueSetup(c.state);
+ const html=c.resultView();assert.doesNotMatch(html,/data-install-action|id="install-command"|data-download="script"/);
+ assert.match(html,/This Mac is not supported/);assert.match(html,/data-prerequisite-continue disabled/);
+ c.step='cpu';assert.match(c.capabilityView(),/Not supported by the installer/);
+ assert.doesNotMatch(c.capabilityView(),/We’ll suggest online speech for this Mac/);
+});

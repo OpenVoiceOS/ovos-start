@@ -10,7 +10,7 @@ export const PACKAGE_SYSTEMS=Object.freeze({
   suse:{label:'openSUSE',command:'sudo zypper refresh && sudo zypper install curl git sudo bash'},
 });
 export const DNF_CURL_CONFLICT_COMMAND='sudo dnf install git sudo bash';
-const SYSTEMS_GUIDE='https://github.com/OpenVoiceOS/ovos-installer/blob/6ffd465028bac299e5235d619819bfdc734af073/docs/supported-systems.md';
+const SYSTEMS_GUIDE='https://github.com/OpenVoiceOS/ovos-installer/blob/main/docs/supported-systems.md';
 
 /** Render selectable shell text with its own accessible clipboard action.
  * @param {string} id Stable, trusted field ID. @param {string} command Literal shell text.
@@ -24,15 +24,17 @@ export function commandBlock(id,command,preview=false){
 /** In-memory, two-action acknowledgement; links and drafts cannot assert readiness. */
 export class PrerequisiteGate {
   /** Start with no target, OS selection, acknowledgement or accepted handoff. */
-  constructor(){this.device=null;this.family='';this.confirmed=false;this.accepted=false;}
-  /** Reset when the target changes. @param {string} device Target ID. @returns {void} */
-  selectDevice(device){
+  constructor(){this.device=null;this.cpu='unknown';this.family='';this.confirmed=false;this.accepted=false;}
+  /** Reset when the target or known Mac processor changes. @param {string} device Target ID. @param {string} [cpu] Selected processor. @returns {void} */
+  selectDevice(device,cpu){
+    const nextCpu=cpu??(this.device===device?this.cpu:'unknown');
+    if(device==='mac'&&this.cpu!==nextCpu){this.cpu=nextCpu;this.confirm(false);}
     if(this.device===device){
       const fixed=fixedSystemFor(device);
       if(fixed&&this.family!==fixed){this.family=fixed;this.confirm(false);}
       return;
     }
-    this.device=device;this.family=device==='mac'?'mac':fixedSystemFor(device);this.confirm(false);
+    this.device=device;this.cpu=nextCpu;this.family=device==='mac'?'mac':fixedSystemFor(device);this.confirm(false);
   }
   /** Changing instructions invalidates both actions. @param {string} family OS family. @returns {void} */
   selectFamily(family){
@@ -42,7 +44,7 @@ export class PrerequisiteGate {
   /** Enforce installer-specific hardware requirements without assuming the OS. @returns {boolean} */
   supported(){
     if(!this.device)return false;
-    if(this.device==='mac')return this.family==='mac';
+    if(this.device==='mac')return this.family==='mac'&&['arm64','unknown'].includes(this.cpu);
     return Object.hasOwn(distributionsFor(this.device),this.family);
   }
   /** Resolve the selected system's package command only when supported. @returns {string} */
@@ -88,14 +90,14 @@ function distributionPicker(state,gate){
 
 /** Dedicated required preparation screen. @param {object} state Recipe. @param {PrerequisiteGate} gate Local acknowledgement. @param {boolean} preview Disable executable copying. @returns {string} */
 export function prerequisitesView(state,gate,preview=false){
-  gate.selectDevice(state.device);
+  gate.selectDevice(state.device,state.cpu);
   const mac=state.device==='mac',fixed=fixedSystemFor(state.device),restricted=['mark1','mark2','devkit'].includes(state.device),wsl=state.device==='windows',command=gate.command();
   return `<section class="prerequisite-panel" aria-labelledby="prerequisite-title"><h2 id="prerequisite-title">${mac?'Required tools':'Linux system'}</h2>
-    ${mac?`<p>On your Mac, install Xcode Command Line Tools, Homebrew and Bash 4 or newer first.</p><ol class="mac-prerequisites"><li>${commandBlock('xcode-command','xcode-select --install',preview)}</li><li><a href="https://brew.sh/" target="_blank" rel="noopener noreferrer">Homebrew</a><p>Finish Homebrew’s “Next steps” in Terminal, then install Bash.</p></li><li>${commandBlock('brew-command','brew install bash',preview)}</li></ol><a class="text-button" href="${preparationFor(state).url}" target="_blank" rel="noopener noreferrer">Open the Mac preparation guide</a>`:`${fixed?'':'<p class="system-matrix-note">Use a supported 64-bit system. Versions are shown below.</p>'}${distributionPicker(state,gate)}${fixed?`<a class="fixed-system-help" href="${preparationFor(state).url}" target="_blank" rel="noopener noreferrer">I need help getting it ready</a>`:''}
+    ${mac?`<p class="preparation-requirement">${gate.supported()?'Apple Silicon and macOS 15 or later are required.':'This Mac is not supported. Choose an Apple Silicon Mac with macOS 15 or later.'}</p>${gate.supported()?`<p>Open Terminal without Rosetta.</p><p>On your Mac, install Xcode Command Line Tools, Homebrew and Bash 4 or newer first.</p><ol class="mac-prerequisites"><li>${commandBlock('xcode-command','xcode-select --install',preview)}</li><li><a href="https://brew.sh/" target="_blank" rel="noopener noreferrer">Homebrew</a><p>Finish Homebrew’s “Next steps” in Terminal, then install Bash.</p></li><li>${commandBlock('brew-command','brew install bash',preview)}</li></ol>`:''}<a class="text-button" href="${preparationFor(state).url}" target="_blank" rel="noopener noreferrer">Open the Mac preparation guide</a>`:`${fixed?'':'<p class="system-matrix-note">Use a supported 64-bit system. Versions are shown below.</p>'}${distributionPicker(state,gate)}${fixed?`<a class="fixed-system-help" href="${preparationFor(state).url}" target="_blank" rel="noopener noreferrer">I need help getting it ready</a>`:''}
     ${!gate.supported()?`<div class="prerequisite-system-help">${restricted?'<p>This device requires Debian 13. Install the supported image before continuing.</p>':wsl?'<p>This Windows setup uses Ubuntu in WSL2. Prepare Ubuntu before continuing.</p>':''}${gate.family==='unknown'?`<p>Not sure? Check the system name on your OVOS device:</p>${commandBlock('system-command','cat /etc/os-release',preview)}<a class="text-button" href="${restricted||wsl?preparationFor(state).url:SYSTEMS_GUIDE}" target="_blank" rel="noopener noreferrer">${restricted||wsl?'I need help getting it ready':'Check supported systems'}${icon('arrow')}</a>`:''}</div>`:''}
     ${command?`<div class="prerequisite-command"><p>${wsl?'On Windows, run this in Ubuntu (WSL2), not PowerShell.':'Run this on your OVOS device, then wait for it to finish.'}</p>${commandBlock('prerequisite-command',command,preview)}${DISTRIBUTIONS[gate.family]?.family==='arch'?'<p class="details-note">This also updates your Arch system.</p>':''}${DISTRIBUTIONS[gate.family]?.family==='fedora'?`<details class="prerequisite-help"><summary>Need help?</summary><h3>A curl-minimal conflict?</h3><p>If DNF reports that curl-minimal is already installed and conflicts with curl, keep it and run this instead:</p>${commandBlock('dnf-conflict-command',DNF_CURL_CONFLICT_COMMAND,preview)}<a href="https://matrix.to/#/#openvoiceos:matrix.org" target="_blank" rel="noopener noreferrer">Command didn’t work? Get help</a></details>`:'<a class="prerequisite-help-link" href="https://matrix.to/#/#openvoiceos:matrix.org" target="_blank" rel="noopener noreferrer">Need help?</a>'}</div>`:''}`}
     ${!mac&&!gate.supported()&&gate.family!=='unknown'?`<a class="matrix-guide" href="${SYSTEMS_GUIDE}" target="_blank" rel="noopener noreferrer">Your version isn’t listed? Check supported systems.</a>`:''}
-    <div class="prerequisite-ack"><label class="prerequisite-confirm"><span class="prerequisite-checkbox"><input type="checkbox" data-prerequisite-confirm ${gate.confirmed?'checked':''} ${!gate.supported()?'disabled':''}><span class="prerequisite-check" aria-hidden="true">${icon('check')}</span></span><span>The required tools are installed.</span></label></div>
+    <div class="prerequisite-ack"><label class="prerequisite-confirm"><span class="prerequisite-checkbox"><input type="checkbox" data-prerequisite-confirm ${gate.confirmed?'checked':''} ${!gate.supported()?'disabled':''}><span class="prerequisite-check" aria-hidden="true">${icon('check')}</span></span><span>${mac?'My Mac uses Apple Silicon and macOS 15 or later; the required tools are installed.':'The required tools are installed.'}</span></label></div>
     <button type="button" class="button prerequisite-continue" data-prerequisite-continue ${gate.canContinue(state.device)?'':'disabled'}><span>Show install command</span>${icon('arrow')}</button>
   </section>`;
 }

@@ -2,8 +2,9 @@ import { encodeRecipeCode, decodeRecipeCode, decodeRecipeEnvelope, RECIPE_TTL_SE
 import { validateState, decodePreset } from './scenario.mjs';
 
 /** Public launcher validates the code's one-hour start deadline on the target. */
-export const LAUNCHER_URL = 'https://raw.githubusercontent.com/OpenVoiceOS/ovos-start-launcher/c2e81097a0dcd33f9dc6747c969466e1cc2c9cbb/v2.sh';
-export const INSTALL_LINK_ORIGIN = 'https://start-api.smartgic.io';
+export const LAUNCHER_URL = 'https://raw.githubusercontent.com/OpenVoiceOS/ovos-start-launcher/40f9fec86e96809ff5a18f08ec156536de84a455/v2.sh';
+/** Branded download alias; browser progress and launcher callbacks keep their API origin. */
+export const INSTALL_LINK_ORIGIN = 'https://installer.openvoiceos.pt';
 
 /** Issue one immutable command artifact shared by display, copy, links and downloads.
  * @param {object} state Recipe choices. @param {number} now Unix seconds.
@@ -42,7 +43,8 @@ export function setupStatus(setup,now=Math.floor(Date.now()/1000)) {
  */
 function validateLaunch(setup,now,launchToken) {
   if(!setup?.code)throw new RangeError('Copy a new command from OVOS Start.');
-  validateState(decodeRecipeCode(setup.code,{now}));
+  const state=validateState(decodeRecipeCode(setup.code,{now}));
+  if(state.device==='mac'&&!['arm64','unknown'].includes(state.cpu))throw new RangeError('This Mac is not supported. Choose an Apple Silicon Mac with macOS 15 or later.');
   if(typeof launchToken!=='string'||launchToken.length!==22||!/^[A-Za-z0-9_-]{22}$/.test(launchToken))throw new TypeError('Could not prepare your install command. Please try again.');
 }
 

@@ -917,5 +917,13 @@
   "Try asking": "ये सवाल पूछकर देखें",
   "After your voice check": "आवाज़ की जाँच के बाद",
   "Say “Hey Mycroft”": "“Hey Mycroft” कहें",
-  "Wait for the listening sound, then ask.": "सुनने का संकेत बजने दें, फिर पूछें।"
+  "Wait for the listening sound, then ask.": "सुनने का संकेत बजने दें, फिर पूछें।",
+  "Apple Silicon · macOS 15+": "Apple Silicon · macOS 15+",
+  "Apple Silicon and macOS 15 or later are required.": "Apple Silicon और macOS 15 या उसके बाद का संस्करण चाहिए।",
+  "Open Terminal without Rosetta.": "Rosetta के बिना Terminal खोलें।",
+  "This Mac is not supported. Choose an Apple Silicon Mac with macOS 15 or later.": "यह Mac समर्थित नहीं है। Apple Silicon और macOS 15 या उसके बाद के संस्करण वाला Mac चुनें।",
+  "My Mac uses Apple Silicon and macOS 15 or later; the required tools are installed.": "मेरे Mac में Apple Silicon और macOS 15 या उसके बाद का संस्करण है; ज़रूरी टूल इंस्टॉल हैं।",
+  "Not supported by the installer.": "इंस्टॉलर इसे सपोर्ट नहीं करता।",
+  "Check Apple menu → About This Mac before continuing.": "आगे बढ़ने से पहले Apple मेन्यू → About This Mac देखें।",
+  "The installer uses the latest main branch.": "इंस्टॉलर main ब्रांच का सबसे नया संस्करण इस्तेमाल करता है।"
 }

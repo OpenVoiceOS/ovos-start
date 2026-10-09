@@ -73,6 +73,6 @@ test('malformed, ambiguous, prototype and injection choices fail closed', () => 
 
 test('every target states the universal 64-bit requirement, independent of speech',()=>{
   for(const device of Object.keys(DEVICES)) {
-    assert.match(compatibility({...DEFAULTS,device}),/64-bit/);
+    assert.match(compatibility({...DEFAULTS,device}),device==='mac'?/Apple Silicon and macOS 15/:/64-bit/);
   }
 });

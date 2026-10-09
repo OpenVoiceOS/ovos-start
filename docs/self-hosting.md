@@ -1,10 +1,10 @@
-Last Edit: Codex - 2026-10-08 - Motive: Document the standalone Node and SQLite API.
+Last Edit: Codex - 2026-10-09 - Motive: Record the validated branded installer hostname and its DNS TTL.
 
 # Host the wizard API
 
 The frontend can use static hosting. The API runs one Node 24 LTS process with a private SQLite database; it does not need Docker or npm packages at runtime. Installation still happens on the user's device.
 
-Run `node server/node-server.mjs` from the repository root. The listener binds to `127.0.0.1:8787`; publish it through an HTTPS reverse proxy or Cloudflare Tunnel. The deployment hostname is `https://start-api.smartgic.io`. Debian 13's standard Node package is version 20, so install a maintained Node 24 runtime separately.
+Run `node server/node-server.mjs` from the repository root. The listener binds to `127.0.0.1:8787`; publish it through an HTTPS reverse proxy or Cloudflare Tunnel. The progress API hostname is `https://start-api.smartgic.io`. Copied commands and downloaded setup scripts use `https://installer.openvoiceos.pt`, an HTTPS alias to the same service and database. Debian 13's standard Node package is version 20, so install a maintained Node 24 runtime separately.
 
 Configure these values in a private service environment file, never in frontend assets:
 
@@ -46,7 +46,11 @@ Only a loopback proxy may provide `CF-Connecting-IP`, and that header affects th
 
 ## Migration and verification
 
-The current relay pins a launcher revision that reports to `start-api.smartgic.io`. For future hostname changes, publish a matching launcher revision and update the pin in [`launch.mjs`](../server/relay/server/launch.mjs). Otherwise the command and progress will use different databases. Keep the previous relay available for outstanding installs through their 24-hour reporting window. Existing databases are not imported automatically.
+The install-download origin and progress origin are independent. [`INSTALL_LINK_ORIGIN`](../dist/short-setup.mjs) uses `https://installer.openvoiceos.pt` only for copied commands and downloaded setup scripts. [`INSTALL_API_URL`](../dist/install-progress.mjs), the launcher's callback URL and `PUBLIC_ORIGIN` remain on `https://start-api.smartgic.io`. Both hostnames must reach this same service and SQLite database. The download alias needs no browser CORS or CSP allowance because curl, not the browser, fetches it.
+
+Provision routing and a valid HTTPS certificate for the alias before publishing it in the wizard. A DNS CNAME alone does not provide a certificate for the alias. Check `/healthz` and a freshly issued `/s/<capability>` through both hostnames: each download must return the same bootstrap without redirecting.
+
+If the progress API itself moves, update `PUBLIC_ORIGIN`, the browser URL/CSP and the launcher's callback URL together, then publish a matching launcher revision and update the pin in [`launch.mjs`](../server/relay/server/launch.mjs). Keep the previous relay available for outstanding installs through their 24-hour reporting window. Existing databases are not imported automatically.
 
 Use `node --test test/node-api*.test.mjs` for ownership isolation, CORS, payload limits, callbacks, persistent state, transactional migrations and real HTTP requests, plus the preserved relay regressions. [`createHttpServer`](../server/node-server.mjs) supplies the listener limits; [`createApi`](../server/node-api.mjs) supplies authentication and throttling. Verify public HTTPS, `/healthz`, a simulated install callback and persistence across a service restart before switching the frontend.
 
@@ -60,5 +64,6 @@ GitHub Pages publishes the frontend from the `dev` branch of `OpenVoiceOS/ovos-s
 | --- | --- | --- |
 | CNAME `start.openvoiceos.pt` | `openvoiceos.github.io` | TTL 300, DNS only |
 | CNAME `start-api.smartgic.io` | `961cc898-6447-4079-adff-0bc3e74386e1.cfargotunnel.com` | Cloudflare proxied, automatic TTL |
+| CNAME `installer.openvoiceos.pt` | `start-api.smartgic.io` | TTL 3600; Cloudflare custom hostname with validated HTTPS |
 
-The `ovos-start-api` tunnel runs as `cloudflared-ovos-start.service` on `agh01.home.lan`. It forwards only the API hostname to `http://127.0.0.1:8787`, with a final 404 rule for every other hostname. The existing tunnel service has separate configuration and credentials.
+The `ovos-start-api` tunnel runs as `cloudflared-ovos-start.service` on `agh01.home.lan`. It forwards approved hostnames to `http://127.0.0.1:8787`, with a final 404 rule for every other hostname. The branded download alias must route to this same origin after its HTTPS certificate is validated. The existing tunnel service has separate configuration and credentials.

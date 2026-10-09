@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createBrowserCredential,InstallTracker,INSTALL_API_URL} from '../dist/install-progress.mjs';
-import {INSTALL_LINK_ORIGIN,issueSetup,buildShortCommand} from '../dist/short-setup.mjs';
+import {INSTALL_LINK_ORIGIN,issueSetup,buildShortCommand,buildSetupScript} from '../dist/short-setup.mjs';
 import {DEFAULTS} from '../dist/scenario.mjs';
 
 /** Small browser storage fixture, isolated from the developer's real browser.
@@ -29,7 +29,6 @@ test('a random browser owner survives reloads and is never encoded in the recipe
   const setup=issueSetup({...DEFAULTS,device:'computer'},1800000000);
   assert.ok(!JSON.stringify(setup).includes(first));
   assert.ok(!buildShortCommand(setup,1800000000,session.launchToken).includes(first));
-  assert.equal(INSTALL_API_URL,INSTALL_LINK_ORIGIN+'/api/install');
 });
 
 test('invalid saved values are replaced with fresh cryptographic credentials',()=>{
@@ -81,4 +80,16 @@ test('missing secure randomness or invalid browser credentials fail before sendi
     assert.equal(await tracker.connect('current-recipe'),null);
     assert.equal(tracker.snapshot().error,'unavailable');
   }
+});
+
+test('copied and downloaded commands use the branded alias while browser tracking stays on the API origin',()=>{
+  const issuedAt=1800000000;
+  const setup=issueSetup({...DEFAULTS,device:'computer'},issuedAt);
+  const command=buildShortCommand(setup,issuedAt,session.launchToken);
+  const download=buildSetupScript(setup,issuedAt,session.launchToken);
+  assert.equal(INSTALL_LINK_ORIGIN,'https://installer.openvoiceos.pt');
+  assert.equal(command,`curl -qfsS -m120 https://installer.openvoiceos.pt/s/${session.launchToken} | sh`);
+  assert.ok(download.includes(`'https://installer.openvoiceos.pt/s/${session.launchToken}'`));
+  assert.ok(!command.includes('start-api.smartgic.io')&&!download.includes('start-api.smartgic.io'));
+  assert.equal(INSTALL_API_URL,'https://start-api.smartgic.io/api/install');
 });

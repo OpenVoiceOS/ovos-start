@@ -917,5 +917,13 @@
   "Try asking": "Saiatu galdetzen",
   "After your voice check": "Ahots-probaren ondoren",
   "Say “Hey Mycroft”": "Esan «Hey Mycroft»",
-  "Wait for the listening sound, then ask.": "Itxaron entzuteko seinaleari, eta galdetu."
+  "Wait for the listening sound, then ask.": "Itxaron entzuteko seinaleari, eta galdetu.",
+  "Apple Silicon · macOS 15+": "Apple Silicon · macOS 15+",
+  "Apple Silicon and macOS 15 or later are required.": "Apple Silicon eta macOS 15 edo berriagoa behar dira.",
+  "Open Terminal without Rosetta.": "Ireki Terminal Rosetta gabe.",
+  "This Mac is not supported. Choose an Apple Silicon Mac with macOS 15 or later.": "Mac hau ez da onartzen. Aukeratu Apple Silicon eta macOS 15 edo berriagoa dituen Mac bat.",
+  "My Mac uses Apple Silicon and macOS 15 or later; the required tools are installed.": "Nire Mac-ak Apple Silicon eta macOS 15 edo berriagoa ditu; beharrezko tresnak instalatuta daude.",
+  "Not supported by the installer.": "Instalatzaileak ez du onartzen.",
+  "Check Apple menu → About This Mac before continuing.": "Jarraitu aurretik, begiratu Apple menua → Mac honi buruz.",
+  "The installer uses the latest main branch.": "Instalatzaileak main adarraren azken bertsioa erabiltzen du."
 }

@@ -143,3 +143,19 @@ test('prerequisite option labels translate explicitly without changing OS values
   assert.equal(literal.childNodes[0].textContent,'Continue');applyTranslations(root,'en-us');assert.equal(unknown.childNodes[0].textContent,'Other / I’m not sure');
  }finally{globalThis.fetch=originalFetch;}
 });
+
+
+test('Mac support and explicit acknowledgement are translated consistently in every locale',()=>{
+ const messages=['Apple Silicon · macOS 15+','Apple Silicon and macOS 15 or later are required.',
+  'Open Terminal without Rosetta.','This Mac is not supported. Choose an Apple Silicon Mac with macOS 15 or later.',
+  'My Mac uses Apple Silicon and macOS 15 or later; the required tools are installed.',
+  'Not supported by the installer.','Check Apple menu → About This Mac before continuing.','The installer uses the latest main branch.'];
+ for(const locale of UI_LOCALES){
+  const catalog=read(locale);
+  for(const key of messages){
+   assert.ok(Object.hasOwn(catalog,key),`${locale}: ${key}`);
+   assert.equal(translateMessage(key,catalog),catalog[key]);
+   if(key.includes('macOS 15'))assert.ok(catalog[key].includes('15'),locale);
+  }
+ }
+});

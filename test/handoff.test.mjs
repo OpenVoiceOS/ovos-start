@@ -30,7 +30,7 @@ test('every handoff retains 64-bit prerequisites and sends Windows users to Ubun
   for(const device of Object.keys(DEVICES)){
     const state=Object.freeze(selectDevice(DEFAULTS,device));
     const before=encodePreset(state),notes=installHandoff(state);
-    assert.match(notes.requirement,/64-bit/);
+    assert.match(notes.requirement,device==='mac'?/Apple Silicon and macOS 15/:/64-bit/);
     assert.equal(encodePreset(state),before);
     if(device==='windows'){
       assert.equal(notes.terminal,'Ubuntu terminal in WSL2');

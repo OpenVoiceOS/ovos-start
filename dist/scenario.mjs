@@ -7,7 +7,7 @@ export const DEVICES = Object.freeze({
   devkit: { name: 'Mycroft DevKit', short: 'Mycroft DevKit', detail: 'Pi 4 · 64-bit Debian 13' },
   jetson: { name: 'Jetson Orin Nano', short: 'Jetson Orin Nano', detail: 'Supported Ubuntu Linux' },
   server: { name: 'Home server', short: 'Home server', icon: 'server', desc: 'One brain. Room to grow.', detail: 'A hub for your future satellites' },
-  mac: { name: 'Mac', short: 'Mac', routeOnly: true, detail: 'Intel or Apple Silicon · macOS' },
+  mac: { name: 'Mac', short: 'Mac', routeOnly: true, detail: 'Apple Silicon · macOS 15+' },
   windows: { name: 'Windows PC', short: 'Windows PC (Ubuntu / WSL2)', routeOnly: true, detail: 'Ubuntu terminal in WSL2' },
   other: { name: 'Other Linux device', short: 'Linux device', routeOnly: true, detail: 'Supported Linux system confirmed' },
 });
@@ -93,7 +93,7 @@ export function decodePreset(fragment) {
 }
 /** Describe device and profile prerequisites without inferring the visitor's hardware. @param {object} state @returns {string} */
 export function compatibility(state) {
-  if (state.device === 'mac') return '64-bit macOS on Intel or Apple Silicon. Install Homebrew, Bash 4+ and Xcode Command Line Tools first. Allow your terminal microphone access for voice. Uses virtualenv and alpha; no GUI.';
+  if (state.device === 'mac') return 'Apple Silicon and macOS 15 or later are required. Install Homebrew, Bash 4+ and Xcode Command Line Tools first. Allow your terminal microphone access for voice. Uses virtualenv and alpha; no GUI.';
   if (state.device === 'windows') return 'Run inside a 64-bit Ubuntu system on WSL2, with systemd=true under [boot] in /etc/wsl.conf. For voice, WSLg must provide working microphone and audio forwarding. This is not a PowerShell command.';
   if (state.device === 'other') return 'Use a supported 64-bit Linux distribution. A virtual machine needs audio and microphone access inside the guest for voice. Unlisted operating systems are not assumed compatible.';
   if (usesScreenHardware(state.device)) return `${DEVICES[state.device].short} needs 64-bit Debian 13 (Trixie) on its Raspberry Pi 4. This preset uses alpha and includes the screen interface. It does not flash your SD card.`;

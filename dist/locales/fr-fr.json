@@ -917,5 +917,13 @@
   "Try asking": "Demandez par exemple",
   "After your voice check": "Après le test vocal",
   "Say “Hey Mycroft”": "Dites « Hey Mycroft »",
-  "Wait for the listening sound, then ask.": "Attendez le signal d’écoute, puis demandez."
+  "Wait for the listening sound, then ask.": "Attendez le signal d’écoute, puis demandez.",
+  "Apple Silicon · macOS 15+": "Apple Silicon · macOS 15+",
+  "Apple Silicon and macOS 15 or later are required.": "Une puce Apple Silicon et macOS 15 ou version ultérieure sont nécessaires.",
+  "Open Terminal without Rosetta.": "Ouvrez Terminal sans Rosetta.",
+  "This Mac is not supported. Choose an Apple Silicon Mac with macOS 15 or later.": "Ce Mac n’est pas pris en charge. Choisissez un Mac avec une puce Apple Silicon et macOS 15 ou version ultérieure.",
+  "My Mac uses Apple Silicon and macOS 15 or later; the required tools are installed.": "Mon Mac dispose d’une puce Apple Silicon et de macOS 15 ou version ultérieure ; les outils nécessaires sont installés.",
+  "Not supported by the installer.": "Non pris en charge par l’installeur.",
+  "Check Apple menu → About This Mac before continuing.": "Consultez le menu Apple → À propos de ce Mac avant de continuer.",
+  "The installer uses the latest main branch.": "L’installeur utilise la dernière version de la branche main."
 }

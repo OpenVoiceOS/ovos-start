@@ -917,5 +917,13 @@
   "Try asking": "Ɛreḍ ad testeqsi",
   "After your voice check": "Seld usenqed n taɣect-ik",
   "Say “Hey Mycroft”": "Ini «Hey Mycroft»",
-  "Wait for the listening sound, then ask.": "Ṛǧu imesli n ulɣu, sakin steqsi."
+  "Wait for the listening sound, then ask.": "Ṛǧu imesli n ulɣu, sakin steqsi.",
+  "Apple Silicon · macOS 15+": "Apple Silicon · macOS 15+",
+  "Apple Silicon and macOS 15 or later are required.": "Yessefk Apple Silicon d macOS 15 neɣ ugar.",
+  "Open Terminal without Rosetta.": "Ldi Terminal war Rosetta.",
+  "This Mac is not supported. Choose an Apple Silicon Mac with macOS 15 or later.": "Mac-a ur yettusefrak ara. Fren Mac s Apple Silicon d macOS 15 neɣ ugar.",
+  "My Mac uses Apple Silicon and macOS 15 or later; the required tools are installed.": "Mac-iw yesɛa Apple Silicon d macOS 15 neɣ ugar; ifecka ilaqen ttusbedden.",
+  "Not supported by the installer.": "Ur yettusefrak ara sɣur umsebdad.",
+  "Check Apple menu → About This Mac before continuing.": "Wali umuɣ Apple → About This Mac send ad tkemmleḍ.",
+  "The installer uses the latest main branch.": "Amsebdad iseqdac lqem aneggaru n tseṭṭa main."
 }

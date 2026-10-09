@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-08 - Motive: Fix links after moving repositories to OpenVoiceOS.
+Last Edit: Codex - 2026-10-09 - Motive: Document installer main and supported native Apple Silicon Macs.
 
 # Adaptive setup contract
 
@@ -18,11 +18,11 @@ Device details precede speech choices through [`firstCapability` / `afterCapabil
 
 ## Speech evidence and limits
 
-Working reference: open [ovos-installer PR #648](https://github.com/OpenVoiceOS/ovos-installer/pull/648), reviewed/pinned commit `6ffd465028bac299e5235d619819bfdc734af073`. Main `cb6b10bdc6feee191d6ed3e58aaa96c854f8c2b1` does not recognize `speech_engine`. Explicit public/local choices use the preview; current-installer defaults omit this field.
+All routes use [ovos-installer main](https://github.com/OpenVoiceOS/ovos-installer/tree/main). Main was checked at `f062c0abf8b28e2646078982aa9439d92ce74ae8` on 2026-10-09. Explicit public/local choices set `speech_engine`; installer-default recipes omit this field. The public launcher is pinned separately by immutable commit.
 
-The preview couples STT and TTS under `speech_engine: local|public`. It supports local speech on alpha + virtualenv audio profiles, at least 7680 MiB usable RAM, and AVX2 x86-64 or NEON ARM64. Pi requires 5 / 500 / Compute Module 5; older Pi and Mycroft enclosures are excluded. Native Mac requires Apple Silicon for local speech. Hindi/Kabyle currently stay public in the available language list. Unknown CPU/RAM stays public until confirmed.
+The installer couples STT and TTS under `speech_engine: local|public`. It supports local speech on alpha + virtualenv audio profiles, at least 7680 MiB usable RAM, and AVX2 x86-64 or NEON ARM64. Pi requires 5 / 500 / Compute Module 5; older Pi and Mycroft enclosures are excluded. Every native Mac route requires Apple Silicon and macOS 15 or later; Terminal must run without Rosetta. Hindi/Kabyle currently stay public in the available language list. Unknown CPU/RAM stays public until confirmed.
 
-Sources: [`utils/speech.sh`](https://github.com/OpenVoiceOS/ovos-installer/blob/6ffd465028bac299e5235d619819bfdc734af073/utils/speech.sh#L42), [`utils/scenario.sh`](https://github.com/OpenVoiceOS/ovos-installer/blob/6ffd465028bac299e5235d619819bfdc734af073/utils/scenario.sh#L163), [speech configuration role](https://github.com/OpenVoiceOS/ovos-installer/blob/6ffd465028bac299e5235d619819bfdc734af073/ansible/roles/ovos_config/tasks/speech.yml#L9).
+Sources: [`utils/speech.sh`](https://github.com/OpenVoiceOS/ovos-installer/blob/main/utils/speech.sh#L42), [`utils/scenario.sh`](https://github.com/OpenVoiceOS/ovos-installer/blob/main/utils/scenario.sh#L163), [speech configuration role](https://github.com/OpenVoiceOS/ovos-installer/blob/main/ansible/roles/ovos_config/tasks/speech.yml#L9).
 
 Local uses onnx-asr + phoonnx with models chosen by the installed configuration. **Public STT remains a fallback.** The UI keeps audio/text data sharing, internet needs and memory/model downloads visible in plain language. Technical/provider details and performance limits are in a disclosure. Target checks can override recommendations. Skill internet requests and online AI are independent of speech processing.
 
@@ -31,12 +31,12 @@ Local uses onnx-asr + phoonnx with models chosen by the installed configuration.
 | Target | Wizard handoff |
 | --- | --- |
 | Linux PC or supported board | Supported Linux terminal, microphone/speaker for voice |
-| macOS | Native Intel/Apple Silicon, Homebrew PATH, Bash 4+, Xcode command-line tools, microphone permission; virtualenv + alpha |
+| macOS | Native Apple Silicon, macOS 15+, no Rosetta, Homebrew PATH, Bash 4+, Xcode command-line tools, microphone permission; virtualenv + alpha |
 | Windows | Ubuntu in WSL2, explicit `[boot]` / `systemd=true`, WSLg audio for voice; command runs in Ubuntu |
 | Unlisted device | OS question; other Linux requires supported-system confirmation |
 | Unknown system | Compatibility resources, no invented installation command |
 
-See [ovos-installer: macOS](https://github.com/OpenVoiceOS/ovos-installer/blob/cb6b10bdc6feee191d6ed3e58aaa96c854f8c2b1/docs/macos.md), [supported systems](https://github.com/OpenVoiceOS/ovos-installer/blob/cb6b10bdc6feee191d6ed3e58aaa96c854f8c2b1/docs/supported-systems.md), [Microsoft WSL install](https://learn.microsoft.com/en-us/windows/wsl/install) and [systemd](https://learn.microsoft.com/en-us/windows/wsl/systemd). Virtualenv-only Windows is the wizard's scoped preset, not an upstream container prohibition.
+See [ovos-installer: macOS](https://github.com/OpenVoiceOS/ovos-installer/blob/main/docs/macos.md), [supported systems](https://github.com/OpenVoiceOS/ovos-installer/blob/main/docs/supported-systems.md), [Microsoft WSL install](https://learn.microsoft.com/en-us/windows/wsl/install) and [systemd](https://learn.microsoft.com/en-us/windows/wsl/systemd). Virtualenv-only Windows is the wizard's scoped preset, not an upstream container prohibition.
 
 ## Skills, Home Assistant and AI
 
@@ -44,22 +44,22 @@ Everyday skills map to the upstream essential/internet/audio bundles; server exc
 
 Home Assistant connects an existing server. AI fallback connects an existing OpenAI-compatible endpoint, local or online; it does not provision an LLM/Ollama. Smaller devices are directed to a model server on another capable computer. The headless `server` profile does not offer these integrations.
 
-Scenario mode skips upstream's full TUI, so feature flags alone would never collect missing credentials. The [canonical v2 launcher](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/launcher.sh.in) provides target-terminal code that prompts for URL/key/model, exports `HOMEASSISTANT_URL`, `HOMEASSISTANT_API_KEY`, `LLM_API_URL`, `LLM_API_KEY`, `LLM_MODEL` and explicit voice-friendly LLM defaults. No top-level LLM YAML section overrides that environment. See [ovos-installer: automation](https://github.com/OpenVoiceOS/ovos-installer/blob/cb6b10bdc6feee191d6ed3e58aaa96c854f8c2b1/docs/automation.md).
+Scenario mode skips upstream's full TUI, so feature flags alone would never collect missing credentials. The [canonical v2 launcher](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/launcher.sh.in) provides target-terminal code that prompts for URL/key/model, exports `HOMEASSISTANT_URL`, `HOMEASSISTANT_API_KEY`, `LLM_API_URL`, `LLM_API_KEY`, `LLM_MODEL` and explicit voice-friendly LLM defaults. No top-level LLM YAML section overrides that environment. See [ovos-installer: automation](https://github.com/OpenVoiceOS/ovos-installer/blob/main/docs/automation.md).
 
 Tokens are read as literal data with echo disabled before the prompt. They never enter browser state, URLs, generated YAML or command-line arguments. URLs/models also stay out of shared presets. Validation failures preserve the active scenario. The upstream installer necessarily receives/stores service configuration on the target device.
 
-## Preview launch and verification
+## Installer launch and verification
 
-The wrapper fetches the exact preview commit into a private temporary checkout and invokes its `setup.sh` through Bash 4+, carrying `RUN_AS` and `RUN_AS_HOME`. It does not run the preview bootstrap that would clone main. Privileged cleanup removes only the known temporary source subtree after setup exits. Existing scenario backups and checkout guards remain.
+The wrapper fetches `refs/heads/main` into a private temporary checkout, verifies the fetched commit and invokes its `setup.sh` through Bash 4+, carrying `RUN_AS` and `RUN_AS_HOME`. A fetch failure stops installation; it does not fall back to an older compatibility revision. Privileged cleanup removes only the known temporary source subtree after setup exits. Existing scenario backups and checkout guards remain.
 
 The canonical Python [`Sandbox` and launcher tests](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/test/test_launcher.py) exercise target preflight, private prompts and failure propagation using fake installers. No production Python class exists in the wizard.
 
-PR status was rechecked on 2026-10-07: #648 remains draft. Its head now contains changes beyond the wizard’s reviewed pin. This UI-only revision keeps the pinned contract unchanged; it does not claim to implement the latest head’s expanded language/container behavior.
+The wizard keeps its conservative alpha/virtualenv local-speech choices. Installer main may support additional combinations; this wizard does not expose every installer option. Current installer checks remain authoritative for actual device capability.
 
 ## Version 0.18: universal 64-bit prerequisite
 
-The wizard requires a 64-bit operating system for every install, independent of speech mode. The [canonical launcher preflight](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/launcher.sh.in#L27) checks `getconf LONG_BIT` before downloads, privilege escalation or configuration writes. Empty, 32-bit and failed probes stop. This is enforced by the wizard launcher: upstream [method handling](https://github.com/OpenVoiceOS/ovos-installer/blob/main/tui/methods.sh) still contains 32-bit virtualenv behavior, and the [pinned speech guard](https://github.com/OpenVoiceOS/ovos-installer/blob/6ffd465028bac299e5235d619819bfdc734af073/utils/speech.sh#L38-L52) applies its own 64-bit check to local speech.
+The wizard requires a 64-bit operating system for every install, independent of speech mode. The [canonical launcher preflight](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/launcher.sh.in#L27) checks `getconf LONG_BIT` before downloads, privilege escalation or configuration writes. Empty, 32-bit and failed probes stop. This is enforced by the wizard launcher: upstream [method handling](https://github.com/OpenVoiceOS/ovos-installer/blob/main/tui/methods.sh) still contains 32-bit virtualenv behavior, and the [installer speech guard](https://github.com/OpenVoiceOS/ovos-installer/blob/main/utils/speech.sh#L38-L52) applies its own 64-bit check to local speech.
 
-[`chooseCapability`](../dist/flow.mjs) derives ARM64 hardware capability from selected Pi/Jetson cards after memory is answered; it does not detect or assert the installed OS. Existing saved links remain conservative until their answers are revisited. [`afterCapability`](../dist/journey.mjs) skips the redundant board CPU question. Pi 3/4/400 are named explicitly instead of implying that every earlier Pi is supported. [`compatibility`](../dist/scenario.mjs) states 64-bit in every target handoff.
+[`chooseCapability`](../dist/flow.mjs) derives ARM64 hardware capability from selected Pi/Jetson cards after memory is answered; it does not detect or assert the installed OS. Existing saved links remain conservative until their answers are revisited. [`afterCapability`](../dist/journey.mjs) skips the redundant board CPU question. Pi 3/4/400 are named explicitly instead of implying that every earlier Pi is supported. [`compatibility`](../dist/scenario.mjs) states 64-bit for Linux and Windows targets and requires native Apple Silicon for Mac.
 
 The canonical Python [`Sandbox` and launcher tests](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/test/test_launcher.py) exercise target preflight, private prompts and failure propagation using fake installers. No production Python class exists in the wizard.

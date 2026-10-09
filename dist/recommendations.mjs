@@ -23,13 +23,13 @@ export function suggestLanguage(languages, supported) {
   return { locale: 'en-us', matched: false, exact: false };
 }
 
-/** Estimate PR 648 eligibility from provisional hardware choices; the target checks actual capabilities. @param {object} state @returns {object} */
+/** Estimate local-speech eligibility from provisional hardware choices; the target checks actual capabilities. @param {object} state @returns {object} */
 export function speechEligibility(state) {
   if (state.experience === 'hub') return { eligible: false, code: 'hub', reason: 'This headless hub does not listen or speak locally. Speech belongs on its room devices.' };
   if (['hi-in', 'kab-dz', 'pl-pl'].includes(state.locale)) return { eligible: false, code: 'language', reason: 'The preview has no local speech recommendation for this language yet.' };
   if (['mark1', 'mark2', 'devkit'].includes(state.device)) return { eligible: false, code: 'mycroft', reason: 'This Mycroft hardware is outside the preview’s local-speech requirements. Public services keep processing off the device.' };
   if (state.device === 'pi' && state.piModel !== 'pi5') return { eligible: false, code: 'pi', reason: 'Local speech requires a Pi 5, Pi 500 or Compute Module 5; older or unconfirmed Pi models use public services.' };
-  if (state.device === 'mac' && state.cpu !== 'arm64') return { eligible: false, code: 'mac', reason: 'The preview supports local speech on Apple Silicon Macs, but not Intel Macs.' };
+  if (state.device === 'mac' && state.cpu !== 'arm64') return { eligible: false, code: 'mac', reason: 'Apple Silicon and macOS 15 or later are required.' };
   if (state.memory !== '8plus') return { eligible: false, code: 'memory', reason: 'Local speech needs at least 7.5 GiB of usable RAM (usually an 8 GB+ device). Confirm memory before choosing it.' };
   if (['pi','jetson'].includes(state.device) && state.cpu !== 'arm64') return { eligible: false, code: 'arm', reason: 'Recheck the processor details for this board. All OVOS setups require a 64-bit operating system.' };
   if (!['arm64', 'avx2'].includes(state.cpu)) return { eligible: false, code: 'cpu', reason: 'Confirm a 64-bit ARM CPU with NEON or an Intel/AMD CPU with AVX2. The installer will check it again.' };

@@ -13,7 +13,7 @@ export function installHandoff(state) {
     mark2: 'Needs 64-bit Debian 13 on its Raspberry Pi 4.',
     devkit: 'Needs 64-bit Debian 13 on its Raspberry Pi 4.',
     jetson: 'Needs supported 64-bit Linux, such as Ubuntu 22.04.',
-    mac: 'Needs 64-bit macOS, Homebrew, Bash 4+ and Xcode Command Line Tools.',
+    mac: 'Apple Silicon and macOS 15 or later are required. Install Homebrew, Bash 4+ and Xcode Command Line Tools first.',
     windows: 'Needs 64-bit Ubuntu in WSL2 with systemd enabled.',
   };
   const hub=state.experience==='hub';

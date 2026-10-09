@@ -917,5 +917,13 @@
   "Try asking": "Experimenta perguntar",
   "After your voice check": "Depois do teste de voz",
   "Say “Hey Mycroft”": "Diz «Hey Mycroft»",
-  "Wait for the listening sound, then ask.": "Espera pelo sinal de escuta e pergunta."
+  "Wait for the listening sound, then ask.": "Espera pelo sinal de escuta e pergunta.",
+  "Apple Silicon · macOS 15+": "Apple Silicon · macOS 15+",
+  "Apple Silicon and macOS 15 or later are required.": "São necessários Apple Silicon e macOS 15 ou posterior.",
+  "Open Terminal without Rosetta.": "Abre o Terminal sem Rosetta.",
+  "This Mac is not supported. Choose an Apple Silicon Mac with macOS 15 or later.": "Este Mac não é compatível. Escolhe um Mac com Apple Silicon e macOS 15 ou posterior.",
+  "My Mac uses Apple Silicon and macOS 15 or later; the required tools are installed.": "O meu Mac tem Apple Silicon e macOS 15 ou posterior; as ferramentas necessárias estão instaladas.",
+  "Not supported by the installer.": "Não é suportado pelo instalador.",
+  "Check Apple menu → About This Mac before continuing.": "Consulta o menu Apple → Acerca deste Mac antes de continuar.",
+  "The installer uses the latest main branch.": "O instalador usa a versão mais recente do ramo main."
 }

@@ -1,6 +1,7 @@
 import { errorReportUrl } from './report-link.mjs';
 import { icon, deviceIcon } from './icons.mjs';
-import { CHECK_COMMAND, DEMOS, guideKind, progressCopy, installationMilestones, installationStages, installationTiming } from './install-progress.mjs';
+import { CHECK_COMMAND, DEMOS, guideKind, progressCopy, installationMilestones, installationStages, installationTiming, installationUpdate } from './install-progress.mjs';
+import { mark1Eyes } from './mark1-eyes.mjs';
 import { DEVICES } from './scenario.mjs';
 import { starterExamples, nextSteps, GUIDE_LINKS } from './post-install-content.mjs';
 
@@ -9,7 +10,6 @@ const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&l
 
 
 const keepOpenHint='<span class="keep-open-hint">Keep this page open to follow the installation.</span>';
-const activityIndicator='<span class="activity-spinner" aria-hidden="true"></span>';
 
 /** A visible waiting signal; animation never implies the installer has started.
  * @param {object} model Current tracker state. @returns {string} Accessible status panel.
@@ -17,15 +17,15 @@ const activityIndicator='<span class="activity-spinner" aria-hidden="true"></spa
 export function waitingView(model) {
   const title=model.error?progressCopy(model).title:'Waiting for your device';
   const active=!model.error&&!model.session?.attention&&model.session?.status==='waiting';
-  return `<div class="install-waiting ${active?'is-waiting':''}"><span class="waiting-indicator" aria-hidden="true">${active?activityIndicator:icon(model.error?'refresh':'schedule')}</span><span role="status" aria-live="polite" aria-atomic="true"><strong class="waiting-title">${escape(title)}</strong>${!model.error&&model.session?keepOpenHint:''}</span>${model.error&&model.error!=='expired'?'<button class="text-button" data-progress-focus="refresh" data-progress-retry>Check progress again</button>':''}</div>`;
+  return `<div class="install-waiting ${active?'is-waiting':''}"><span class="waiting-indicator" aria-hidden="true">${active?mark1Eyes({compact:true}):icon(model.error?'refresh':'schedule')}</span><span role="status" aria-live="polite" aria-atomic="true"><strong class="waiting-title">${escape(title)}</strong>${!model.error&&model.session?keepOpenHint:''}</span>${model.error&&model.error!=='expired'?'<button class="text-button" data-progress-focus="refresh" data-progress-retry>Check progress again</button>':''}</div>`;
 }
 
 /** Small timing surface updated independently so polling preserves focus.
  * @param {object} model Tracker state. @param {number} now Unix seconds. @returns {string}
  */
 export function timingView(model,now) {
-  const timing=installationTiming(model,now);if(!timing)return '';
-  return `<span class="timing-elapsed">${icon('schedule')}<span>${escape(timing.elapsedText)}</span></span>${timing.remaining?`<span class="timing-estimate"><span>Estimated time left</span><strong>${escape(timing.remaining)}</strong></span>`:''}${timing.note&&timing.note!=='Time varies by device and connection.'?`<span class="timing-note">${escape(timing.note)}</span>`:''}`;
+  const timing=installationTiming(model,now),update=installationUpdate(model,now);
+  return `${timing?`<span class="timing-elapsed">${icon('schedule')}<span>${escape(timing.elapsedText)}</span></span>${timing.remaining?`<span class="timing-estimate"><span>Estimated time left</span><strong>${escape(timing.remaining)}</strong></span>`:''}${timing.note&&timing.note!=='Time varies by device and connection.'?`<span class="timing-note">${escape(timing.note)}</span>`:''}`:''}${update?`<span class="timing-update">${escape(update.text)}</span>${update.note?`<span class="timing-hint">${escape(update.note)}</span>`:''}`:''}`;
 }
 
 /** A stopped run needs recovery, not another handoff or a guessed next step.
@@ -105,8 +105,8 @@ export function progressView(model,state,{preview=false,prerequisitesReady=true}
     ${copy.installed?'<p class="rerun-wizard-note" id="rerun-wizard-note">Your choices are kept. Review them before installing again.</p>':''}
     ${copy.installed||working?'':`<p class="progress-description">${phase.description}</p>`}</header>
     ${copy.installed?`<div class="installation-receipt"><span class="installation-confirmed">${icon('check')}<span>Installation complete</span></span><div class="installation-timing" data-install-timing>${timingView(model)}</div></div>`:`<section class="installation-flow" aria-label="${model.error?'Last confirmed progress':'Installation progress'}">
-      <ol class="installation-stages" aria-live="polite" aria-atomic="true">${stages.map((stage,index)=>`<li class="stage-${stage.state}" ${stage.state==='current'?'aria-current="step"':''}><span class="stage-symbol" aria-hidden="true">${stage.state==='complete'?icon('check'):stage.state==='current'&&active?activityIndicator:icon(stage.icon)}</span><span class="stage-label">${stage.label}</span><span class="sr-only">${stage.state==='complete'?'Completed':stage.state==='current'?(model.error?'Last confirmed progress':'In progress'):'Not reached'}</span></li>`).join('')}</ol>
-      ${detailed?`<div class="installation-current" role="status" aria-live="polite" aria-atomic="true"><span aria-hidden="true">${icon(model.session.phase===3?'settings':model.session.phase===4?'check':'terminal')}</span><div><h2>${detailed.label}</h2><p>${detailed.description}</p></div></div>`:''}
+      ${working?`<div class="installation-current" role="status" aria-live="polite" aria-atomic="true">${mark1Eyes({animated:active})}<div><h2>${detailed?detailed.label:phase.title}</h2><p>${detailed?detailed.description:phase.description}</p></div></div>`:''}
+      <ol class="installation-stages ${stages.length===5?'installation-stages--detailed':''}" aria-live="polite" aria-atomic="true">${stages.map(stage=>`<li class="stage-${stage.state}" ${stage.state==='current'?'aria-current="step"':''}><span class="stage-symbol" aria-hidden="true">${stage.state==='complete'?icon('check'):icon(stage.icon)}</span><span class="stage-label">${stage.label}</span><span class="sr-only">${stage.state==='complete'?'Completed':stage.state==='current'?(model.error?'Last confirmed progress':'In progress'):'Not reached'}</span></li>`).join('')}</ol>
       <div class="installation-meta"><div class="installation-timing" data-install-timing>${timingView(model)}</div>${reconnecting?`<span class="connection-badge is-reconnecting">${icon('refresh')}<span>Reconnecting…</span></span>`:''}</div>
     </section>`}
     ${active?`<p class="installation-instruction">${icon('terminal')}<span>Keep this page open. Follow any prompts in Terminal.</span></p>`:''}

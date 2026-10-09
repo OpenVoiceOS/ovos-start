@@ -930,5 +930,9 @@
   "View installation statistics": "इंस्टॉलेशन के आँकड़े देखें",
   "On": "चालू",
   "Raspberry Pi tuning is included.": "Raspberry Pi के लिए ट्यूनिंग शामिल है।",
-  "You may be asked for your sudo password.": "आपसे sudo का पासवर्ड पूछा जा सकता है।"
+  "You may be asked for your sudo password.": "आपसे sudo का पासवर्ड पूछा जा सकता है।",
+  "Last device update just now": "डिवाइस से आख़िरी अपडेट: अभी-अभी",
+  "Last device update 1 min ago": "डिवाइस से आख़िरी अपडेट: 1 मिनट पहले",
+  "Last device update {minutes} min ago": "डिवाइस से आख़िरी अपडेट: {minutes} मिनट पहले",
+  "Some steps take a while. Check Terminal for progress or a password prompt.": "कुछ चरणों में समय लगता है। प्रगति देखने या पासवर्ड माँगे जाने की जानकारी के लिए टर्मिनल देखें।"
 }

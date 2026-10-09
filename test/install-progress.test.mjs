@@ -1,8 +1,8 @@
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {InstallTracker,progressCopy,guideKind,VOICE_EXAMPLES,CHECK_COMMAND,DEMOS,installationStages,installationMilestones,installationTiming} from '../dist/install-progress.mjs';
-import {progressView} from '../dist/post-install.mjs';
+import {InstallTracker,progressCopy,guideKind,VOICE_EXAMPLES,CHECK_COMMAND,DEMOS,installationStages,installationMilestones,installationTiming,installationUpdate} from '../dist/install-progress.mjs';
+import {progressView,timingView} from '../dist/post-install.mjs';
 import {DEFAULTS} from '../dist/scenario.mjs';
 import {issueSetup,buildShortCommand,buildSetupScript,readSetupSession} from '../dist/short-setup.mjs';
 const base={...DEFAULTS,device:'pi'},now=1800000000;
@@ -101,17 +101,17 @@ test('missing or malformed launch capabilities cannot reach the command builder'
 
 test('activity is decorative and limited to healthy waiting or working states',async()=>{
  const {waitingView}=await import('../dist/post-install.mjs');
- const waiting=waitingView({session});assert.match(waiting,/install-waiting is-waiting/);assert.match(waiting,/class="activity-spinner" aria-hidden="true"/);assert.match(waiting,/role="status" aria-live="polite" aria-atomic="true"/);assert.match(waiting,/<strong class="waiting-title">Waiting for your device<\/strong>/);
+ const waiting=waitingView({session});assert.match(waiting,/install-waiting is-waiting/);assert.match(waiting,/class="mark1-eyes mark1-eyes--animated mark1-eyes--compact"[^>]*aria-hidden="true"/);assert.match(waiting,/role="status" aria-live="polite" aria-atomic="true"/);assert.match(waiting,/<strong class="waiting-title">Waiting for your device<\/strong>/);
  assert.doesNotMatch(waiting,/aria-busy|progressbar|percent|[0-9]+%/);
- for(const status of ['started','downloading','installing'])assert.match(progressView({session:{...session,status}},base),/activity-spinner/,status);
- for(const status of ['installed','services_ready','voice_ready','failed','cancelled'])assert.doesNotMatch(progressView({session:{...session,status}},base),/activity-spinner/,status);
+ for(const status of ['started','downloading','installing'])assert.match(progressView({session:{...session,status}},base),/mark1-eyes--animated/,status);
+ for(const status of ['installed','services_ready','voice_ready','failed','cancelled'])assert.doesNotMatch(progressView({session:{...session,status}},base),/mark1-eyes--animated/,status);
  for(const error of ['expired','unavailable']){
-  assert.doesNotMatch(waitingView({session,error}),/activity-spinner|is-waiting/);
-  assert.doesNotMatch(progressView({session:{...session,status:'installing'},error},base),/activity-spinner/);
+  assert.doesNotMatch(waitingView({session,error}),/mark1-eyes--animated|is-waiting/);
+  assert.doesNotMatch(progressView({session:{...session,status:'installing'},error},base),/mark1-eyes--animated/);
  }
- assert.doesNotMatch(waitingView({}),/activity-spinner|is-waiting/);
- assert.doesNotMatch(waitingView({session:{...session,attention:true}}),/activity-spinner/);
- assert.doesNotMatch(progressView({session:{...session,status:'installing',attention:true}},base),/activity-spinner/);
+ assert.doesNotMatch(waitingView({}),/mark1-eyes--animated|is-waiting/);
+ assert.doesNotMatch(waitingView({session:{...session,attention:true}}),/mark1-eyes--animated/);
+ assert.doesNotMatch(progressView({session:{...session,status:'installing',attention:true}},base),/mark1-eyes--animated/);
 });
 
 
@@ -122,14 +122,14 @@ test('real milestones retain their last confirmed phase through reconnects and n
   assert.deepEqual(installationMilestones({...model,error:'unavailable'}),stages);
   const live=progressView(model,base),offline=progressView({...model,error:'unavailable'},base);
   assert.equal((live.match(/<h1/g)||[]).length,1);assert.doesNotMatch(live,/class="eyebrow"/);
-  if(['started','downloading','installing'].includes(status))assert.match(offline,/Last confirmed progress/);assert.doesNotMatch(offline,/Updates paused|activity-spinner|aria-valuenow|progressbar/);
+  if(['started','downloading','installing'].includes(status))assert.match(offline,/Last confirmed progress/);assert.doesNotMatch(offline,/Updates paused|mark1-eyes--animated|aria-valuenow|progressbar/);
   assert.ok(offline.includes(['started','downloading','installing'].includes(status)?'Installing OVOS':progressCopy(model).title));
   if(status!=='voice_ready')assert.match(offline,/data-progress-retry/);
   if(['installed','services_ready'].includes(status)){assert.match(offline,/Voice check pending/);assert.doesNotMatch(offline,/Try your first question/);assert.equal(progressCopy(model).complete,false);}
  }
  for(const status of ['waiting','failed','cancelled'])assert.deepEqual(installationMilestones({session:{...session,status}}),[]);
  const expired=progressView({session:{...session,status:'installing'},error:'expired'},base);
- assert.match(expired,/Installation updates have ended/);assert.match(expired,/data-copy-check/);assert.doesNotMatch(expired,/data-progress-retry|activity-spinner/);
+ assert.match(expired,/Installation updates have ended/);assert.match(expired,/data-copy-check/);assert.doesNotMatch(expired,/data-progress-retry|mark1-eyes--animated/);
 });
 
 
@@ -149,7 +149,7 @@ test('granular phases check completed work and keep remaining steps visible on f
   const steps=installationMilestones(model);assert.equal(steps.filter(s=>s.state==='complete').length,phase);assert.equal(steps[phase].state,'current');
   const failed={session:{...model.session,status:'failed'}};
   assert.equal(installationMilestones(failed)[phase].state,'stopped');
-  const html=progressView(failed,base);assert.match(html,/Last reported step/);assert.doesNotMatch(html,/OVOS is installed|post-install-guide|activity-spinner|Up next|Not reached/);
+  const html=progressView(failed,base);assert.match(html,/Last reported step/);assert.doesNotMatch(html,/OVOS is installed|post-install-guide|mark1-eyes--animated|Up next|Not reached/);
  }
 });
 
@@ -162,7 +162,7 @@ test('legacy stopped runs keep download evidence without inventing the step that
   assert.match(html,/The exact step wasn’t reported/);
   assert.match(html,/Download installer<\/span><small>Completed/);
   assert.equal((html.match(/<small>Not confirmed<\/small>/g)||[]).length,4);
-  assert.doesNotMatch(html,/Up next|Not reached|In progress|Last reported step|steps done|activity-spinner|installation-layout|data-progress-retry|post-install-guide/);
+  assert.doesNotMatch(html,/Up next|Not reached|In progress|Last reported step|steps done|mark1-eyes--animated|installation-layout|data-progress-retry|post-install-guide/);
   assert.match(html,/data-restart-install/);
   assert.equal(progressCopy(model).title,status==='failed'?'Installation stopped':'Installation cancelled');
  }
@@ -208,6 +208,42 @@ test('older same-second phase responses cannot regress an installation checkpoin
  value={...value,phase:4};await tracker.poll();assert.equal(tracker.session.phase,4);tracker.stop();
 });
 
+test('detailed installation shows all five checkpoints and only confirms earlier work',()=>{
+ for(const phase of [1,2,3,4]){
+  const model={session:{...session,status:'installing',phase,progressRank:3}};
+  const steps=installationStages(model);
+  assert.equal(steps.length,5);
+  assert.deepEqual(steps.map(step=>step.state),Array.from({length:5},(_,index)=>index<phase?'complete':index===phase?'current':'upcoming'));
+  const html=progressView(model,base);
+  assert.equal((html.match(/<li class="stage-/g)||[]).length,5);
+  assert.equal((html.match(/aria-current="step"/g)||[]).length,1);
+  assert.equal((html.match(/class="mark1-eyes mark1-eyes--animated"/g)||[]).length,1);
+  assert.ok(html.indexOf('mark1-eyes')<html.indexOf('installation-stages'));
+  assert.doesNotMatch(html,/Installation complete|percent|aria-valuenow/);
+  for(const step of steps)assert.ok(html.includes(step.label));
+  const offline=progressView({...model,error:'unavailable'},base);
+  assert.match(offline,/class="mark1-eyes"/);
+  assert.doesNotMatch(offline,/mark1-eyes--animated|Last device update/);
+ }
+});
+
+test('device freshness ages real events, without mistaking polling for a heartbeat',()=>{
+ const model={session:{...session,status:'installing',startedAt:now-600},observedAt:now};
+ assert.equal(installationUpdate(model,now+59).text,'Last device update just now');
+ assert.equal(installationUpdate(model,now+60).text,'Last device update 1 min ago');
+ assert.equal(installationUpdate(model,now+119).note,null);
+ const quiet=installationUpdate({...model,observedAt:now+120},now+120);
+ assert.equal(quiet.text,'Last device update 2 min ago');
+ assert.match(quiet.note,/Check Terminal for progress or a password prompt/);
+ assert.equal(installationUpdate({...model,session:{...model.session,updatedAt:now+120}},now+120).note,null);
+ for(const updatedAt of [undefined,null,0,-1,now+1,1.5,'1800000000'])assert.equal(installationUpdate({...model,session:{...model.session,updatedAt}},now),null);
+ for(const status of ['waiting','installed','services_ready','voice_ready','failed','cancelled'])assert.equal(installationUpdate({...model,session:{...model.session,status}},now+120),null);
+ for(const error of ['unavailable','expired'])assert.equal(installationUpdate({...model,error},now+120),null);
+ assert.equal(installationUpdate({...model,session:{...model.session,attention:true}},now+120),null);
+ assert.match(timingView(model,now+120),/12 min elapsed[\s\S]*Last device update 2 min ago[\s\S]*Some steps take a while/);
+ assert.doesNotMatch(timingView({...model,error:'unavailable'},now+120),/Last device update|Some steps/);
+});
+
 
 test('coarse progress stays understandable without presenting unreported phases as problems',()=>{
  const model={session:{...session,status:'installing',phase:0,progressRank:3}};
@@ -228,7 +264,7 @@ test('installed services never imply verified voice; pending instructions match 
   assert.match(html,/Installation complete/);assert.match(html,/Voice check pending/);
   assert.match(html,/At the first prompt, enter 1 and press Enter/);
   assert.match(html,/Terminal already closed/);assert.match(html,/data-copy-check/);
-  assert.doesNotMatch(html,/Your voice check passed|A check needs your attention|installation-stages|activity-spinner/);
+  assert.doesNotMatch(html,/Your voice check passed|A check needs your attention|installation-stages|mark1-eyes--animated/);
   assert.match(html,/<details class="voice-examples-preview"[^>]*><summary[^>]*>[\s\S]*?Try asking[\s\S]*?After your voice check[\s\S]*?Show examples[\s\S]*?<\/summary>/);
   assert.doesNotMatch(html,/<details class="voice-examples-preview"[^>]* open/);
   assert.equal((html.match(/id="post-check-command"/g)||[]).length,1);

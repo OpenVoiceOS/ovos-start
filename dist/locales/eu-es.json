@@ -930,5 +930,9 @@
   "View installation statistics": "Ikusi instalazio-estatistikak",
   "On": "Aktibatuta",
   "Raspberry Pi tuning is included.": "Raspberry Pi-rako optimizazioak barne daude.",
-  "You may be asked for your sudo password.": "Baliteke sudo pasahitza eskatzea."
+  "You may be asked for your sudo password.": "Baliteke sudo pasahitza eskatzea.",
+  "Last device update just now": "Gailuaren azken berria: oraintxe",
+  "Last device update 1 min ago": "Gailuaren azken berria: duela 1 min",
+  "Last device update {minutes} min ago": "Gailuaren azken berria: duela {minutes} min",
+  "Some steps take a while. Check Terminal for progress or a password prompt.": "Urrats batzuek denbora behar dute. Begiratu terminalean aurrerapena edo pasahitza eskatzen den."
 }

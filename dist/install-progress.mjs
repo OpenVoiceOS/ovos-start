@@ -83,15 +83,34 @@ export function installationMilestones(model) {
   return steps.map(([label,description],index)=>({label,description,state:coarse?(index===0?'complete':'unknown'):index<current?'complete':index===current?(interrupted?'stopped':'current'):interrupted?'unknown':'upcoming'}));
 }
 
-/** Three honest stages even when an older installer omits detailed checkpoints.
+/** Show reported checkpoints, with a coarse path when detailed updates are absent.
  * @param {object} model Confirmed tracker state. @returns {Array<object>}
  */
 export function installationStages(model) {
   const status=model.session?.status;
   if(!['started','downloading','installing',...INSTALLED_STATES].includes(status))return [];
+  if(model.session.phase>0){
+    const icons=['download','terminal','widgets','settings','schedule'];
+    return installationMilestones(model).map((stage,index)=>({...stage,icon:icons[index]}));
+  }
   const installed=INSTALLED_STATES.includes(status);
   const current=installed?3:status==='installing'?1:0;
   return [['Downloading','download'],['Installing','settings'],['Installed','schedule']].map(([label,icon],index)=>({label,icon,state:index<current?'complete':index===current?'current':'upcoming'}));
+}
+
+/** Age the last device event, never the browser's successful polling timestamp.
+ * @param {object} model Confirmed tracker state. @param {number} now Unix seconds.
+ * @returns {object|null} Neutral freshness and long-step guidance.
+ */
+export function installationUpdate(model,now=Math.floor(Date.now()/1000)) {
+  const session=model.session;
+  if(model.error||session?.attention||!['started','downloading','installing'].includes(session?.status))return null;
+  if(!Number.isSafeInteger(now)||!Number.isSafeInteger(session.updatedAt)||session.updatedAt<=0||now<session.updatedAt)return null;
+  const minutes=Math.floor((now-session.updatedAt)/60);
+  return {
+    text:minutes===0?'Last device update just now':minutes===1?'Last device update 1 min ago':`Last device update ${minutes} min ago`,
+    note:minutes>=2?'Some steps take a while. Check Terminal for progress or a password prompt.':null,
+  };
 }
 
 /** Display real elapsed time; a remaining range requires server-side comparable runs.

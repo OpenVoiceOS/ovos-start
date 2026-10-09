@@ -140,6 +140,28 @@ test('every locale explains why to keep the installation page open',()=>{
  for(const locale of UI_LOCALES){const catalog=read(locale);assert.equal(translateMessage(hint,catalog),catalog[hint]);if(locale!=='en-us')assert.notEqual(catalog[hint],hint,locale);}
 });
 
+test('device update age and terminal guidance translate in every locale',()=>{
+ const messages=['Last device update just now','Last device update 1 min ago',
+  'Some steps take a while. Check Terminal for progress or a password prompt.'];
+ const age='Last device update {minutes} min ago';
+ for(const locale of UI_LOCALES){
+  const catalog=read(locale);
+  for(const message of messages){
+   assert.ok(Object.hasOwn(catalog,message),`${locale}: ${message}`);
+   assert.equal(translateMessage(message,catalog),catalog[message]);
+   if(locale!=='en-us')assert.notEqual(catalog[message],message,locale);
+  }
+  assert.ok(Object.hasOwn(catalog,age),locale);
+  assert.equal(catalog[age].split('{minutes}').length,2,locale);
+  const expected=catalog[age].replace('{minutes}','7');
+  assert.equal(translateMessage(age,catalog,{minutes:7}),expected,locale);
+  assert.equal(translateMessage('Last device update 7 min ago',catalog),expected,locale);
+  assert.match(expected,/7/,locale);
+  assert.doesNotMatch(expected,/\{minutes\}/,locale);
+  if(locale!=='en-us')assert.notEqual(expected,'Last device update 7 min ago',locale);
+ }
+});
+
 test('prerequisite option labels translate explicitly without changing OS values or language names',async()=>{
  const originalFetch=globalThis.fetch;
  try{

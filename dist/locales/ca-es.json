@@ -930,5 +930,9 @@
   "View installation statistics": "Veure estadístiques d’instal·lació",
   "On": "Activat",
   "Raspberry Pi tuning is included.": "S’inclouen ajustos de rendiment per a Raspberry Pi.",
-  "You may be asked for your sudo password.": "Pot ser que se’t demani la contrasenya de sudo."
+  "You may be asked for your sudo password.": "Pot ser que se’t demani la contrasenya de sudo.",
+  "Last device update just now": "Última informació del dispositiu: ara mateix",
+  "Last device update 1 min ago": "Última informació del dispositiu: fa 1 min",
+  "Last device update {minutes} min ago": "Última informació del dispositiu: fa {minutes} min",
+  "Some steps take a while. Check Terminal for progress or a password prompt.": "Alguns passos triguen una estona. Consulta el terminal per seguir el progrés o veure si demana una contrasenya."
 }

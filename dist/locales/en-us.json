@@ -930,5 +930,9 @@
   "View installation statistics": "View installation statistics",
   "On": "On",
   "Raspberry Pi tuning is included.": "Raspberry Pi tuning is included.",
-  "You may be asked for your sudo password.": "You may be asked for your sudo password."
+  "You may be asked for your sudo password.": "You may be asked for your sudo password.",
+  "Last device update just now": "Last device update just now",
+  "Last device update 1 min ago": "Last device update 1 min ago",
+  "Last device update {minutes} min ago": "Last device update {minutes} min ago",
+  "Some steps take a while. Check Terminal for progress or a password prompt.": "Some steps take a while. Check Terminal for progress or a password prompt."
 }

@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import {progressView} from '../dist/post-install.mjs';
+import {DEFAULTS} from '../dist/scenario.mjs';
 
 const source=readFileSync(new URL('../dist/theme.js',import.meta.url),'utf8');
 const key='ovos.theme.v1';
@@ -47,14 +49,15 @@ function assertContrast(foreground,background,minimum,label){
   assert.ok(ratio>=minimum,`${label}: ${ratio.toFixed(2)}:1 must reach ${minimum}:1`);
 }
 
-/** Calculate the sRGB tint declared by a current audio component rule.
+/** Calculate the sRGB tint declared by a current component rule.
  * @param {string} selector Component selector. @param {string} tone Actual status color.
- * @param {object} tokens Appearance palette. @returns {number[]} Mixed RGB channels.
+ * @param {object} tokens Appearance palette. @param {string} variable Status color variable.
+ * @returns {number[]} Mixed RGB channels.
  */
-function audioSurface(selector,tone,tokens){
+function tintedSurface(selector,tone,tokens,variable='--audio-tone'){
   const rule=css.match(new RegExp(`${selector.replaceAll('.','\\.')}\\{([^}]+)\\}`));
-  assert.ok(rule,`Missing audio component ${selector}`);
-  const mixture=rule[1].match(/background:color-mix\(in srgb,var\(--audio-tone\) ([\d.]+)%,var\(--card\)\)/);
+  assert.ok(rule,`Missing component ${selector}`);
+  const mixture=rule[1].match(new RegExp(`background:color-mix\\(in srgb,var\\(${variable}\\) ([\\d.]+)%,var\\(--card\\)\\)`));
   assert.ok(mixture,`Missing sRGB surface for ${selector}`);
   const fraction=Number(mixture[1])/100,foreground=rgb(tone),background=rgb(tokens['--card']);
   return foreground.map((channel,index)=>channel*fraction+background[index]*(1-fraction));
@@ -107,18 +110,54 @@ for(const theme of ['light','dark','automatic-dark']){
   test(`audio results retain readable labels and distinguishable icons in ${theme}`,()=>{
     const tokens=palette(theme);
     for(const status of ['pass','fail','check']){
-      const tone=tokens[`--audio-${status}`],surface=audioSurface('.audio-result',tone,tokens);
+      const tone=tokens[`--audio-${status}`],surface=tintedSurface('.audio-result',tone,tokens);
       assertContrast(tokens['--ink'],surface,4.5,`${theme}: ${status} heading`);
       assertContrast(tokens['--muted'],surface,4.5,`${theme}: ${status} description`);
-      assertContrast(tone,audioSurface('.audio-result-symbol',tone,tokens),3,`${theme}: ${status} icon`);
+      assertContrast(tone,tintedSurface('.audio-result-symbol',tone,tokens),3,`${theme}: ${status} icon`);
       if(status==='check'){
-        assertContrast(tone,audioSurface('.audio-result-status',tone,tokens),4.5,`${theme}: checking badge`);
+        assertContrast(tone,tintedSurface('.audio-result-status',tone,tokens),4.5,`${theme}: checking badge`);
       }else{
         assertContrast(tokens['--audio-status-ink'],tone,4.5,`${theme}: ${status} badge`);
       }
     }
   });
+
+  test(`completed and current checklist rows retain readable states and receipts in ${theme}`,()=>{
+    const tokens=palette(theme),done=tokens['--install-done'];
+    assertContrast(done,tokens['--card'],4.5,`${theme}: completed checkpoint label`);
+    assertContrast(done,tintedSurface('.stage-complete .stage-symbol',done,tokens,'--install-done'),3,`${theme}: completed check icon`);
+    assertContrast(tokens['--ink'],tokens['--soft'],4.5,`${theme}: current checkpoint label`);
+    assertContrast(tokens['--accent'],tokens['--soft'],4.5,`${theme}: current checkpoint status`);
+    for(const surface of ['--card','--soft']){
+      assertContrast(tokens['--muted'],tokens[surface],4.5,`${theme}: receipt description on ${surface}`);
+      assertContrast(done,tokens[surface],3,`${theme}: confirmed receipt check on ${surface}`);
+    }
+    assertContrast(tokens['--accent'],tokens['--card'],3,`${theme}: current checkpoint icon`);
+  });
 }
+
+test('working checklist statuses stay accessible without hiding the current or unknown step',()=>{
+  const state={...DEFAULTS,device:'mark2'};
+  const html=progressView({session:{status:'installing',phase:3,progressRank:3,completedSteps:['packages_installed','audio_configured','components_installed']}},state);
+  const statuses=[...html.matchAll(/<span class="stage-status([^"]*)"([^>]*)>([^<]+)<\/span>/g)];
+  assert.equal(statuses.length,5);
+  assert.deepEqual(statuses.map(match=>match[3]),['Completed','Completed','Completed','In progress','Not started']);
+  assert.deepEqual(statuses.map(match=>match[1].trim()==='sr-only'),[true,true,true,false,true]);
+  assert.equal((html.match(/class="stage-complete"/g)||[]).length,3,'green checkpoints remain visible while later steps run');
+  assert.equal((html.match(/data-completed-step=/g)||[]).length,3,'confirmed receipts remain available during installation');
+  for(const status of statuses)assert.doesNotMatch(status[2],/\bhidden\b|aria-hidden/,'visually compact statuses must remain in the accessibility tree');
+  const srOnly=css.match(/\.sr-only\{([^}]+)\}/)?.[1];
+  assert.ok(srOnly);
+  assert.doesNotMatch(srOnly,/display\s*:\s*none|visibility\s*:\s*hidden|content-visibility\s*:\s*hidden/);
+  const coarse=progressView({session:{status:'installing',phase:0,progressRank:3}},state);
+  assert.equal((coarse.match(/<span class="stage-status">Not confirmed<\/span>/g)||[]).length,4,'unknown progress must remain visibly explicit');
+  const offline=progressView({session:{status:'installing',phase:2,progressRank:3},error:'unavailable'},state);
+  assert.match(offline,/<span class="stage-status">Last reported step<\/span>/);
+  for(const status of ['installed','services_ready','voice_ready']){
+    const finished=progressView({session:{status,audioStatus:'passed',microphoneStatus:'passed'}},state);
+    assert.doesNotMatch(finished,/class="installation-stages"|data-install-step=|class="installation-receipt"/,'finished setup no longer exposes the installation checklist');
+  }
+});
 
 /** Execute the real early theme script with browser boundaries mocked.
  * @param {object} options Stored preference, system appearance and storage failures.

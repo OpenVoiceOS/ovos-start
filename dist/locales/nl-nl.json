@@ -966,5 +966,10 @@
   "Pause trivia": "Weetjes pauzeren",
   "Resume trivia": "Weetjes hervatten",
   "Installing <em>OVOS</em>": "<em>OVOS</em> wordt geïnstalleerd",
-  "<em>OVOS</em> is installed": "<em>OVOS</em> is geïnstalleerd"
+  "<em>OVOS</em> is installed": "<em>OVOS</em> is geïnstalleerd",
+  "Not started": "Nog niet gestart",
+  "You did it!": "Het is je gelukt!",
+  "OVOS is ready!": "OVOS is klaar!",
+  "Your device can hear you and talk back. Say hello!": "Je apparaat kan je horen en antwoord geven. Zeg hallo!",
+  "<em>OVOS</em> is ready!": "<em>OVOS</em> is klaar!"
 }

@@ -966,5 +966,10 @@
   "Pause trivia": "Pausar curiosidades",
   "Resume trivia": "Retomar curiosidades",
   "Installing <em>OVOS</em>": "Instalando <em>OVOS</em>",
-  "<em>OVOS</em> is installed": "<em>OVOS</em> está instalado"
+  "<em>OVOS</em> is installed": "<em>OVOS</em> está instalado",
+  "Not started": "Aínda non comezou",
+  "You did it!": "Conseguíchelo!",
+  "OVOS is ready!": "OVOS está listo!",
+  "Your device can hear you and talk back. Say hello!": "O teu dispositivo pode escoitarte e responderche. Di ola!",
+  "<em>OVOS</em> is ready!": "<em>OVOS</em> está listo!"
 }

@@ -966,5 +966,10 @@
   "Pause trivia": "Ḥbes timussniwin",
   "Resume trivia": "Kemmel timussniwin",
   "Installing <em>OVOS</em>": "Asebded n <em>OVOS</em>",
-  "<em>OVOS</em> is installed": "<em>OVOS</em> yettusebded"
+  "<em>OVOS</em> is installed": "<em>OVOS</em> yettusebded",
+  "Not started": "Mazal ur yebdi ara",
+  "You did it!": "Tessawḍeḍ!",
+  "OVOS is ready!": "OVOS ihegga!",
+  "Your device can hear you and talk back. Say hello!": "Ibenk-ik yezmer ad k-isel yerna ad ak-d-yerr. Ini-d azul!",
+  "<em>OVOS</em> is ready!": "<em>OVOS</em> ihegga!"
 }

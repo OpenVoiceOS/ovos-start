@@ -966,5 +966,10 @@
   "Pause trivia": "Pausatu bitxikeriak",
   "Resume trivia": "Jarraitu bitxikeriekin",
   "Installing <em>OVOS</em>": "<em>OVOS</em> instalatzen",
-  "<em>OVOS</em> is installed": "<em>OVOS</em> instalatuta dago"
+  "<em>OVOS</em> is installed": "<em>OVOS</em> instalatuta dago",
+  "Not started": "Hasi gabe",
+  "You did it!": "Lortu duzu!",
+  "OVOS is ready!": "OVOS prest dago!",
+  "Your device can hear you and talk back. Say hello!": "Zure gailuak entzun eta erantzun diezazuke. Esan kaixo!",
+  "<em>OVOS</em> is ready!": "<em>OVOS</em> prest dago!"
 }

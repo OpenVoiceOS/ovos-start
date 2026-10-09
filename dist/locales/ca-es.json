@@ -929,5 +929,6 @@
   "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Motors locals: onnx-asr i phoonnx. El processament de veu local fa servir un entorn Python. Els models es baixen durant la instal·lació. El rendiment varia segons el dispositiu.",
   "View installation statistics": "Veure estadístiques d’instal·lació",
   "On": "Activat",
-  "Raspberry Pi tuning is included.": "S’inclouen ajustos de rendiment per a Raspberry Pi."
+  "Raspberry Pi tuning is included.": "S’inclouen ajustos de rendiment per a Raspberry Pi.",
+  "You may be asked for your sudo password.": "Pot ser que se’t demani la contrasenya de sudo."
 }

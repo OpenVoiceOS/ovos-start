@@ -396,7 +396,7 @@ function resultView() {
           <button class="button install-copy" data-install-action ${previewOnly||!prerequisiteGate.ready(state.device)?'disabled':''}>${icon('copy')}<span>Copy install command</span></button><span class="code-expiry" data-code-expiry role="status" data-prerequisite-required></span>
           <div class="command-fallback" ${manualCopyReady()?'':'hidden'}><label class="sr-only" for="install-command">Your one-line install command</label><textarea class="command" id="install-command" readonly spellcheck="false" rows="3" data-no-translate>${manualCopyReady()?escape(buildShortCommand(setupSession,undefined,launchToken())):''}</textarea></div>
         </div></li>
-        <li data-handoff-step="paste"><span class="handoff-number" aria-hidden="true">2</span><div class="handoff-action-body paste-step"><strong>Paste on your device</strong><p data-paste-title>${state.device==='windows'?'Open Ubuntu in WSL2, paste and press Enter.':`Open Terminal on your ${DEVICES[state.device].name}, paste and press Enter.`}</p></div></li>
+        <li data-handoff-step="paste"><span class="handoff-number" aria-hidden="true">2</span><div class="handoff-action-body paste-step"><strong>Paste on your device</strong><p data-paste-title>${state.device==='windows'?'Open Ubuntu in WSL2, paste and press Enter.':`Open Terminal on your ${DEVICES[state.device].name}, paste and press Enter.`}</p><p>You may be asked for your sudo password.</p></div></li>
       </ol>
       <section data-install-waiting hidden aria-label="Installation progress"></section>
       <details class="install-help-short handoff-help"><summary>Installation help</summary>

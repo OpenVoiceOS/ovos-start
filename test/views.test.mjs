@@ -202,7 +202,7 @@ test('processor cards use familiar names and lookup hints; features remain in op
  const result=recommendations.speechEligibility({...scenario.DEFAULTS,device:'computer',memory:'8plus',cpu:'avx2'});assert.equal(result.eligible,true);assert.match(result.reason,/may work.*may use online services/);
 });
 
-test('install handoff exposes one instruction and keeps recovery and tracking details inside help',()=>{
+test('install handoff shows the sudo password hint beside paste instructions before optional help',()=>{
  const c=views();
  for(const device of Object.keys(scenario.DEVICES)){
   c.state.device=device;acceptPreparation(c);const html=c.resultView();
@@ -210,6 +210,9 @@ test('install handoff exposes one instruction and keeps recovery and tracking de
   assert.match(primary,/Install <em>OVOS\.<\/em>/);
   assert.equal((primary.match(/data-install-action/g)||[]).length,1);
   assert.equal((primary.match(/data-paste-title/g)||[]).length,1);
+  const paste=primary.match(/<li data-handoff-step="paste"[\s\S]*?<\/li>/)[0];
+  assert.equal((paste.match(/You may be asked for your sudo password\./g)||[]).length,1);
+  assert.ok(paste.indexOf('You may be asked')>paste.indexOf('data-paste-title'));
   assert.match(primary,/data-install-waiting hidden/);
   assert.doesNotMatch(primary,/After a restart|24 hours|Follow the steps|No device logs/);
   if(device==='windows')assert.match(primary,/Open Ubuntu in WSL2, paste and press Enter/);

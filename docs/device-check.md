@@ -1,4 +1,8 @@
-Last Edit: Codex - 2026-10-09 - Motive: Enable Raspberry Pi tuning for Pi-based devices.
+Last Edit: Codex - 2026-10-09 - Motive: Explain the possible sudo password prompt beside the paste step.
+
+## Password prompt during installation
+
+[`resultView`](../dist/app.mjs) shows “You may be asked for your sudo password.” directly below the paste instructions for every device. The note is visible without opening installation help and is translated into all 12 wizard languages. [View tests](../test/views.test.mjs) verify its placement for all hardware targets; [locale tests](../test/i18n.test.mjs) verify the translated hint.
 
 ## Raspberry Pi tuning
 

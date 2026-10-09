@@ -125,6 +125,16 @@ test('compact device instructions beat broader placeholder templates in every lo
  }
 });
 
+test('every locale explains the possible sudo password prompt',()=>{
+ const hint='You may be asked for your sudo password.';
+ for(const locale of UI_LOCALES){
+  const catalog=read(locale);assert.ok(catalog[hint],locale);
+  assert.equal(translateMessage(hint,catalog),catalog[hint]);
+  assert.match(catalog[hint],/sudo/,locale);
+  if(locale!=='en-us')assert.notEqual(catalog[hint],hint,locale);
+ }
+});
+
 test('every locale explains why to keep the installation page open',()=>{
  const hint='Keep this page open to follow the installation.';
  for(const locale of UI_LOCALES){const catalog=read(locale);assert.equal(translateMessage(hint,catalog),catalog[hint]);if(locale!=='en-us')assert.notEqual(catalog[hint],hint,locale);}

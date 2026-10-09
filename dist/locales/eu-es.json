@@ -929,5 +929,6 @@
   "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Tokiko hornitzaileak: onnx-asr eta phoonnx. Gailuko ahotsak Python ingurunea erabiltzen du. Modeloak instalazioan deskargatzen dira. Errendimendua gailuaren araberakoa da.",
   "View installation statistics": "Ikusi instalazio-estatistikak",
   "On": "Aktibatuta",
-  "Raspberry Pi tuning is included.": "Raspberry Pi-rako optimizazioak barne daude."
+  "Raspberry Pi tuning is included.": "Raspberry Pi-rako optimizazioak barne daude.",
+  "You may be asked for your sudo password.": "Baliteke sudo pasahitza eskatzea."
 }

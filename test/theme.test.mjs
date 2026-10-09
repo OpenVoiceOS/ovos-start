@@ -7,55 +7,118 @@ const source=readFileSync(new URL('../dist/theme.js',import.meta.url),'utf8');
 const key='ovos.theme.v1';
 const css=readFileSync(new URL('../dist/style.css',import.meta.url),'utf8');
 
-/** Calculate WCAG relative luminance for a six-digit opaque color.
- * @param {string} hex Hex color. @returns {number} Relative luminance.
+/** Resolve the opaque palette for a manual or system appearance.
+ * @param {string} theme Appearance to inspect. @returns {object} CSS color tokens.
  */
-function luminance(hex){
-  const rgb=hex.slice(1).match(/../g).map(channel=>parseInt(channel,16)/255)
+function palette(theme){
+  const base=[...css.matchAll(/:root\s*\{([^}]+)\}/g)];
+  const overrides=theme==='automatic-dark'
+    ?[...css.matchAll(/:root:not\(\[data-theme\]\)\s*\{([^}]+)\}/g)]
+    :[...css.matchAll(new RegExp(`:root\\[data-theme="${theme}"\\]\\s*\\{([^}]+)\\}`,'g'))];
+  return Object.fromEntries([...base,...overrides].flatMap(block=>
+    [...block[1].matchAll(/(--[\w-]+):\s*(#[\da-f]{6}|#[\da-f]{3})(?=;|$)/gi)]
+      .map(match=>[match[1],match[2]])));
+}
+
+/** Convert an opaque hex color to its sRGB channels.
+ * @param {string} hex Three- or six-digit hex color. @returns {number[]} RGB channels.
+ */
+function rgb(hex){
+  const full=hex.length===4?hex.slice(1).split('').map(channel=>channel.repeat(2)).join(''):hex.slice(1);
+  return full.match(/../g).map(channel=>parseInt(channel,16));
+}
+
+/** Calculate WCAG relative luminance, including unrounded CSS color mixtures.
+ * @param {string|number[]} color Hex color or sRGB channels. @returns {number} Relative luminance.
+ */
+function luminance(color){
+  const channels=(typeof color==='string'?rgb(color):color).map(channel=>channel/255)
     .map(channel=>channel<=0.04045?channel/12.92:((channel+0.055)/1.055)**2.4);
-  return rgb[0]*0.2126+rgb[1]*0.7152+rgb[2]*0.0722;
+  return channels[0]*0.2126+channels[1]*0.7152+channels[2]*0.0722;
+}
+
+/** Assert readable text or distinguishable icons against their actual surface.
+ * @param {string|number[]} foreground Foreground color. @param {string|number[]} background Background color.
+ * @param {number} minimum Required contrast. @param {string} label Failure context. @returns {void}
+ */
+function assertContrast(foreground,background,minimum,label){
+  const values=[luminance(foreground),luminance(background)].sort((a,b)=>b-a);
+  const ratio=(values[0]+0.05)/(values[1]+0.05);
+  assert.ok(ratio>=minimum,`${label}: ${ratio.toFixed(2)}:1 must reach ${minimum}:1`);
+}
+
+/** Calculate the sRGB tint declared by a current audio component rule.
+ * @param {string} selector Component selector. @param {string} tone Actual status color.
+ * @param {object} tokens Appearance palette. @returns {number[]} Mixed RGB channels.
+ */
+function audioSurface(selector,tone,tokens){
+  const rule=css.match(new RegExp(`${selector.replaceAll('.','\\.')}\\{([^}]+)\\}`));
+  assert.ok(rule,`Missing audio component ${selector}`);
+  const mixture=rule[1].match(/background:color-mix\(in srgb,var\(--audio-tone\) ([\d.]+)%,var\(--card\)\)/);
+  assert.ok(mixture,`Missing sRGB surface for ${selector}`);
+  const fraction=Number(mixture[1])/100,foreground=rgb(tone),background=rgb(tokens['--card']);
+  return foreground.map((channel,index)=>channel*fraction+background[index]*(1-fraction));
 }
 
 test('subtle light colors retain readable body, accent and confirmation text',()=>{
-  const blocks=[...css.matchAll(/:root\s*\{([^}]+)\}/g),...css.matchAll(/:root\[data-theme="light"\]\s*\{([^}]+)\}/g)];
-  const tokens=Object.fromEntries(blocks.flatMap(block=>[...block[1].matchAll(/(--[\w-]+):\s*(#[\da-f]{6})(?=;|$)/gi)].map(match=>[match[1],match[2]])));
+  const tokens=palette('light');
   const pairs=[...['--paper','--card','--soft'].flatMap(bg=>['--ink','--muted','--accent'].map(fg=>[fg,bg])),['--card','--accent'],['--success-ink','--success-soft'],['--install-done','--card'],['--back-ink','--back-bg']];
   for(const [fg,bg] of pairs){
     assert.ok(tokens[fg]&&tokens[bg],`Missing palette tokens ${fg}/${bg}`);
-    const values=[luminance(tokens[fg]),luminance(tokens[bg])].sort((a,b)=>b-a);
-    assert.ok((values[0]+0.05)/(values[1]+0.05)>=4.5,`${fg} on ${bg} must reach 4.5:1`);
+    assertContrast(tokens[fg],tokens[bg],4.5,`${fg} on ${bg}`);
   }
   const base=browser();assert.equal(base.meta.content,tokens['--paper']);
 });
 
 test('requirement highlights have readable text and a distinct icon in each appearance',()=>{
-  const base=[...css.matchAll(/:root\s*\{([^}]+)\}/g)];
-  const automatic=[...css.matchAll(/:root:not\(\[data-theme\]\)\s*\{([^}]+)\}/g)];
   for(const theme of ['light','dark','automatic-dark']){
-    const overrides=theme==='automatic-dark'?automatic:[...css.matchAll(new RegExp(`:root\\[data-theme="${theme}"\\]\\s*\\{([^}]+)\\}`,'g'))];
-    const tokens=Object.fromEntries([...base,...overrides].flatMap(block=>[...block[1].matchAll(/(--[\w-]+):\s*(#[\da-f]{6})(?=;|$)/gi)].map(match=>[match[1],match[2]])));
+    const tokens=palette(theme);
     assert.notEqual(tokens['--requirement-bg'],tokens['--card']);
     for(const [foreground,minimum] of [['--requirement-ink',4.5],['--requirement-accent',3]]){
       assert.ok(tokens[foreground]&&tokens['--requirement-bg'],`${theme}: missing requirement colors`);
-      const values=[luminance(tokens[foreground]),luminance(tokens['--requirement-bg'])].sort((a,b)=>b-a);
-      assert.ok((values[0]+0.05)/(values[1]+0.05)>=minimum,`${theme}: ${foreground} must reach ${minimum}:1`);
+      assertContrast(tokens[foreground],tokens['--requirement-bg'],minimum,`${theme}: ${foreground}`);
     }
   }
 });
 
 test('copy confirmation keeps readable neutral text and a contrasting check in both themes',()=>{
-  const base=[...css.matchAll(/:root\s*\{([^}]+)\}/g)];
   for(const theme of ['light','dark']){
-    const blocks=[...base,...css.matchAll(new RegExp(`:root\\[data-theme="${theme}"\\]\\s*\\{([^}]+)\\}`,'g'))];
-    const tokens=Object.fromEntries(blocks.flatMap(block=>[...block[1].matchAll(/(--[\w-]+):\s*(#[\da-f]{6})(?=;|$)/gi)].map(match=>[match[1],match[2]])));
+    const tokens=palette(theme);
     for(const foreground of ['--ink','--install-done','--ack-pending'])for(const surface of ['--paper','--soft']){
-      const values=[luminance(tokens[foreground]),luminance(tokens[surface])].sort((a,b)=>b-a);
-      assert.ok((values[0]+0.05)/(values[1]+0.05)>=4.5,`${theme}: ${foreground} on ${surface}`);
+      assertContrast(tokens[foreground],tokens[surface],4.5,`${theme}: ${foreground} on ${surface}`);
     }
   }
   assert.doesNotMatch(css,/\.prerequisite-panel\s+\.copied\s*\{/,'legacy success styling must not recolor the whole button');
   assert.match(css,/\.command-copy\.copied\s+\.ui-icon\s*\{color:var\(--install-done\)/);
 });
+
+for(const theme of ['light','dark','automatic-dark']){
+  test(`installation heading, task, checkpoint, timing and trivia remain readable in ${theme}`,()=>{
+    const tokens=palette(theme);
+    for(const surface of ['--paper','--card','--soft']){
+      for(const foreground of ['--ink','--muted','--accent','--install-done']){
+        assert.ok(tokens[foreground]&&tokens[surface],`${theme}: missing ${foreground}/${surface}`);
+        assertContrast(tokens[foreground],tokens[surface],4.5,`${theme}: ${foreground} on ${surface}`);
+      }
+    }
+    assertContrast(tokens['--muted'],tokens['--requirement-bg'],4.5,`${theme}: attention instructions`);
+  });
+
+  test(`audio results retain readable labels and distinguishable icons in ${theme}`,()=>{
+    const tokens=palette(theme);
+    for(const status of ['pass','fail','check']){
+      const tone=tokens[`--audio-${status}`],surface=audioSurface('.audio-result',tone,tokens);
+      assertContrast(tokens['--ink'],surface,4.5,`${theme}: ${status} heading`);
+      assertContrast(tokens['--muted'],surface,4.5,`${theme}: ${status} description`);
+      assertContrast(tone,audioSurface('.audio-result-symbol',tone,tokens),3,`${theme}: ${status} icon`);
+      if(status==='check'){
+        assertContrast(tone,audioSurface('.audio-result-status',tone,tokens),4.5,`${theme}: checking badge`);
+      }else{
+        assertContrast(tokens['--audio-status-ink'],tone,4.5,`${theme}: ${status} badge`);
+      }
+    }
+  });
+}
 
 /** Execute the real early theme script with browser boundaries mocked.
  * @param {object} options Stored preference, system appearance and storage failures.

@@ -451,7 +451,7 @@ test('failure reports use direct safe paste links and fall back to Terminal othe
 
 
 test('live installation highlights OVOS, frames the task and explains sudo without claiming a detected prompt',()=>{
- const hint='If Terminal asks for your sudo password, enter your device password. Nothing appears while you type.';
+ const hint='Terminal may ask for your password';
  for(const status of ['started','downloading','installing']){
   const model={session:{...session,status,phase:1}};
   const html=progressView(model,base);
@@ -460,6 +460,15 @@ test('live installation highlights OVOS, frames the task and explains sudo witho
   assert.equal((html.match(/class="mark1-eye-ring"/g)||[]).length,2);
   assert.match(html,/<p>[^<]+<\/p><\/div><svg class="mark1-eye/);
   assert.ok(html.includes(hint));
+  assert.match(html,/<aside class="sudo-notice" role="note">/);
+  assert.equal(html.split(hint).length-1,1);
+  assert.ok(html.indexOf(hint)<html.indexOf('<section class="installation-flow"'),'password guidance is visible before the progress dashboard');
+  assert.match(html,/Type the password you use to sign in to your device, then press Enter\./);
+  assert.match(html,/You may not see any characters as you type\. This is normal\./);
+  assert.doesNotMatch(html,/<input[^>]+type="password"|role="alert"/);
+  assert.ok(progressView({...model,error:'unavailable'},base).includes(hint),'a tracking outage must not hide useful Terminal guidance');
+  assert.ok(!progressView({...model,error:'expired'},base).includes(hint));
+  assert.ok(!progressView({session:{...model.session,attention:true}},base).includes(hint),'the reported audio action takes priority');
   for(const paused of [{...model,error:'unavailable'},{session:{...model.session,attention:true}}]){
    const stopped=progressView(paused,base);
    assert.doesNotMatch(stopped,/ is-working |mark1-eye--animated/);
@@ -470,4 +479,10 @@ test('live installation highlights OVOS, frames the task and explains sudo witho
   assert.doesNotMatch(html,/ is-working /);
   assert.ok(!html.includes(hint));
  }
+});
+
+test('Windows progress asks for the Ubuntu password rather than the Windows login',()=>{
+ const html=progressView({session:{...session,status:'started'}},{...base,device:'windows'});
+ assert.match(html,/Type the password you set for Ubuntu, then press Enter\./);
+ assert.doesNotMatch(html,/password you use to sign in to your device/);
 });

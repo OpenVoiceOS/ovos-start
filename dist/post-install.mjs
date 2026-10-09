@@ -2,6 +2,7 @@ import { errorReportUrl } from './report-link.mjs';
 import { icon, deviceIcon } from './icons.mjs';
 import { CHECK_COMMAND, DEMOS, guideKind, progressCopy, installationMilestones, installationStages, installationTiming, installationUpdate, audioChecks, installationReceipts } from './install-progress.mjs';
 import { mark1Eye } from './mark1-eye.mjs';
+import { sudoPasswordNotice } from './terminal-notice.mjs';
 import { DEVICES } from './scenario.mjs';
 import { starterExamples, nextSteps, GUIDE_LINKS } from './post-install-content.mjs';
 
@@ -107,6 +108,7 @@ export function progressView(model,state,{preview=false,prerequisitesReady=true}
 
   const working=['started','downloading','installing'].includes(model.session?.status);
   const active=!model.error&&!model.session?.attention&&working;
+  const showPasswordNotice=working&&!model.session?.attention&&model.error!=='expired';
   const reconnecting=!!model.error&&model.error!=='expired'&&!['failed','cancelled'].includes(model.session?.status);
   const stages=installationStages(model),receipts=completedStepsView(model);
   const current=installationMilestones(model).find(step=>step.state==='current');
@@ -119,12 +121,13 @@ export function progressView(model,state,{preview=false,prerequisitesReady=true}
     <div class="installation-title-row"><h1 class="progress-title" tabindex="-1" data-progress-focus="heading" aria-live="polite" aria-atomic="true">${escape(preview?`Preview: ${headline}`:headline).replace(/\bOVOS\b/g,'<em>OVOS</em>')}</h1>${copy.installed?`<button type="button" class="button button-secondary rerun-wizard" data-rerun-wizard data-progress-focus="rerun-wizard" aria-describedby="rerun-wizard-note">${icon('refresh')}<span>Run the wizard again</span></button>`:''}</div>
     ${copy.installed?'<p class="rerun-wizard-note" id="rerun-wizard-note">Your choices are kept. Review them before installing again.</p>':''}
     ${copy.installed||working?'':`<p class="progress-description">${phase.description}</p>`}</header>
+    ${showPasswordNotice?sudoPasswordNotice(state.device):''}
     ${copy.installed?`<div class="installation-receipt"><span class="installation-confirmed">${icon('check')}<span>Installation complete</span></span>${installationReceipts(model).some(step=>step.id==='services_started')?`<span class="installation-confirmed">${icon('check')}<span>Services started</span></span>`:''}<div class="installation-timing" data-install-timing>${timingView(model)}</div></div>`:`<section class="installation-flow" aria-label="${model.error?'Last confirmed progress':'Installation progress'}">
       ${working?`<div class="installation-current${attention?' installation-current--attention':''}" role="status" aria-live="polite" aria-atomic="true">${mark1Eye({animated:active})}<div><h2>${task.title}</h2><p>${task.description}</p></div>${mark1Eye({animated:active})}</div>`:''}
       ${receipts||`<ol class="installation-stages ${stages.length===5?'installation-stages--detailed':''}" aria-live="polite" aria-atomic="true">${stages.map(stage=>`<li class="stage-${stage.state}" ${stage.state==='current'?'aria-current="step"':''}><span class="stage-symbol" aria-hidden="true">${stage.state==='complete'?icon('check'):icon(stage.icon)}</span><span class="stage-label">${stage.label}</span><span class="sr-only">${stage.state==='complete'?'Completed':stage.state==='current'?(model.error?'Last confirmed progress':'In progress'):'Not reached'}</span></li>`).join('')}</ol>`}
       <div class="installation-meta"><div class="installation-timing" data-install-timing>${timingView(model)}</div>${reconnecting?`<span class="connection-badge is-reconnecting">${icon('refresh')}<span>Reconnecting…</span></span>`:''}</div>
     </section>`}
-    ${active?`<p class="installation-instruction">${icon('terminal')}<span>Keep this page open. Follow any prompts in Terminal.<span class="sudo-password-hint">If Terminal asks for your sudo password, enter your device password. Nothing appears while you type.</span>${kind!=='hub'?'<span class="audio-check-reminder">At the end, answer the speaker and microphone questions in Terminal.</span>':''}</span></p>`:''}
+    ${active?`<p class="installation-instruction">${icon('terminal')}<span>Keep this page open. Follow any prompts in Terminal.${kind!=='hub'?'<span class="audio-check-reminder">At the end, answer the speaker and microphone questions in Terminal.</span>':''}</span></p>`:''}
     ${model.error&&copy.description?`<div class="connection-notice"><p>${copy.description}</p>${reconnecting?'<button class="button button-secondary progress-retry" data-progress-focus="refresh" data-progress-retry>'+icon('refresh')+'<span>Try again</span></button>':''}</div>`:model.session?.attention&&!copy.installed&&!working?`<p class="progress-description">${phase.description}</p>`:''}
     ${!copy.installed&&working?`<details class="install-help-short" data-progress-disclosure="check"><summary data-progress-focus="check-summary">After a restart</summary><p>Open Terminal on your device and run this check. It checks services and helps you test your voice.</p><button class="text-button" data-progress-focus="copy-check" data-copy-check>Copy check command</button><textarea id="post-check-command" data-progress-focus="check-field" aria-label="Check sound and microphone" class="command check-command" readonly rows="2" data-no-translate>${escape(CHECK_COMMAND)}</textarea></details>`:''}
     ${copy.installed&&receipts?`<details class="install-help-short completed-install-details" data-progress-disclosure="history"><summary data-progress-focus="history-summary">Installation details</summary>${receipts}</details>`:''}

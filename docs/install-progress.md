@@ -1,4 +1,4 @@
-Last Edit: Codex (GPT-6) - 2026-10-09 - Motive: Document rotating trivia, framed task feedback and explicit sudo guidance.
+Last Edit: Codex (GPT-6) - 2026-10-09 - Motive: Document prominent password guidance and validation in both themes.
 
 # Installation follow-up
 
@@ -6,11 +6,11 @@ Last Edit: Codex (GPT-6) - 2026-10-09 - Motive: Document rotating trivia, framed
 
 [`progressView`](../dist/post-install.mjs) highlights **OVOS** in the heading using translated emphasis and centers the current task between two synchronized decorative LED eyes. The smaller waiting panel retains its single centered eye. The current checkpoint icon has a gentle blue glow only while live progress is available; the active task eyes retain a soft halo when completion receipts replace the checkpoint rail. Errors and attention stop motion. Reduced-motion and forced-color settings replace the glow with a static outline. On phones the flanking eyes shrink while the task text stays centered.
 
-The handoff and active progress explicitly explain that a sudo prompt requires the device password and that typing is invisible. This is conditional guidance, not a claim that the browser detected a prompt. The launcher reports installing only after its initial sudo command succeeds; the current API does not report authentication prompts.
+Version 0.62.1 uses a shared amber [`sudoPasswordNotice`](../dist/terminal-notice.mjs) after the paste instruction and above the active progress dashboard. It tells users to enter their device login password in Terminal, press Enter and expect that typing may be invisible. Windows users are specifically told to use their Ubuntu password. The notice remains visible during a tracking outage and yields to audio attention, expired tracking or a finished/stopped installation. Its text and icon use the existing high-contrast requirement colors in light, dark and automatic-dark themes; forced colors use the system palette. It is a non-live note, so progress polling does not repeatedly announce it. This is conditional guidance, not a claim that the browser detected a prompt. The launcher reports installing only after its initial sudo command succeeds; the current API does not report authentication prompts.
 
 [`TriviaRotation`](../dist/trivia-rotation.mjs) changes facts every 20 seconds during active installation without resetting the timer on each progress poll. Pause/Resume and manual Next remain available; a manually chosen fact gets a full reading interval. Rotation pauses for hidden pages, reduced motion, hover/focus in trivia, attention, connection errors and completion. Automatic updates preserve controls/focus and do not announce unsolicited facts to screen readers. All 12 UI catalogs include the controls, sudo instruction and emphasized progress headings.
 
-Validation: [rotation lifecycle tests](../test/trivia-rotation.test.mjs), [progress rendering tests](../test/install-progress.test.mjs) and [translation tests](../test/i18n.test.mjs). Browser verification uses simulated installation progress without running an installer.
+Validation: [rotation lifecycle tests](../test/trivia-rotation.test.mjs), [progress rendering tests](../test/install-progress.test.mjs) and [translation tests](../test/i18n.test.mjs), [handoff tests](../test/views.test.mjs) and [theme contrast tests](../test/theme.test.mjs). Browser verification uses simulated installation progress without running an installer.
 
 ## Version 0.60.0: final speaker and microphone checks
 

@@ -1,6 +1,10 @@
-Last Edit: Codex - 2026-10-08 - Motive: Document local calendar and timer interface icons.
+Last Edit: Codex (GPT-6) - 2026-10-09 - Motive: Document local speaker and microphone status icons.
 
 # Identity and artwork
+
+## Audio check icons
+
+[`icons.mjs`](../dist/icons.mjs) adds original speaker and microphone SVGs for `audioChecksView` in [`post-install.mjs`](../dist/post-install.mjs). Their 24×24 bounds, rounded strokes and `currentColor` match the existing local interface symbols. They are decorative beside explicit result labels and status text, require no font or network request, and share the repository's Apache-2.0 license. The check, information and clock status markers reuse bundled Material icons. No recording or microphone access is involved in rendering these symbols; see the [audio-result contract](install-progress.md).
 
 ## Starter question icons
 

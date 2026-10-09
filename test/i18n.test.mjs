@@ -162,6 +162,29 @@ test('device update age and terminal guidance translate in every locale',()=>{
  }
 });
 
+test('final audio checks and distinct result states translate in every locale',()=>{
+ const states=['Not checked','Checking','Passed','Failed','Awaiting result'];
+ const messages=['At the end, answer the speaker and microphone questions in Terminal.',
+  'Final audio checks','Speaker and microphone checks passed',
+  'Answer the questions in Terminal. Results appear here.','Confirmed on your device.',
+  'Speaker','Microphone & voice',...states,'Waiting for the sound check.',
+  'Listen for the test sound.','You confirmed you heard it.','Check the volume and audio output.',
+  'Waiting for the voice check.','Say the wake word, then ask a question.',
+  'You confirmed OVOS replied.','Check your microphone and try the voice question again.'];
+ for(const locale of UI_LOCALES){
+  const catalog=read(locale);
+  for(const message of messages){
+   assert.ok(Object.hasOwn(catalog,message),`${locale}: ${message}`);
+   assert.ok(catalog[message].trim(),`${locale}: empty audio-check message`);
+   assert.equal(translateMessage(message,catalog),catalog[message],`${locale}: ${message}`);
+   if(locale==='en-us')assert.equal(catalog[message],message);
+   else assert.notEqual(catalog[message],message,`${locale}: untranslated audio-check message`);
+  }
+  assert.equal(new Set(states.map(message=>catalog[message])).size,states.length,`${locale}: distinct audio-check states`);
+  assert.match(catalog['You confirmed OVOS replied.'],/OVOS/,locale);
+ }
+});
+
 test('prerequisite option labels translate explicitly without changing OS values or language names',async()=>{
  const originalFetch=globalThis.fetch;
  try{

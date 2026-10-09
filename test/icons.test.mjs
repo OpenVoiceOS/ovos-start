@@ -22,8 +22,8 @@ test('untrusted icon names cannot inject markup or access inherited properties',
   }
 });
 
-test('example icons remain decorative local SVGs with consistent bounds',()=>{
-  for(const name of ['calendar','timer']){
+test('example and audio icons remain decorative local SVGs with consistent bounds',()=>{
+  for(const name of ['calendar','timer','speaker','microphone']){
     const markup=icon(name);
     assert.match(markup,/viewBox="0 0 24 24"/);
     assert.match(markup,/aria-hidden="true" focusable="false"/);

@@ -1,6 +1,6 @@
 import { errorReportUrl } from './report-link.mjs';
 import { icon, deviceIcon } from './icons.mjs';
-import { CHECK_COMMAND, DEMOS, guideKind, progressCopy, installationMilestones, installationStages, installationTiming, installationUpdate } from './install-progress.mjs';
+import { CHECK_COMMAND, DEMOS, guideKind, progressCopy, installationMilestones, installationStages, installationTiming, installationUpdate, audioChecks } from './install-progress.mjs';
 import { mark1Eyes } from './mark1-eyes.mjs';
 import { DEVICES } from './scenario.mjs';
 import { starterExamples, nextSteps, GUIDE_LINKS } from './post-install-content.mjs';
@@ -64,8 +64,13 @@ function checkCommandView(label,hub=false) {
  * @param {object} model Current connection status.
  * @returns {string} One clear next action that matches the terminal menu.
  */
-function pendingVoiceView(model) {
-  return `<section class="voice-check-panel" aria-label="Voice check pending"><div class="voice-check-heading"><span class="voice-check-symbol" aria-hidden="true">${icon('terminal')}</span><div><span class="voice-check-pending">Voice check pending</span><h2>Check your speaker and microphone</h2></div></div><p class="voice-check-instruction">Follow the checks in Terminal. At the first prompt, enter 1 and press Enter.</p>${!model.error?'<p class="voice-check-wait">Keep this page open for the check result.</p>':''}${checkCommandView('Terminal already closed?')}</section>`;
+function audioChecksView(model) {
+  const checks=audioChecks(model),complete=progressCopy(model).complete;
+  const started=checks.some(check=>check.status!=='pending');
+  return `<section class="voice-check-panel ${complete?'audio-checks-passed':''}" aria-label="${complete?'Speaker and microphone checks passed':'Voice check pending'}"><div class="voice-check-heading"><span class="voice-check-symbol" aria-hidden="true">${icon(complete?'check':'terminal')}</span><div><span class="voice-check-pending">Final audio checks</span><h2>${complete?'Speaker and microphone checks passed':'Check your speaker and microphone'}</h2></div></div>
+    <p class="voice-check-instruction">${complete?'Confirmed on your device.':started?'Answer the questions in Terminal. Results appear here.':'Follow the checks in Terminal. At the first prompt, enter 1 and press Enter.'}</p>
+    <ul class="audio-check-results" aria-live="polite" aria-atomic="true">${checks.map(check=>`<li class="audio-result audio-result--${check.status}" data-audio-result="${check.id}"><span class="audio-result-symbol" aria-hidden="true">${icon(check.icon)}</span><div class="audio-result-copy"><h3>${escape(check.label)}</h3><p>${check.description}</p></div><span class="audio-result-status">${icon(check.status==='passed'?'check':check.status==='failed'?'info':'schedule')}<span>${check.statusLabel}</span></span></li>`).join('')}</ul>
+    ${complete?'':`${!model.error?'<p class="voice-check-wait">Keep this page open for the check result.</p>':''}${checkCommandView(model.session?.attention?'Run the check again':'Terminal already closed?')}`}</section>`;
 }
 
 /** Curated examples stay optional until voice is confirmed; hubs get pairing guidance.
@@ -94,7 +99,7 @@ export function progressView(model,state,{preview=false,prerequisitesReady=true}
 
   const working=['started','downloading','installing'].includes(model.session?.status);
   const active=!model.error&&!model.session?.attention&&working;
-  const reconnecting=!!model.error&&model.error!=='expired'&&!['failed','cancelled','voice_ready'].includes(model.session?.status);
+  const reconnecting=!!model.error&&model.error!=='expired'&&!['failed','cancelled'].includes(model.session?.status);
   const stages=installationStages(model);
   const current=installationMilestones(model).find(step=>step.state==='current');
   const detailed=working&&model.session?.phase>0?current:null;
@@ -109,11 +114,11 @@ export function progressView(model,state,{preview=false,prerequisitesReady=true}
       <ol class="installation-stages ${stages.length===5?'installation-stages--detailed':''}" aria-live="polite" aria-atomic="true">${stages.map(stage=>`<li class="stage-${stage.state}" ${stage.state==='current'?'aria-current="step"':''}><span class="stage-symbol" aria-hidden="true">${stage.state==='complete'?icon('check'):icon(stage.icon)}</span><span class="stage-label">${stage.label}</span><span class="sr-only">${stage.state==='complete'?'Completed':stage.state==='current'?(model.error?'Last confirmed progress':'In progress'):'Not reached'}</span></li>`).join('')}</ol>
       <div class="installation-meta"><div class="installation-timing" data-install-timing>${timingView(model)}</div>${reconnecting?`<span class="connection-badge is-reconnecting">${icon('refresh')}<span>Reconnecting…</span></span>`:''}</div>
     </section>`}
-    ${active?`<p class="installation-instruction">${icon('terminal')}<span>Keep this page open. Follow any prompts in Terminal.</span></p>`:''}
+    ${active?`<p class="installation-instruction">${icon('terminal')}<span>Keep this page open. Follow any prompts in Terminal.${kind!=='hub'?'<span class="audio-check-reminder">At the end, answer the speaker and microphone questions in Terminal.</span>':''}</span></p>`:''}
     ${model.error&&copy.description?`<div class="connection-notice"><p>${copy.description}</p>${reconnecting?'<button class="button button-secondary progress-retry" data-progress-focus="refresh" data-progress-retry>'+icon('refresh')+'<span>Try again</span></button>':''}</div>`:model.session?.attention&&!copy.installed?`<p class="progress-description">${phase.description}</p>`:''}
     ${!copy.installed&&working?`<details class="install-help-short" data-progress-disclosure="check"><summary data-progress-focus="check-summary">After a restart</summary><p>Open Terminal on your device and run this check. It checks services and helps you test your voice.</p><button class="text-button" data-progress-focus="copy-check" data-copy-check>Copy check command</button><textarea id="post-check-command" data-progress-focus="check-field" aria-label="Check sound and microphone" class="command check-command" readonly rows="2" data-no-translate>${escape(CHECK_COMMAND)}</textarea></details>`:''}
     ${copy.installed?`<div class="post-install-guide">
-      ${!copy.complete&&kind!=='hub'?pendingVoiceView(model):''}
+      ${kind!=='hub'?audioChecksView(model):''}
       ${gettingStartedView(state,copy.complete)}
       <section class="post-next-steps" aria-label="Next steps"><h2>Next steps</h2><div class="next-step-grid">${nextSteps(state).map(item=>`<a class="next-step-card" href="${item.url}" target="_blank" rel="noopener noreferrer" data-next-step="${item.id}" data-progress-focus="next-${item.id}"><span class="next-step-symbol" aria-hidden="true">${icon(item.icon)}</span><div class="next-step-copy"><h3>${item.title}</h3><p>${item.description}</p><span class="next-step-action">${item.action}</span></div></a>`).join('')}</div>${state.locale!=='en-us'?'<p class="details-note">Guides may be in English.</p>':''}</section>
       ${copy.complete||kind==='hub'?checkCommandView(kind==='hub'?'Check OVOS services':'Run the check again',kind==='hub'):''}

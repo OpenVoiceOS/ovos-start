@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-09 - Motive: Record the validated branded installer hostname and its DNS TTL.
+Last Edit: Codex - 2026-10-09 - Motive: Document durable audio-check results and the compatible database migration.
 
 # Host the wizard API
 
@@ -22,7 +22,7 @@ Use a dedicated service account. Its database directory must be owned by that ac
 
 [`deploy/ovos-start-api.service`](../deploy/ovos-start-api.service) supplies the systemd service: the dedicated `ovos-start` user, private state directory, automatic restart and a 256 MiB memory limit. It reads `/etc/ovos-start/api.env`, runs `/opt/ovos-start/current/server/node-server.mjs` using `/opt/ovos-start/node/bin/node`, and keeps the application filesystem read-only. The runtime and `current` symlinks should be managed by root. Enable it only after the runtime, application files and private environment are in place.
 
-[`openDatabase`](../server/node-database.mjs) applies the relay's four migrations in a transaction and records their checksums. Restarting does not replay them. It rejects changed migrations, symlinks and a public state directory. SQLite uses WAL, full synchronous writes and a one-second busy timeout. Back up the live database using SQLite's backup facilities; copying only the main file while WAL is active is insufficient.
+[`openDatabase`](../server/node-database.mjs) applies the relay's five migrations in a transaction and records their checksums. Restarting does not replay them. It rejects changed migrations, symlinks and a public state directory. SQLite uses WAL, full synchronous writes and a one-second busy timeout. Back up the live database using SQLite's backup facilities; copying only the main file while WAL is active is insufficient.
 
 ## API contract
 
@@ -41,6 +41,14 @@ The service-only relay routes `/v1/sessions` and `/v1/session` are inaccessible 
 Generate a 32-byte browser credential with `crypto.getRandomValues`, retain it in the wizard's first-party storage, and send its lowercase hex encoding in `Authorization: Bearer ...`. Send JSON and use `credentials: 'omit'`. The server derives an opaque owner using HMAC; a different browser credential cannot read another owner's install. Do not include this credential in share links, exported recipes or commands. Clearing browser storage loses access to that browser's earlier progress. The public frontend never receives `RELAY_ADMIN_KEY` or the installer write token.
 
 Cross-site cookies are unnecessary. CORS allows only configured wizard origins. It is not a replacement for bearer authentication. Requests are capped at 1 KiB and have bounded HTTP timeouts. Rate limits allow 180 requests per client address and 1,200 globally per minute, plus 10 new sessions per address and 60 globally per minute. At most 2,000 session rows can be stored; the durable row limit survives process restarts, and expired rows are pruned as new sessions are created. Minute counters reset with the process. Restore/status operations do not consume the new-session quota.
+
+### Speaker and microphone checks
+
+Owner-scoped status responses include `audioStatus` and `microphoneStatus`: `pending`, `checking`, `passed` or `failed`. The installer sends only fixed events (`audio_checking`, `audio_passed`, `audio_failed`, `microphone_checking`, `microphone_passed`, `microphone_failed`). These callbacks contain no recording, device name or freeform diagnostic. [`transition`](../server/relay/server/worker.mjs) accepts them after installation, including later checks after `voice_ready`, without regressing the installation milestone. Failed or cancelled installations cannot be changed.
+
+A new passed result must follow its `checking` event; duplicate passed results are harmless. Failure is always recorded after installation, even if the checking callback was missed, so an old success cannot hide a failing retry. Starting a new speaker check resets the microphone result to `pending`. Failures set the attention flag; a retry clears it when neither check remains failed. `needs_attention` changes unfinished checks back to `pending` while keeping completed results. A callback can be missed, so a pending result means no result was received, not a hardware failure. Two passed checks do not automatically mark voice readiness; the existing `voice_ready` callback still requires a confirmed assistant reply, confirms both checks for older launchers, and clears attention even when the installation reached that milestone before a retry.
+
+[`0004_audio_checks.sql`](../server/relay/drizzle/0004_audio_checks.sql) adds enum-constrained columns with `pending` defaults and backfills both as `passed` only for existing `voice_ready` sessions. Results survive API restarts, use the existing owner authentication and expiry, and share the 120-update limit and compare-and-swap protection. [`node-api-relay.test.mjs`](../test/node-api-relay.test.mjs) covers outcomes, retries, ordering, concurrent updates and compatibility; [`node-api.test.mjs`](../test/node-api.test.mjs) verifies migration from existing databases, persistence and owner isolation.
 
 Only a loopback proxy may provide `CF-Connecting-IP`, and that header affects throttling only. A direct local request falls back to its TCP address. Do not bind the Node listener publicly or use a proxy that passes user-supplied Cloudflare identity headers unchanged. Do not put an interactive Cloudflare Access challenge in front of installer callback/download routes.
 

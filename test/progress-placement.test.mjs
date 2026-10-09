@@ -19,6 +19,12 @@ test('waiting stays in the handoff; actual installation replaces it with progres
   model={session:{status}};c.updateInstallProgress();assert.equal(waiting.hidden,true,status);assert.equal(region.hidden,false,status);assert.equal(card.hidden,true,status);assert.equal(intro.hidden,true,status);assert.equal(setup.hidden,true,status);assert.equal(navigation.hidden,true,status);assert.equal((region.innerHTML.match(/<h1/g)||[]).length,1);
   if(INSTALLED_STATES.includes(status))assert.match(region.innerHTML,/demo-thumbnail/);
  }
+ model={session:{status:'services_ready',audioStatus:'checking',microphoneStatus:'pending'}};c.updateInstallProgress();
+ assert.match(region.innerHTML,/audio-result--checking" data-audio-result="audio"/);
+ model.session.audioStatus='passed';c.updateInstallProgress();
+ assert.match(region.innerHTML,/audio-result--passed" data-audio-result="audio"/);
+ model.session.microphoneStatus='failed';c.updateInstallProgress();
+ assert.match(region.innerHTML,/audio-result--failed" data-audio-result="microphone"/);
  for(const status of ['failed','cancelled']){model={session:{status}};c.updateInstallProgress();assert.equal(card.hidden,true);assert.equal(region.hidden,false);assert.match(region.innerHTML,/install-recovery/);assert.equal(setup.hidden,true);assert.equal(navigation.hidden,true);assert.equal(trivia.hidden,true);assert.equal(heading.textContent,status==='failed'?'Installation stopped':'Installation cancelled');}
  model={session:{status:'failed'}};c.updateInstallProgress();assert.doesNotMatch(region.innerHTML,/data-copy-report/);
  model={session:{status:'failed',errorUrl:'https://paste.uoi.io/report123'}};c.updateInstallProgress();assert.match(region.innerHTML,/data-copy-report/);

@@ -2,7 +2,7 @@ import { encodeRecipeCode, decodeRecipeCode, decodeRecipeEnvelope, RECIPE_TTL_SE
 import { validateState, decodePreset } from './scenario.mjs';
 
 /** Public launcher validates the code's one-hour start deadline on the target. */
-export const LAUNCHER_URL = 'https://raw.githubusercontent.com/OpenVoiceOS/ovos-start-launcher/09638d68820a4bfafd3ffb9f38b219e2d7007bd1/v2.sh';
+export const LAUNCHER_URL = 'https://raw.githubusercontent.com/OpenVoiceOS/ovos-start-launcher/a3209f200b32666ae2aeb2b7258bdb381fc5d487/v2.sh';
 /** Branded download alias; browser progress and launcher callbacks keep their API origin. */
 export const INSTALL_LINK_ORIGIN = 'https://installer.openvoiceos.pt';
 

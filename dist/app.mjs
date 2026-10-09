@@ -726,7 +726,7 @@ function updateInstallProgress() {
   const trivia=wizard.querySelector('.project-fact');if(trivia)trivia.hidden=stopped;
   const setup=wizard.querySelector('.install-options');if(setup)setup.hidden=started;
   const setupNav=document.querySelector('.steps');if(setupNav)setupNav.hidden=started;
-  const signature=JSON.stringify([state.locale,model.session?.status,model.session?.phase,model.session?.progressRank,model.session?.attention,model.session?.installedAt,model.session?.errorUrl,model.error]);
+  const signature=JSON.stringify([state.locale,model.session?.status,model.session?.phase,model.session?.progressRank,model.session?.attention,model.session?.audioStatus,model.session?.microphoneStatus,model.session?.installedAt,model.session?.errorUrl,model.error]);
   if(signature!==progressSignature){
     region.innerHTML=pending?'':progressView(model,state,{preview:previewOnly,prerequisitesReady:prerequisiteGate.ready(state.device)});
     if(waiting){waiting.innerHTML=pending?waitingView(model):'';applyTranslations(waiting,state.locale);}

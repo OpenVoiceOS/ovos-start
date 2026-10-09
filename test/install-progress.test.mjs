@@ -1,9 +1,9 @@
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {InstallTracker,progressCopy,guideKind,VOICE_EXAMPLES,CHECK_COMMAND,DEMOS,installationStages,installationMilestones,installationTiming,installationUpdate} from '../dist/install-progress.mjs';
+import {InstallTracker,progressCopy,guideKind,VOICE_EXAMPLES,CHECK_COMMAND,DEMOS,installationStages,installationMilestones,installationTiming,installationUpdate,audioChecks} from '../dist/install-progress.mjs';
 import {progressView,timingView} from '../dist/post-install.mjs';
-import {DEFAULTS} from '../dist/scenario.mjs';
+import {DEFAULTS,DEVICES} from '../dist/scenario.mjs';
 import {issueSetup,buildShortCommand,buildSetupScript,readSetupSession} from '../dist/short-setup.mjs';
 const base={...DEFAULTS,device:'pi'},now=1800000000;
 const session={id:'b'.repeat(32),launchToken:'d'.repeat(22),status:'waiting',attention:false,createdAt:now,updatedAt:now,expiresAt:now+86400};
@@ -263,7 +263,7 @@ test('installed services never imply verified voice; pending instructions match 
   const html=progressView({session:{...session,status,attention},error},base);
   assert.match(html,/Installation complete/);assert.match(html,/Voice check pending/);
   assert.match(html,/At the first prompt, enter 1 and press Enter/);
-  assert.match(html,/Terminal already closed/);assert.match(html,/data-copy-check/);
+  assert.match(html,attention?/Run the check again/:/Terminal already closed/);assert.match(html,/data-copy-check/);
   assert.doesNotMatch(html,/Your voice check passed|A check needs your attention|installation-stages|mark1-eyes--animated/);
   assert.match(html,/<details class="voice-examples-preview"[^>]*><summary[^>]*>[\s\S]*?Try asking[\s\S]*?After your voice check[\s\S]*?Show examples[\s\S]*?<\/summary>/);
   assert.doesNotMatch(html,/<details class="voice-examples-preview"[^>]* open/);
@@ -278,6 +278,57 @@ test('voice confirmation reveals the guide and keeps a check-again disclosure',(
   assert.match(html,/Your voice check passed/);assert.match(html,/Try asking/);
   assert.match(html,/Run the check again/);assert.match(html,/What time is it/);
   assert.doesNotMatch(html,/Voice check pending|At the first prompt|Terminal already closed|installation-stages/);
+ }
+});
+
+test('final audio guidance appears during installation and reports independent device results',()=>{
+ const hint='At the end, answer the speaker and microphone questions in Terminal.';
+ for(const device of Object.keys(DEVICES)){
+  assert.ok(progressView({session:{...session,status:'installing'}},{...base,device}).includes(hint));
+ }
+ assert.ok(!progressView({session:{...session,status:'installing'}},{...base,experience:'hub'}).includes(hint));
+ const model={session:{...session,status:'services_ready',audioStatus:'passed',microphoneStatus:'failed',attention:true}};
+ assert.deepEqual(audioChecks(model).map(check=>check.status),['passed','failed']);
+ const html=progressView(model,base);
+ assert.match(html,/audio-result--passed" data-audio-result="audio"/);
+ assert.match(html,/audio-result--failed" data-audio-result="microphone"/);
+ assert.match(html,/Microphone &amp; voice/);assert.match(html,/Results appear here/);
+ assert.match(html,/OVOS is installed/);assert.doesNotMatch(html,/Installation stopped|Speaker and microphone checks passed/);
+ assert.doesNotMatch(progressView(model,{...base,experience:'hub'}),/data-audio-result/);
+ assert.deepEqual(audioChecks({session:{...session,status:'installed'}}).map(check=>check.status),['pending','pending']);
+ const offline=audioChecks({session:{...session,status:'installed',audioStatus:'checking'},error:'unavailable'});
+ assert.equal(offline[0].statusLabel,'Awaiting result');
+});
+
+test('a later failed voice check replaces old success without undoing installation',()=>{
+ const old={session:{...session,status:'voice_ready'}};
+ assert.deepEqual(audioChecks(old).map(check=>check.status),['passed','passed']);
+ const rerun={session:{...old.session,audioStatus:'passed',microphoneStatus:'failed',attention:true}};
+ assert.equal(progressCopy(rerun).complete,false);assert.equal(progressCopy(rerun).installed,true);
+ const html=progressView(rerun,base);
+ assert.match(html,/OVOS is installed/);assert.match(html,/audio-result--failed/);
+ assert.doesNotMatch(html,/Your voice check passed|Speaker and microphone checks passed/);
+ const complete=progressView({session:{...rerun.session,microphoneStatus:'passed',attention:false}},base);
+ assert.match(complete,/Speaker and microphone checks passed/);
+ assert.equal((complete.match(/audio-result--passed/g)||[]).length,2);
+ assert.match(complete,/Run the check again/);
+});
+
+test('completed checks poll slowly for reruns, speed up for a new check and stop at expiry',async()=>{
+ let clock=now*1000,value={...session,status:'voice_ready',audioStatus:'passed',microphoneStatus:'passed'};
+ const delays=[];
+ const tracker=new InstallTracker({fetcher:async()=>reply(value),now:()=>clock,schedule:(fn,delay)=>{delays.push(delay);return 1;},cancel(){}});
+ await tracker.connect('code');assert.equal(delays.at(-1),30000);
+ value={...value,audioStatus:'checking',microphoneStatus:'pending',updatedAt:now+1};await tracker.poll();assert.equal(delays.at(-1),5000);assert.equal(progressCopy(tracker.snapshot()).complete,false);
+ value={...value,audioStatus:'failed',attention:true,updatedAt:now+2};await tracker.poll();assert.equal(audioChecks(tracker.snapshot())[0].status,'failed');
+ clock=(value.expiresAt-1)*1000;tracker.queue();assert.equal(delays.at(-1),1000);
+ clock=value.expiresAt*1000;const count=delays.length;tracker.queue();assert.equal(tracker.error,'expired');assert.equal(delays.length,count);tracker.stop();
+});
+
+test('tracker rejects unknown check values and accepts legacy absent fields',async()=>{
+ for(const field of ['audioStatus','microphoneStatus'])for(const value of ['success','<script>',null,1,{}]){
+  const tracker=new InstallTracker({fetcher:async()=>reply({...session,[field]:value}),schedule:()=>1,cancel(){}});
+  assert.equal(await tracker.connect('code'),null);assert.equal(tracker.error,'unavailable');tracker.stop();
  }
 });
 

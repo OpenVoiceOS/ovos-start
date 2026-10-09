@@ -920,11 +920,13 @@
   "Check Apple menu → About This Mac before continuing.": "Consulta el menú Apple → Quant a aquest Mac abans de continuar.",
   "The installer uses the latest main branch.": "L’instal·lador fa servir la versió més recent de la branca main.",
   "Help improve <em>OVOS.</em>": "Ajuda a millorar <em>OVOS.</em>",
-  "Share installation details to help us improve OVOS on devices like yours.": "Comparteix informació de la instal·lació per ajudar-nos a millorar OVOS en dispositius com el teu.",
-  "Share installation diagnostics": "Comparteix dades de diagnòstic de la instal·lació",
-  "Optional. You can continue without sharing.": "És opcional. Pots continuar sense compartir dades.",
+  "Help us focus on the devices and systems you use.": "Ajuda’ns a centrar-nos en els dispositius i sistemes que fas servir.",
+  "Share setup statistics": "Comparteix estadístiques d’instal·lació",
+  "Optional. Share device, system and installation details.": "Opcional. Comparteix dades del dispositiu, el sistema i la instal·lació.",
   "What is shared?": "Quines dades es comparteixen?",
   "Uses a Python environment; no GUI.": "Fa servir un entorn Python, sense interfície gràfica.",
   "Includes the screen interface.": "Inclou la interfície de pantalla.",
-  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Motors locals: onnx-asr i phoonnx. El processament de veu local fa servir un entorn Python. Els models es baixen durant la instal·lació. El rendiment varia segons el dispositiu."
+  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Motors locals: onnx-asr i phoonnx. El processament de veu local fa servir un entorn Python. Els models es baixen durant la instal·lació. El rendiment varia segons el dispositiu.",
+  "View installation statistics": "Veure estadístiques d’instal·lació",
+  "On": "Activat"
 }

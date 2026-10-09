@@ -920,11 +920,13 @@
   "Check Apple menu → About This Mac before continuing.": "Jarraitu aurretik, begiratu Apple menua → Mac honi buruz.",
   "The installer uses the latest main branch.": "Instalatzaileak main adarraren azken bertsioa erabiltzen du.",
   "Help improve <em>OVOS.</em>": "Lagundu <em>OVOS</em> hobetzen.",
-  "Share installation details to help us improve OVOS on devices like yours.": "Partekatu instalazioari buruzko datuak, zurea bezalako gailuetan OVOS hobetzen laguntzeko.",
-  "Share installation diagnostics": "Partekatu instalazioaren diagnostiko-datuak",
-  "Optional. You can continue without sharing.": "Aukerakoa da. Datuak partekatu gabe jarrai dezakezu.",
+  "Help us focus on the devices and systems you use.": "Lagundu gure lana erabiltzen dituzun gailu eta sistemetara bideratzen.",
+  "Share setup statistics": "Partekatu instalazio-estatistikak",
+  "Optional. Share device, system and installation details.": "Aukerakoa. Partekatu gailuari, sistemari eta instalazioari buruzko datuak.",
   "What is shared?": "Zer datu partekatzen dira?",
   "Uses a Python environment; no GUI.": "Python ingurune bat erabiltzen du, interfaze grafikorik gabe.",
   "Includes the screen interface.": "Pantailako interfazea barne dakar.",
-  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Tokiko hornitzaileak: onnx-asr eta phoonnx. Gailuko ahotsak Python ingurunea erabiltzen du. Modeloak instalazioan deskargatzen dira. Errendimendua gailuaren araberakoa da."
+  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Tokiko hornitzaileak: onnx-asr eta phoonnx. Gailuko ahotsak Python ingurunea erabiltzen du. Modeloak instalazioan deskargatzen dira. Errendimendua gailuaren araberakoa da.",
+  "View installation statistics": "Ikusi instalazio-estatistikak",
+  "On": "Aktibatuta"
 }

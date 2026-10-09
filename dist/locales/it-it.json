@@ -920,11 +920,13 @@
   "Check Apple menu → About This Mac before continuing.": "Controlla il menu Apple → Informazioni su questo Mac prima di continuare.",
   "The installer uses the latest main branch.": "L’installatore usa la versione più recente del ramo main.",
   "Help improve <em>OVOS.</em>": "Aiutaci a migliorare <em>OVOS.</em>",
-  "Share installation details to help us improve OVOS on devices like yours.": "Condividi informazioni sull’installazione per aiutarci a migliorare OVOS su dispositivi come il tuo.",
-  "Share installation diagnostics": "Condividi i dati diagnostici dell’installazione",
-  "Optional. You can continue without sharing.": "È facoltativo. Puoi continuare senza condividere dati.",
+  "Help us focus on the devices and systems you use.": "Aiutaci a concentrarci sui dispositivi e sui sistemi che usi.",
+  "Share setup statistics": "Condividi statistiche di installazione",
+  "Optional. Share device, system and installation details.": "Facoltativo. Condividi dati su dispositivo, sistema e installazione.",
   "What is shared?": "Quali dati vengono condivisi?",
   "Uses a Python environment; no GUI.": "Usa un ambiente Python, senza interfaccia grafica.",
   "Includes the screen interface.": "Include l’interfaccia per lo schermo.",
-  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Servizi vocali locali: onnx-asr e phoonnx. L'elaborazione vocale locale usa un ambiente Python. I modelli vengono scaricati durante l'installazione. Le prestazioni variano in base al dispositivo."
+  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Servizi vocali locali: onnx-asr e phoonnx. L'elaborazione vocale locale usa un ambiente Python. I modelli vengono scaricati durante l'installazione. Le prestazioni variano in base al dispositivo.",
+  "View installation statistics": "Vedi le statistiche di installazione",
+  "On": "Attivato"
 }

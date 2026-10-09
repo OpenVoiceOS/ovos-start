@@ -20,7 +20,7 @@ Device details precede speech choices through [`firstCapability` / `afterCapabil
 
 ## Installation diagnostics
 
-Every new journey, including a headless hub, visits [`telemetryView`](../dist/app.mjs) before installation. A short explanation links to the [installer's collected-data documentation](https://github.com/OpenVoiceOS/ovos-installer/blob/main/docs/telemetry.md). The toggle starts on, and a visitor can switch it off before Continue. Its red breathing outline respects reduced-motion preferences and keyboard focus.
+Every new journey, including a headless hub, visits [`telemetryView`](../dist/app.mjs) before installation. A compact switch row links directly to the [public installation statistics](https://telemetry.smartgic.io/ovos-installer/dashboard/) and the [installer's collected-data documentation](https://github.com/OpenVoiceOS/ovos-installer/blob/main/docs/telemetry.md). The toggle starts on, and a visitor can switch it off before Continue. Its red breathing outline respects reduced-motion preferences and keyboard focus.
 
 [`confirmTelemetry`](../dist/app.mjs) commits that choice; merely opening a shared recipe does not complete this step. Copy, script download and retry paths require its completion. Changing the choice regenerates the immutable recipe so YAML and the device command agree. Same-browser drafts retain an accepted choice; a separate reinstall starts with the default enabled toggle and requires review again. Existing installation progress remains available.
 

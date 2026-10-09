@@ -920,11 +920,13 @@
   "Check Apple menu → About This Mac before continuing.": "आगे बढ़ने से पहले Apple मेन्यू → About This Mac देखें।",
   "The installer uses the latest main branch.": "इंस्टॉलर main ब्रांच का सबसे नया संस्करण इस्तेमाल करता है।",
   "Help improve <em>OVOS.</em>": "<em>OVOS</em> को बेहतर बनाने में मदद करें।",
-  "Share installation details to help us improve OVOS on devices like yours.": "इंस्टॉलेशन की जानकारी साझा करें, ताकि हम आपके जैसे डिवाइस पर OVOS को बेहतर बना सकें।",
-  "Share installation diagnostics": "इंस्टॉलेशन की जाँच से जुड़ी जानकारी साझा करें",
-  "Optional. You can continue without sharing.": "यह वैकल्पिक है। आप जानकारी साझा किए बिना आगे बढ़ सकते हैं।",
+  "Help us focus on the devices and systems you use.": "आप जिन डिवाइस और सिस्टम का इस्तेमाल करते हैं, उन पर ध्यान देने में हमारी मदद करें।",
+  "Share setup statistics": "इंस्टॉलेशन के आँकड़े साझा करें",
+  "Optional. Share device, system and installation details.": "वैकल्पिक। डिवाइस, सिस्टम और इंस्टॉलेशन की जानकारी साझा करें।",
   "What is shared?": "क्या जानकारी साझा होती है?",
   "Uses a Python environment; no GUI.": "Python परिवेश इस्तेमाल करता है; ग्राफ़िकल इंटरफ़ेस नहीं है।",
   "Includes the screen interface.": "स्क्रीन इंटरफ़ेस शामिल है।",
-  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "डिवाइस पर वॉइस के लिए: onnx-asr और phoonnx। डिवाइस पर वॉइस के लिए Python परिवेश इस्तेमाल होता है। मॉडल इंस्टॉलेशन के दौरान डाउनलोड होते हैं। गति डिवाइस के अनुसार बदलती है।"
+  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "डिवाइस पर वॉइस के लिए: onnx-asr और phoonnx। डिवाइस पर वॉइस के लिए Python परिवेश इस्तेमाल होता है। मॉडल इंस्टॉलेशन के दौरान डाउनलोड होते हैं। गति डिवाइस के अनुसार बदलती है।",
+  "View installation statistics": "इंस्टॉलेशन के आँकड़े देखें",
+  "On": "चालू"
 }

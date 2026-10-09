@@ -299,12 +299,17 @@ function tweakView() {
 }
 /** Ask for optional installation diagnostics before allowing installation exports. @returns {string} */
 function telemetryView() {
-  return `<div class="ready-wrap telemetry-step">${intro('Help improve <em>OVOS.</em>','Share installation details to help us improve OVOS on devices like yours.')}
+  return `<div class="ready-wrap telemetry-step">${intro('Help improve <em>OVOS.</em>','Help us focus on the devices and systems you use.')}
     <section data-install-progress hidden aria-label="Installation progress"></section>
-    <div class="install-card telemetry-card">
-      <label class="telemetry-choice"><span>Share installation diagnostics</span><span class="telemetry-switch"><input type="checkbox" role="switch" data-telemetry-confirm aria-describedby="telemetry-optional" ${telemetrySelection?'checked':''}><span class="telemetry-track" aria-hidden="true"></span></span></label>
-      <p id="telemetry-optional" class="telemetry-note">Optional. You can continue without sharing.</p>
-      <a class="telemetry-details" href="https://github.com/OpenVoiceOS/ovos-installer/blob/main/docs/telemetry.md" target="_blank" rel="noopener noreferrer">What is shared?${icon('arrow')}</a>
+    <div class="install-card telemetry-panel">
+      <div class="telemetry-card">
+        <label class="telemetry-choice">
+          <span class="telemetry-symbol" aria-hidden="true">${icon('favorite')}</span>
+          <span class="telemetry-copy"><strong id="telemetry-label">Share setup statistics</strong><span id="telemetry-optional">Optional. Share device, system and installation details.</span></span>
+          <span class="telemetry-control"><span data-telemetry-state aria-hidden="true">${telemetrySelection?'On':'Off'}</span><span class="telemetry-switch"><input type="checkbox" role="switch" data-telemetry-confirm aria-labelledby="telemetry-label" aria-describedby="telemetry-optional" ${telemetrySelection?'checked':''}><span class="telemetry-track" aria-hidden="true"></span></span></span>
+        </label>
+        <div class="telemetry-links"><a class="telemetry-dashboard" href="https://telemetry.smartgic.io/ovos-installer/dashboard/" target="_blank" rel="noopener noreferrer">${icon('globe')}<span>View installation statistics</span>${icon('arrow')}</a><a class="telemetry-details" href="https://github.com/OpenVoiceOS/ovos-installer/blob/main/docs/telemetry.md" target="_blank" rel="noopener noreferrer">What is shared?${icon('arrow')}</a></div>
+      </div>
       <button type="button" class="button telemetry-continue" data-telemetry-continue>Continue ${icon('arrow')}</button>
     </div></div>`;
 }
@@ -960,7 +965,7 @@ async function selectLanguage(locale) {
 }
 
 wizard.addEventListener('change',event=>{
-  if(event.target.matches('[data-telemetry-confirm]')){telemetrySelection=event.target.checked;return;}
+  if(event.target.matches('[data-telemetry-confirm]')){telemetrySelection=event.target.checked;const label=wizard.querySelector('[data-telemetry-state]');if(label)label.textContent=t(telemetrySelection?'On':'Off',state.locale);return;}
   if(event.target.matches('[data-prerequisite-confirm]')){prerequisiteGate.confirm(event.target.checked);wizard.querySelector('[data-install-action]')?.classList.remove('copied');updateExpiry();return;}
   if(event.target.matches('[data-language-select]'))selectLanguage(event.target.value);
 });

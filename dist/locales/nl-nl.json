@@ -920,11 +920,13 @@
   "Check Apple menu → About This Mac before continuing.": "Controleer het Apple-menu → Over deze Mac voordat je doorgaat.",
   "The installer uses the latest main branch.": "Het installatieprogramma gebruikt de nieuwste versie van de main-branch.",
   "Help improve <em>OVOS.</em>": "Help <em>OVOS</em> verbeteren.",
-  "Share installation details to help us improve OVOS on devices like yours.": "Deel informatie over je installatie om ons te helpen OVOS op apparaten zoals het jouwe te verbeteren.",
-  "Share installation diagnostics": "Diagnosegegevens over de installatie delen",
-  "Optional. You can continue without sharing.": "Vrijwillig. Je kunt doorgaan zonder gegevens te delen.",
+  "Help us focus on the devices and systems you use.": "Help ons prioriteit te geven aan de apparaten en systemen die je gebruikt.",
+  "Share setup statistics": "Installatiestatistieken delen",
+  "Optional. Share device, system and installation details.": "Vrijwillig. Deel gegevens over apparaat, systeem en installatie.",
   "What is shared?": "Welke gegevens worden gedeeld?",
   "Uses a Python environment; no GUI.": "Gebruikt een Python-omgeving, zonder grafische interface.",
   "Includes the screen interface.": "Inclusief de scherminterface.",
-  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Lokale spraakdiensten: onnx-asr en phoonnx. Lokale spraakverwerking gebruikt een Python-omgeving. Modellen worden tijdens de installatie gedownload. De prestaties verschillen per apparaat."
+  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Lokale spraakdiensten: onnx-asr en phoonnx. Lokale spraakverwerking gebruikt een Python-omgeving. Modellen worden tijdens de installatie gedownload. De prestaties verschillen per apparaat.",
+  "View installation statistics": "Installatiestatistieken bekijken",
+  "On": "Aan"
 }

@@ -920,11 +920,13 @@
   "Check Apple menu → About This Mac before continuing.": "Consultez le menu Apple → À propos de ce Mac avant de continuer.",
   "The installer uses the latest main branch.": "L’installeur utilise la dernière version de la branche main.",
   "Help improve <em>OVOS.</em>": "Aidez-nous à améliorer <em>OVOS.</em>",
-  "Share installation details to help us improve OVOS on devices like yours.": "Partagez des informations sur votre installation pour nous aider à améliorer OVOS sur des appareils comme le vôtre.",
-  "Share installation diagnostics": "Partager les données de diagnostic de l’installation",
-  "Optional. You can continue without sharing.": "Facultatif. Vous pouvez continuer sans partager ces données.",
+  "Help us focus on the devices and systems you use.": "Aidez-nous à concentrer nos efforts sur les appareils et systèmes que vous utilisez.",
+  "Share setup statistics": "Partager des statistiques d’installation",
+  "Optional. Share device, system and installation details.": "Facultatif. Détails sur l’appareil, le système et l’installation.",
   "What is shared?": "Quelles données sont partagées ?",
   "Uses a Python environment; no GUI.": "Utilise un environnement Python, sans interface graphique.",
   "Includes the screen interface.": "Inclut l’interface à l’écran.",
-  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Moteurs locaux : onnx-asr et phoonnx. Le traitement vocal local utilise un environnement Python. Les modèles sont téléchargés pendant l’installation. Les performances varient selon l’appareil."
+  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Moteurs locaux : onnx-asr et phoonnx. Le traitement vocal local utilise un environnement Python. Les modèles sont téléchargés pendant l’installation. Les performances varient selon l’appareil.",
+  "View installation statistics": "Voir les statistiques d’installation",
+  "On": "Activé"
 }

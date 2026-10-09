@@ -920,11 +920,13 @@
   "Check Apple menu → About This Mac before continuing.": "Wali umuɣ Apple → About This Mac send ad tkemmleḍ.",
   "The installer uses the latest main branch.": "Amsebdad iseqdac lqem aneggaru n tseṭṭa main.",
   "Help improve <em>OVOS.</em>": "Ɛiwen deg usnerni n <em>OVOS.</em>",
-  "Share installation details to help us improve OVOS on devices like yours.": "Beṭṭu isefka ɣef usebded akken ad aɣ-tɛawneḍ ad nnerni OVOS deg yibenkan am win-ik.",
-  "Share installation diagnostics": "Beṭṭu isefka n usenqed n usebded",
-  "Optional. You can continue without sharing.": "D afran-ik. Tzemreḍ ad tkemmleḍ war beṭṭu n yisefka.",
+  "Help us focus on the devices and systems you use.": "Ɛiwen-aɣ ad nerr azal i yibenkan d yinagrawen i tseqdaceḍ.",
+  "Share setup statistics": "Beṭṭu tidaddanin n usebded",
+  "Optional. Share device, system and installation details.": "D afran-ik. Beṭṭu isefka ɣef yibenk, anagraw d usebded.",
   "What is shared?": "D acu n yisefka ara yettwabḍun?",
   "Uses a Python environment; no GUI.": "Yesseqdac tawennaḍt Python; war agrudem udlif.",
   "Includes the screen interface.": "Yegber agrudem n ugdil.",
-  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Imsefraken idiganen: onnx-asr d phoonnx. Ameslay adigan yesseqdac tawennaḍt Python. Timudmiwin ad ttusadrent deg usebded. Tamellit tettemgirid seg yibenk ɣer wayeḍ."
+  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Imsefraken idiganen: onnx-asr d phoonnx. Ameslay adigan yesseqdac tawennaḍt Python. Timudmiwin ad ttusadrent deg usebded. Tamellit tettemgirid seg yibenk ɣer wayeḍ.",
+  "View installation statistics": "Wali tidaddanin n usebded",
+  "On": "Yermed"
 }

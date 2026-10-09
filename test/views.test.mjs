@@ -45,7 +45,9 @@ test('telemetry has one on-by-default toggle switch, an explanation and optional
  let html=c.telemetryView();
  assert.equal((html.match(/role="switch"/g)||[]).length,1);
  assert.match(html,/<input[^>]*data-telemetry-confirm[^>]*checked/);
- assert.match(html,/help us improve OVOS/);assert.match(html,/Optional\. You can continue without sharing/);
+ assert.match(html,/Help us focus on the devices and systems/);assert.match(html,/Optional\. Share device, system and installation details/);
+ assert.match(html,/href="https:\/\/telemetry\.smartgic\.io\/ovos-installer\/dashboard\/"/);
+ assert.match(html,/data-telemetry-state aria-hidden="true">On/);
  assert.match(html,/docs\/telemetry\.md/);assert.match(html,/aria-describedby="telemetry-optional"/);
  assert.doesNotMatch(html,/data-install-action|data-download|data-answer="telemetry"|data-telemetry-continue[^>]*disabled/);
  c.telemetrySelection=false;html=c.telemetryView();
@@ -56,7 +58,7 @@ test('telemetry has one on-by-default toggle switch, an explanation and optional
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)[\s\S]*\.telemetry-track::before\{animation:none/);
 });
 test('prepared shared recipes cannot expose commands before telemetry review',()=>{
- const c=views();acceptPreparation(c);c.answered.delete('telemetry');
+ const c=views();acceptPreparation(c);c.setupSession=short.issueSetup(c.state);c.answered.delete('telemetry');
  const html=c.resultView();
  assert.match(html,/data-telemetry-continue/);
  assert.doesNotMatch(html,/data-install-action|data-download|id="install-command"/);

@@ -161,13 +161,13 @@ test('Mac support and explicit acknowledgement are translated consistently in ev
 });
 
 test('the telemetry switch and explanation are translated in every offered language',()=>{
- const messages=['Help improve <em>OVOS.</em>','Share installation details to help us improve OVOS on devices like yours.','Share installation diagnostics','Optional. You can continue without sharing.','What is shared?'];
+ const messages=['Help improve <em>OVOS.</em>','Help us focus on the devices and systems you use.','Share setup statistics','Optional. Share device, system and installation details.','What is shared?','View installation statistics','On','Off'];
  for(const locale of UI_LOCALES){
   const catalog=read(locale);
   for(const message of messages){
    assert.ok(Object.hasOwn(catalog,message),`${locale}: ${message}`);
    assert.equal(translateMessage(message,catalog),catalog[message]);
-   if(locale!=='en-us')assert.notEqual(catalog[message],message,`${locale}: untranslated telemetry copy`);
+   if(locale!=='en-us'&&!['On','Off'].includes(message))assert.notEqual(catalog[message],message,`${locale}: untranslated telemetry copy`);
   }
  }
 });

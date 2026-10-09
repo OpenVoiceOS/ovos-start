@@ -920,11 +920,13 @@
   "Check Apple menu → About This Mac before continuing.": "Consulta o menu Apple → Acerca deste Mac antes de continuar.",
   "The installer uses the latest main branch.": "O instalador usa a versão mais recente do ramo main.",
   "Help improve <em>OVOS.</em>": "Ajuda a melhorar o <em>OVOS.</em>",
-  "Share installation details to help us improve OVOS on devices like yours.": "Partilha informações sobre a instalação para nos ajudares a melhorar o OVOS em dispositivos como o teu.",
-  "Share installation diagnostics": "Partilhar dados de diagnóstico da instalação",
-  "Optional. You can continue without sharing.": "É opcional. Podes continuar sem partilhar dados.",
+  "Help us focus on the devices and systems you use.": "Ajuda-nos a dar prioridade aos dispositivos e sistemas que usas.",
+  "Share setup statistics": "Partilhar estatísticas de instalação",
+  "Optional. Share device, system and installation details.": "Opcional. Partilha dados do dispositivo, sistema e instalação.",
   "What is shared?": "Que dados são partilhados?",
   "Uses a Python environment; no GUI.": "Usa um ambiente Python, sem interface gráfica.",
   "Includes the screen interface.": "Inclui a interface de ecrã.",
-  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Motores locais: onnx-asr e phoonnx. O processamento de voz local usa um ambiente Python. Os modelos são transferidos durante a instalação. O desempenho varia conforme o dispositivo."
+  "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Motores locais: onnx-asr e phoonnx. O processamento de voz local usa um ambiente Python. Os modelos são transferidos durante a instalação. O desempenho varia conforme o dispositivo.",
+  "View installation statistics": "Ver estatísticas de instalação",
+  "On": "Ativado"
 }

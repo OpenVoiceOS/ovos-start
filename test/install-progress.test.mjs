@@ -115,13 +115,13 @@ test('activity is decorative and limited to healthy waiting or working states',a
  assert.doesNotMatch(progressView({session:{...session,status:'installing',attention:true}},base),/mark1-eye--animated/);
 });
 
-test('attention replaces the current task with one clear Terminal instruction and a static eye',()=>{
+test('attention replaces the current task with one clear Terminal instruction and static eyes',()=>{
  const model={session:{...session,status:'installing',phase:2,attention:true}};
  const html=progressView(model,base);
  assert.match(html,/class="installation-current installation-current--attention"[^>]*role="status"/);
  assert.match(html,/<h2>A check needs your attention<\/h2><p>Open Terminal to finish the sound and voice checks\.<\/p>/);
  assert.equal((html.match(/Open Terminal to finish the sound and voice checks\./g)||[]).length,1);
- assert.equal((html.match(/class="mark1-eye-ring"/g)||[]).length,1);
+ assert.equal((html.match(/class="mark1-eye-ring"/g)||[]).length,2);
  assert.doesNotMatch(html,/mark1-eye--animated/);
  const reconnected=progressView({session:{...model.session,attention:false}},base);
  assert.match(reconnected,/mark1-eye--animated/);
@@ -137,7 +137,7 @@ test('real milestones retain their last confirmed phase through reconnects and n
   const live=progressView(model,base),offline=progressView({...model,error:'unavailable'},base);
   assert.equal((live.match(/<h1/g)||[]).length,1);assert.doesNotMatch(live,/class="eyebrow"/);
   if(['started','downloading','installing'].includes(status))assert.match(offline,/Last confirmed progress/);assert.doesNotMatch(offline,/Updates paused|mark1-eye--animated|aria-valuenow|progressbar/);
-  assert.ok(offline.includes(['started','downloading','installing'].includes(status)?'Installing OVOS':progressCopy(model).title));
+  assert.ok(offline.replace(/<\/?em>/g,'').includes(['started','downloading','installing'].includes(status)?'Installing OVOS':progressCopy(model).title));
   if(status!=='voice_ready')assert.match(offline,/data-progress-retry/);
   if(['installed','services_ready'].includes(status)){assert.match(offline,/Voice check pending/);assert.doesNotMatch(offline,/Try your first question/);assert.equal(progressCopy(model).complete,false);}
  }
@@ -149,7 +149,7 @@ test('real milestones retain their last confirmed phase through reconnects and n
 
 test('simulated completion is labelled inside the headline and failed installs never show success content',()=>{
  const preview=progressView({session:{...session,status:'installed'}},base,{preview:true});
- assert.match(preview,/<h1[^>]*>Preview: OVOS is installed<\/h1>/);
+ assert.match(preview,/<h1[^>]*>Preview: <em>OVOS<\/em> is installed<\/h1>/);
  for(const error of [null,'unavailable']){
   const failed=progressView({session:{...session,status:'failed'},error},base);
   assert.match(failed,/Installation stopped/);assert.doesNotMatch(failed,/OVOS is installed|post-install-guide|demo-thumbnail|milestone-complete/);
@@ -231,7 +231,7 @@ test('detailed installation shows all five checkpoints and only confirms earlier
   const html=progressView(model,base);
   assert.equal((html.match(/<li class="stage-/g)||[]).length,5);
   assert.equal((html.match(/aria-current="step"/g)||[]).length,1);
-  assert.equal((html.match(/class="mark1-eye mark1-eye--animated"/g)||[]).length,1);
+  assert.equal((html.match(/class="mark1-eye mark1-eye--animated"/g)||[]).length,2);
   assert.ok(html.indexOf('mark1-eye')<html.indexOf('installation-stages'));
   assert.doesNotMatch(html,/Installation complete|percent|aria-valuenow/);
   for(const step of steps)assert.ok(html.includes(step.label));
@@ -307,7 +307,7 @@ test('final audio guidance appears during installation and reports independent d
  assert.match(html,/audio-result--passed" data-audio-result="audio"/);
  assert.match(html,/audio-result--failed" data-audio-result="microphone"/);
  assert.match(html,/Microphone &amp; voice/);assert.match(html,/Results appear here/);
- assert.match(html,/OVOS is installed/);assert.doesNotMatch(html,/Installation stopped|Speaker and microphone checks passed/);
+ assert.match(html,/<em>OVOS<\/em> is installed/);assert.doesNotMatch(html,/Installation stopped|Speaker and microphone checks passed/);
  assert.doesNotMatch(progressView(model,{...base,experience:'hub'}),/data-audio-result/);
  assert.deepEqual(audioChecks({session:{...session,status:'installed'}}).map(check=>check.status),['pending','pending']);
  const offline=audioChecks({session:{...session,status:'installed',audioStatus:'checking'},error:'unavailable'});
@@ -320,7 +320,7 @@ test('a later failed voice check replaces old success without undoing installati
  const rerun={session:{...old.session,audioStatus:'passed',microphoneStatus:'failed',attention:true}};
  assert.equal(progressCopy(rerun).complete,false);assert.equal(progressCopy(rerun).installed,true);
  const html=progressView(rerun,base);
- assert.match(html,/OVOS is installed/);assert.match(html,/audio-result--failed/);
+ assert.match(html,/<em>OVOS<\/em> is installed/);assert.match(html,/audio-result--failed/);
  assert.doesNotMatch(html,/Your voice check passed|Speaker and microphone checks passed/);
  const complete=progressView({session:{...rerun.session,microphoneStatus:'passed',attention:false}},base);
  assert.match(complete,/Speaker and microphone checks passed/);
@@ -447,4 +447,27 @@ test('failure reports use direct safe paste links and fall back to Terminal othe
  const tracker=new InstallTracker({fetcher:async()=>reply(model.session),schedule:()=>0,cancel(){}});
  await tracker.connect('code');assert.equal(tracker.session.errorUrl,errorUrl);
  for(const status of ['cancelled','installed','services_ready','voice_ready'])assert.doesNotMatch(progressView({session:{...model.session,status}},base),/data-copy-report/);
+});
+
+
+test('live installation highlights OVOS, frames the task and explains sudo without claiming a detected prompt',()=>{
+ const hint='If Terminal asks for your sudo password, enter your device password. Nothing appears while you type.';
+ for(const status of ['started','downloading','installing']){
+  const model={session:{...session,status,phase:1}};
+  const html=progressView(model,base);
+  assert.match(html,/class="install-progress install-dashboard[^"\n]* is-working /);
+  assert.match(html,/<h1[^>]+>Installing <em>OVOS<\/em><\/h1>/);
+  assert.equal((html.match(/class="mark1-eye-ring"/g)||[]).length,2);
+  assert.match(html,/<p>[^<]+<\/p><\/div><svg class="mark1-eye/);
+  assert.ok(html.includes(hint));
+  for(const paused of [{...model,error:'unavailable'},{session:{...model.session,attention:true}}]){
+   const stopped=progressView(paused,base);
+   assert.doesNotMatch(stopped,/ is-working |mark1-eye--animated/);
+  }
+ }
+ for(const status of ['installed','services_ready','voice_ready','failed','cancelled']){
+  const html=progressView({session:{...session,status}},base);
+  assert.doesNotMatch(html,/ is-working /);
+  assert.ok(!html.includes(hint));
+ }
 });

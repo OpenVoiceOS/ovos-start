@@ -958,5 +958,10 @@
   "System packages installed": "सिस्टम पैकेज इंस्टॉल हो गए",
   "Audio configured": "ऑडियो सेट अप हो गया",
   "OVOS components installed": "OVOS के घटक इंस्टॉल हो गए",
-  "Services started": "सेवाएँ शुरू हो गईं"
+  "Services started": "सेवाएँ शुरू हो गईं",
+  "If Terminal asks for your sudo password, enter your device password. Nothing appears while you type.": "अगर Terminal आपका sudo पासवर्ड माँगे, तो अपने डिवाइस का पासवर्ड डालें। टाइप करते समय कुछ दिखाई नहीं देगा।",
+  "Pause trivia": "रोचक बातें रोकें",
+  "Resume trivia": "रोचक बातें फिर शुरू करें",
+  "Installing <em>OVOS</em>": "<em>OVOS</em> इंस्टॉल हो रहा है",
+  "<em>OVOS</em> is installed": "<em>OVOS</em> इंस्टॉल हो गया है"
 }

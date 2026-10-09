@@ -255,20 +255,22 @@ main:has(.workbench[data-question="language"]) .journey-hint{visibility:hidden}
 @media(max-width:360px){.progress-meta{flex-wrap:wrap;row-gap:10px}}
 
 /* A tiny editorial stamp; the story stays light and unboxed. */
-.project-fact{display:grid;grid-template-columns:64px minmax(0,1fr) 40px;align-items:center;gap:14px;margin:30px 0 0;padding:3px 0;max-width:100%;color:var(--muted)}
+.project-fact{display:grid;grid-template-columns:64px minmax(0,1fr) auto;align-items:center;gap:14px;margin:30px 0 0;padding:3px 0;max-width:100%;color:var(--muted)}
 .fact-stamp{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;width:60px;min-height:42px;padding:6px 5px;border:1px solid currentColor;border-radius:3px;outline:1px dashed color-mix(in srgb,currentColor 48%,transparent);outline-offset:-4px;transform:rotate(-5deg);color:var(--accent);background:color-mix(in srgb,var(--accent) 4%,transparent);font-size:12px;line-height:1.2;letter-spacing:.07em;font-weight:500}
 .fact-stamp strong{font-size:12px;font-weight:700;letter-spacing:.035em}
 .project-fact p{font-size:15px;line-height:1.7;margin:0}
 .project-fact [data-fact-text]{font-style:italic;font-weight:400}
 .project-fact a{color:var(--muted);font-size:13px;font-style:normal;font-weight:500;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--muted) 45%,transparent);text-underline-offset:3px;white-space:nowrap;margin-left:3px}
 .project-fact a:hover{color:var(--accent);text-decoration-color:currentColor}
+.fact-controls{display:flex;align-items:center;gap:2px}
 .fact-next{display:grid;place-items:center;width:40px;height:40px;padding:10px;border:0;border-radius:10px;background:transparent;color:var(--muted)}
 .fact-next:hover{background:var(--soft);color:var(--accent)}
 .fact-next svg{width:17px;height:17px}
 @media(max-width:760px){
- .project-fact{grid-template-columns:56px minmax(0,1fr) 32px;gap:10px;align-items:start;margin-top:27px}
+ .project-fact{grid-template-columns:56px minmax(0,1fr) 40px;gap:10px;align-items:start;margin-top:27px}
  .fact-stamp{width:54px;margin-top:4px}
- .fact-next{margin-top:-7px;margin-left:-4px}
+ .fact-controls{flex-direction:column}
+ .fact-next{margin-top:0;margin-left:0}
  .project-fact p{font-size:14px;line-height:1.65}
 }
 
@@ -805,9 +807,9 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .stage-label{font-size:16px;line-height:1.5;overflow-wrap:anywhere}
 .stage-current .stage-symbol{color:var(--accent);background:var(--soft);border-color:transparent}.stage-current .stage-label{color:var(--ink);font-weight:650}
 .stage-complete .stage-symbol{color:var(--install-done);background:color-mix(in srgb,var(--install-done) 10%,var(--card));border-color:transparent}.stage-complete .stage-label{color:var(--ink)}
-.installation-current{display:flex;align-items:center;gap:20px;padding:28px 30px;background:linear-gradient(110deg,var(--soft),var(--card) 80%)}
+.installation-current{display:flex;align-items:center;justify-content:center;gap:20px;padding:28px 30px;background:linear-gradient(110deg,var(--soft),var(--card) 80%)}
 .installation-current h2{font-size:20px;line-height:1.4;margin:0;font-weight:600}.installation-current p{font-size:15px;color:var(--muted);margin:5px 0 0;line-height:1.6}
-.installation-current>div{flex:1;min-width:0}.installation-stages--detailed .stage-label{font-size:14px;overflow-wrap:normal}
+.installation-current>div{flex:0 1 auto;min-width:0;text-align:center}.installation-stages--detailed .stage-label{font-size:14px;overflow-wrap:normal}
 .installation-current--attention{background:var(--requirement-bg)}
 .installation-current--attention h2{color:var(--requirement-ink)}
 .installation-current--attention .mark1-eye{--eye-led:var(--requirement-accent)}
@@ -822,10 +824,10 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .timing-hint{flex-basis:100%;font-size:14px;line-height:1.65;color:var(--muted)}
 .installation-instruction{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.65;color:var(--muted);margin:20px 2px 0;text-align:left}
 .installation-instruction>.ui-icon{width:20px;height:20px;flex:none;margin-top:2px;color:var(--accent)}
-@media(max-width:540px){.installation-stages{padding:26px 12px}.stage-symbol{width:40px;height:40px}.installation-stages li+li:before{top:20px;left:calc(-50% + 27px);width:calc(100% - 54px)}.stage-label{font-size:14px}.installation-current{padding:20px;gap:10px}.installation-current h2{font-size:18px}.installation-meta{padding:16px 20px}.installation-meta .installation-timing{gap:10px}.installation-meta .timing-estimate{flex-basis:100%}}
+@media(max-width:540px){.installation-stages{padding:26px 12px}.stage-symbol{width:40px;height:40px}.installation-stages li+li:before{top:20px;left:calc(-50% + 27px);width:calc(100% - 54px)}.stage-label{font-size:14px}.installation-current{padding:20px 14px;gap:10px;text-align:center}.installation-current svg.mark1-eye{width:36px;height:36px}.installation-current h2{font-size:18px}.installation-meta{padding:16px 20px}.installation-meta .installation-timing{gap:10px}.installation-meta .timing-estimate{flex-basis:100%}}
 @media(max-width:420px){.installation-stages{display:flex;flex-direction:column;gap:18px;padding:22px 20px}.installation-stages li{flex-direction:row;gap:12px;text-align:left}.installation-stages li+li:before{top:-18px;left:19px;width:2px;height:18px}.stage-label{font-size:16px;overflow-wrap:normal}.stage-symbol{flex:none}}
-@media(max-width:650px){.installation-stages--detailed{display:flex;flex-direction:column;gap:14px;padding:22px 20px}.installation-stages--detailed li{flex-direction:row;gap:12px;text-align:left}.installation-stages--detailed .stage-symbol{width:32px;height:32px;flex:none}.installation-stages--detailed .stage-symbol>.ui-icon{width:17px;height:17px}.installation-stages--detailed li+li:before{top:-14px;left:15px;width:2px;height:14px}.installation-stages--detailed .stage-label{font-size:15px}.installation-current{gap:18px}.timing-update{margin-left:0}}
-@media(max-width:380px){.installation-current{align-items:flex-start;gap:14px}}
+@media(max-width:650px){.installation-stages--detailed{display:flex;flex-direction:column;gap:14px;padding:22px 20px}.installation-stages--detailed li{flex-direction:row;gap:12px;text-align:left}.installation-stages--detailed .stage-symbol{width:32px;height:32px;flex:none}.installation-stages--detailed .stage-symbol>.ui-icon{width:17px;height:17px}.installation-stages--detailed li+li:before{top:-14px;left:15px;width:2px;height:14px}.installation-stages--detailed .stage-label{font-size:15px}.installation-current{gap:14px}.timing-update{margin-left:0}}
+@media(max-width:380px){.installation-current{gap:14px}}
 
 /* Completed installation hands off to verification, rather than a second checklist. */
 .installation-receipt{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;padding:0 0 22px;border-bottom:1px solid var(--line)}
@@ -839,6 +841,7 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 
 .install-dashboard.is-installed>.post-install-guide{border-top:0;padding-top:0;margin-top:24px}.post-install-guide .voice-check-wait{font-size:14px;line-height:1.6;color:var(--muted);margin:-8px 0 20px}
 .audio-check-reminder{display:block;margin-top:4px}
+.sudo-password-hint{display:block;margin-top:6px;color:var(--ink)}
 .installation-completed-steps{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px;margin:0;padding:24px 30px;text-align:left}
 .installation-current+.installation-completed-steps{border-top:1px solid var(--line)}
 .installation-completed-steps li{display:flex;align-items:center;gap:10px;min-width:0;font-size:15px;line-height:1.5;color:var(--ink)}.installation-completed-steps .ui-icon{width:21px;height:21px;flex:none;color:var(--install-done)}
@@ -1094,3 +1097,10 @@ svg.mark1-eye--animated{--eye-led:#138298}
 }
 @media(prefers-reduced-motion:reduce){.mark1-eye--animated .mark1-led{animation:none;opacity:1}}
 @media(forced-colors:active){.mark1-eye-face{fill:Canvas;stroke:CanvasText}.mark1-eye .mark1-led{fill:Highlight;opacity:1}.mark1-eye--animated .mark1-led{animation:none;opacity:1}}
+
+/* The active checkpoint breathes only while device progress can be followed. */
+.is-working .installation-current .mark1-eye{filter:drop-shadow(0 0 5px color-mix(in srgb,var(--accent) 35%,transparent))}
+.is-working .stage-current .stage-symbol{animation:installation-step-glow 2.6s ease-in-out infinite}
+@keyframes installation-step-glow{0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent),0 0 10px color-mix(in srgb,var(--accent) 8%,transparent)}50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 24%,transparent),0 0 24px color-mix(in srgb,var(--accent) 30%,transparent)}}
+@media(prefers-reduced-motion:reduce){.is-working .stage-current .stage-symbol{animation:none;outline:2px solid var(--accent);outline-offset:3px}}
+@media(forced-colors:active){.is-working .installation-current .mark1-eye{filter:none}.is-working .stage-current .stage-symbol{animation:none;box-shadow:none;outline:2px solid Highlight;outline-offset:3px}}

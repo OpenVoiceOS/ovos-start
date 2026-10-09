@@ -958,5 +958,10 @@
   "System packages installed": "Sistemako paketeak instalatuta",
   "Audio configured": "Audioa konfiguratuta",
   "OVOS components installed": "OVOS osagaiak instalatuta",
-  "Services started": "Zerbitzuak abiarazita"
+  "Services started": "Zerbitzuak abiarazita",
+  "If Terminal asks for your sudo password, enter your device password. Nothing appears while you type.": "Terminalak sudo pasahitza eskatzen badizu, idatzi zure gailuaren pasahitza. Idazten duzun bitartean ez da ezer agertuko.",
+  "Pause trivia": "Pausatu bitxikeriak",
+  "Resume trivia": "Jarraitu bitxikeriekin",
+  "Installing <em>OVOS</em>": "<em>OVOS</em> instalatzen",
+  "<em>OVOS</em> is installed": "<em>OVOS</em> instalatuta dago"
 }

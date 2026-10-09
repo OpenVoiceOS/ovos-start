@@ -1,5 +1,6 @@
 /** Bundled Material Symbols Rounded, Simple Icons and local calendar/timer drawings. See docs/assets.md. */
 const ICONS = {
+  "pause": {"viewBox":"0 0 24 24","markup":"<rect x=\"6\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\"/><rect x=\"14\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\"/>"},
   "speaker": {"viewBox":"0 0 24 24","markup":"<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M11 5 6 9H3v6h3l5 4V5Zm4 4a5 5 0 0 1 0 6m3-9a9 9 0 0 1 0 12\"/></g>"},
   "microphone": {"viewBox":"0 0 24 24","markup":"<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"9\" y=\"2\" width=\"6\" height=\"13\" rx=\"3\"/><path d=\"M5 10v2a7 7 0 0 0 14 0v-2m-7 9v3m-4 0h8\"/></g>"},
   "calendar": {"viewBox":"0 0 24 24","markup":"<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"M7 3v4m10-4v4M3 10h18m-14 4h3m4 0h3m-10 3h3\"/></g>"},

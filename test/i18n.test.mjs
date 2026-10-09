@@ -126,7 +126,7 @@ test('compact device instructions beat broader placeholder templates in every lo
 });
 
 test('every locale explains the possible sudo password prompt',()=>{
- const hint='You may be asked for your sudo password.';
+ const hint='If Terminal asks for your sudo password, enter your device password. Nothing appears while you type.';
  for(const locale of UI_LOCALES){
   const catalog=read(locale);assert.ok(catalog[hint],locale);
   assert.equal(translateMessage(hint,catalog),catalog[hint]);
@@ -238,6 +238,22 @@ test('the telemetry switch and explanation are translated in every offered langu
    assert.ok(Object.hasOwn(catalog,message),`${locale}: ${message}`);
    assert.equal(translateMessage(message,catalog),catalog[message]);
    if(locale!=='en-us'&&!['On','Off'].includes(message))assert.notEqual(catalog[message],message,`${locale}: untranslated telemetry copy`);
+  }
+ }
+});
+
+
+test('progress heading emphasis and trivia controls retain their translations',()=>{
+ for(const locale of UI_LOCALES){
+  const catalog=read(locale);
+  for(const heading of ['Installing <em>OVOS</em>','<em>OVOS</em> is installed']){
+   assert.equal(translateMessage(heading,catalog),catalog[heading]);
+   assert.equal((catalog[heading].match(/<em>OVOS<\/em>/g)||[]).length,1);
+   assert.equal(translateMessage('Preview: '+heading,catalog),catalog['Preview: {status}'].replace('{status}',catalog[heading]));
+  }
+  for(const label of ['Pause trivia','Resume trivia']){
+   assert.ok(catalog[label],locale+': '+label);
+   if(locale!=='en-us')assert.notEqual(catalog[label],label);
   }
  }
 });

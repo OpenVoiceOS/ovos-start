@@ -8,6 +8,7 @@ import { hardwareCardsForExperience, platformTarget, chooseExperience, applySkil
 import { nextQuestion, canExploreLocal, firstCapability, afterCapability, questionChapter, progressStages, canGoBack, RECIPE_QUESTIONS } from './journey.mjs';
 
 import { nextTrivia, readTriviaHistory, updateTriviaNote } from './facts.mjs';
+import { canRotateTrivia, TriviaRotation } from './trivia-rotation.mjs';
 import { icon, deviceIcon } from './icons.mjs';
 import { LAUNCHER_URL, issueSetup, sameSetupChoices, setupStatus, buildShortCommand, buildSetupScript, readSetupSession } from './short-setup.mjs';
 import { installHandoff, reviewChoices, setupSummary, revealCopyFallback, updateHandoffStep } from './handoff.mjs';
@@ -76,6 +77,7 @@ let triviaStorage=null;
 try{triviaStorage=window.localStorage;}catch{/* Private browsing may block storage. */}
 let triviaHistory=readTriviaHistory(triviaStorage);
 let currentFact=null;
+let triviaPaused=false;
 let transitionTimer = null;
 let toastTimer;
 const wizard = document.querySelector('#wizard');
@@ -90,6 +92,7 @@ const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 let trackingShown=false;
 let progressSignature='';
 const installTracker=new InstallTracker({onChange:updateInstallProgress});
+const triviaRotation=new TriviaRotation({canRotate:triviaMayRotate,onRotate:()=>advanceTrivia(true)});
 
 /** Escape values for HTML and readonly fields. @param {unknown} value @returns {string} */
 function escape(value) { return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])); }
@@ -396,7 +399,7 @@ function resultView() {
           <button class="button install-copy" data-install-action ${previewOnly||!prerequisiteGate.ready(state.device)?'disabled':''}>${icon('copy')}<span>Copy install command</span></button><span class="code-expiry" data-code-expiry role="status" data-prerequisite-required></span>
           <div class="command-fallback" ${manualCopyReady()?'':'hidden'}><label class="sr-only" for="install-command">Your one-line install command</label><textarea class="command" id="install-command" readonly spellcheck="false" rows="3" data-no-translate>${manualCopyReady()?escape(buildShortCommand(setupSession,undefined,launchToken())):''}</textarea></div>
         </div></li>
-        <li data-handoff-step="paste"><span class="handoff-number" aria-hidden="true">2</span><div class="handoff-action-body paste-step"><strong>Paste on your device</strong><p data-paste-title>${state.device==='windows'?'Open Ubuntu in WSL2, paste and press Enter.':`Open Terminal on your ${DEVICES[state.device].name}, paste and press Enter.`}</p><p>You may be asked for your sudo password.</p></div></li>
+        <li data-handoff-step="paste"><span class="handoff-number" aria-hidden="true">2</span><div class="handoff-action-body paste-step"><strong>Paste on your device</strong><p data-paste-title>${state.device==='windows'?'Open Ubuntu in WSL2, paste and press Enter.':`Open Terminal on your ${DEVICES[state.device].name}, paste and press Enter.`}</p><p>If Terminal asks for your sudo password, enter your device password. Nothing appears while you type.</p></div></li>
       </ol>
       <section data-install-waiting hidden aria-label="Installation progress"></section>
       <details class="install-help-short handoff-help"><summary>Installation help</summary>
@@ -418,7 +421,7 @@ function resultView() {
  */
 function projectTriviaView() {
   const fact = currentFact;
-  return `<aside class="project-fact" role="note" aria-label="OVOS trivia"><span class="fact-stamp" aria-hidden="true" data-no-translate><span>OVOS</span><strong>TRIVIA</strong></span><p><span data-fact-text aria-live="polite" aria-atomic="true">${escape(fact.text)}</span> <a href="${escape(fact.source)}" title="${escape(fact.sourceLabel)}" target="_blank" rel="noopener noreferrer">Backstory</a></p><button class="fact-next" data-next-trivia aria-label="Show another OVOS fact" title="Another little discovery">${icon('refresh')}</button></aside>`;
+  return `<aside class="project-fact" role="note" aria-label="OVOS trivia"><span class="fact-stamp" aria-hidden="true" data-no-translate><span>OVOS</span><strong>TRIVIA</strong></span><p><span data-fact-text aria-live="polite" aria-atomic="true">${escape(fact.text)}</span> <a href="${escape(fact.source)}" title="${escape(fact.sourceLabel)}" target="_blank" rel="noopener noreferrer">Backstory</a></p><div class="fact-controls"><button class="fact-next" data-pause-trivia hidden aria-label="Pause trivia" title="Pause trivia">${icon('pause')}</button><button class="fact-next" data-next-trivia aria-label="Show another OVOS fact" title="Another little discovery">${icon('refresh')}</button></div></aside>`;
 }
 
 /** Draw one fact without changing the question or its focus. @returns {void} */
@@ -427,10 +430,46 @@ function drawTrivia() {
   try{triviaStorage?.setItem('ovos.trivia.v1',JSON.stringify(triviaHistory));}catch{/* Keep the in-memory deck usable. */}
 }
 
+/** Refresh only the story, preserving the link, controls and keyboard focus.
+ * @param {boolean} automatic Avoid announcing unsolicited facts to screen readers.
+ * @returns {void}
+ */
+function advanceTrivia(automatic=false) {
+  const note=wizard.querySelector('.project-fact');if(!note)return;
+  note.querySelector('[data-fact-text]').setAttribute('aria-live',automatic?'off':'polite');
+  drawTrivia();updateTriviaNote(note,currentFact);applyTranslations(note,state.locale);
+  if(!automatic)triviaRotation.restart();
+}
+
+/** Pause while someone reads or operates trivia; never rotate in another setup. @returns {boolean} */
+function triviaMayRotate() {
+  const note=wizard.querySelector('.project-fact');
+  const rotationControl=!triviaPaused&&document.activeElement?.matches('[data-pause-trivia]');
+  return canRotateTrivia(installTracker.snapshot(),{
+    visible:step==='review'&&installTracker.code===setupSession?.code&&!document.hidden&&!!note&&!note.hidden,
+    reducedMotion:motionQuery.matches,paused:triviaPaused,
+    interacting:!!note&&(note.matches(':hover')||(note.contains(document.activeElement)&&!rotationControl)),
+  });
+}
+
+/** Keep the optional rotation control and timer aligned with live progress. @returns {void} */
+function syncTriviaRotation() {
+  const control=wizard.querySelector('[data-pause-trivia]');
+  if(control){
+    control.hidden=motionQuery.matches||!['started','downloading','installing'].includes(installTracker.session?.status);
+    const label=triviaPaused?'Resume trivia':'Pause trivia';
+    if(control.dataset.rotation!==label){
+      control.dataset.rotation=label;control.setAttribute('aria-label',label);control.setAttribute('title',label);
+      control.innerHTML=icon(triviaPaused?'play':'pause');applyTranslations(control,state.locale);
+    }
+  }
+  triviaRotation.sync();
+}
+
 /** Render the active question and focus its visible selected choice after navigation. @param {boolean} focus @returns {void} */
 function render(focus = false) {
   if(manualCopyFor!==setupSession?.code)manualCopyFor=null;
-  installTracker.stop();progressSignature='';
+  installTracker.stop();triviaRotation.stop();progressSignature='';
   localeRequest+=1;
   document.querySelector('main').inert=false;document.querySelector('main').removeAttribute('aria-busy');
   cancelTransition();
@@ -724,6 +763,7 @@ function updateInstallProgress() {
   const started=!!model.session&&model.session.status!=='waiting';
   const stopped=['failed','cancelled'].includes(model.session?.status);
   const trivia=wizard.querySelector('.project-fact');if(trivia)trivia.hidden=stopped;
+  syncTriviaRotation();
   const setup=wizard.querySelector('.install-options');if(setup)setup.hidden=started;
   const setupNav=document.querySelector('.steps');if(setupNav)setupNav.hidden=started;
   const signature=JSON.stringify([state.locale,model.session?.status,model.session?.phase,model.session?.progressRank,model.session?.attention,model.session?.audioStatus,model.session?.microphoneStatus,model.session?.completedSteps,model.session?.installedAt,model.session?.errorUrl,model.error]);
@@ -906,7 +946,8 @@ document.addEventListener('click', event => {
   if(target.hasAttribute('data-back')){back();return;}
   if(target.hasAttribute('data-cancel-edit')){cancelTransition();cancelEdit();return;}
   if(target.hasAttribute('data-edit')){editQuestion(target.dataset.edit);return;}
-  if(target.hasAttribute('data-next-trivia')){drawTrivia();updateTriviaNote(wizard.querySelector('.project-fact'),currentFact);applyTranslations(wizard.querySelector('.project-fact'),state.locale);return;}
+  if(target.hasAttribute('data-next-trivia')){advanceTrivia();return;}
+  if(target.hasAttribute('data-pause-trivia')){triviaPaused=!triviaPaused;syncTriviaRotation();return;}
   if(target.hasAttribute('data-change-language')){languageChooserOpen=!languageChooserOpen;render();wizard.querySelector(languageChooserOpen?'[data-language-select]':'[data-change-language]').focus({preventScroll:true});return;}
   if(target.hasAttribute('data-confirm-language')){react(target,()=>complete());return;}
   if(target.hasAttribute('data-prepared')){preparedFor=state.device;answered.add('prepare');if(editing&&(state.experience==='hub'||(editSnapshot?.device===state.device&&answered.has('speech'))))finish();else go(nextQuestion('prepare',state));return;}
@@ -979,10 +1020,16 @@ window.addEventListener('ovos-theme-change',()=>{
 window.addEventListener('popstate',()=>{void restoreRoute();});
 window.addEventListener('hashchange',()=>{if(history.state?.ovosWizard?.id!==navigationId)void restore();});
 window.addEventListener('focus',updateExpiry);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateExpiry();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateExpiry();syncTriviaRotation();});
+motionQuery.addEventListener('change',syncTriviaRotation);
+for(const eventName of ['pointerover','pointerout','focusin','focusout']){
+  wizard.addEventListener(eventName,event=>{
+    if(event.target.closest('.project-fact'))queueMicrotask(syncTriviaRotation);
+  });
+}
 restore();
 fetch('./assets/mark1-welcome-envelope.json').then(response=>response.ok?response.json():null).then(envelope=>{welcomeEnvelope=envelope;if(welcomePlayback)welcomePlayback.envelope=envelope;}).catch(()=>{});
-window.addEventListener('pagehide',()=>{installTracker.stop();stopWelcomeEyes?.();welcomePlayback?.dispose();});
+window.addEventListener('pagehide',()=>{installTracker.stop();triviaRotation.stop();stopWelcomeEyes?.();welcomePlayback?.dispose();});
 window.addEventListener('pageshow',event=>{
   if(!event.persisted)return;
   if(step==='welcome')render();

@@ -22,6 +22,14 @@ test('untrusted icon names cannot inject markup or access inherited properties',
   }
 });
 
+test('trivia pause uses two decorative bars in the existing local icon system',()=>{
+  const markup=icon('pause');
+  assert.match(markup,/viewBox="0 0 24 24"/);
+  assert.match(markup,/aria-hidden="true" focusable="false"/);
+  assert.equal((markup.match(/<rect /g)||[]).length,2);
+  assert.doesNotMatch(markup,/<script|<text|https?:|undefined/);
+});
+
 test('example and audio icons remain decorative local SVGs with consistent bounds',()=>{
   for(const name of ['calendar','timer','speaker','microphone']){
     const markup=icon(name);

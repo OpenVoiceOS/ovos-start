@@ -958,5 +958,10 @@
   "System packages installed": "Pacotes do sistema instalados",
   "Audio configured": "Áudio configurado",
   "OVOS components installed": "Componentes do OVOS instalados",
-  "Services started": "Serviços iniciados"
+  "Services started": "Serviços iniciados",
+  "If Terminal asks for your sudo password, enter your device password. Nothing appears while you type.": "Se o Terminal pedir a palavra-passe do sudo, introduz a palavra-passe do teu dispositivo. Não aparece nada enquanto escreves.",
+  "Pause trivia": "Pausar curiosidades",
+  "Resume trivia": "Retomar curiosidades",
+  "Installing <em>OVOS</em>": "A instalar o <em>OVOS</em>",
+  "<em>OVOS</em> is installed": "O <em>OVOS</em> está instalado"
 }

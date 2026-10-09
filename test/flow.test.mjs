@@ -64,8 +64,20 @@ test('previously published v1 links still restore the exact installer choices', 
   assert.equal(restored.device, 'pi');
   assert.equal(restored.speech, 'auto');
   assert.equal(restored.channel, 'testing');
+  assert.equal(restored.telemetry, false);
   assert.equal(restored.homeassistant, false);
   assert.deepEqual(decodePreset(encodePreset(restored)), restored);
+});
+
+test('an explicit installer-statistics opt-out survives hardware, purpose and speech edits',()=>{
+  const optedOut={...DEFAULTS,device:'computer',telemetry:false};
+  const choices=[chooseHardware(optedOut,'pi'),chooseExperience(optedOut,'hub'),chooseSpeech(optedOut,'public')];
+  for(const state of choices){
+    assert.equal(state.telemetry,false);
+    assert.equal(decodePreset(encodePreset(state)).telemetry,false);
+    assert.match(buildYaml(state),/^share_telemetry: false$/m);
+    assert.match(buildYaml(state),/^share_usage_telemetry: false$/m);
+  }
 });
 
 test('explicit Testing choices survive compatible hardware, purpose and speech edits', () => {

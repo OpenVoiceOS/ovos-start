@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULTS, validateState } from '../dist/scenario.mjs';
+import { DEFAULTS, DEVICES, LANGUAGES, allowedExperiences, validateState } from '../dist/scenario.mjs';
 import { speechEligibility } from '../dist/recommendations.mjs';
 import { chooseHardware, chooseExperience, chooseCapability } from '../dist/flow.mjs';
-import { nextQuestion, canExploreLocal, firstCapability, afterCapability, questionChapter, progressStages, canGoBack } from '../dist/journey.mjs';
+import { RECIPE_QUESTIONS, nextQuestion, canExploreLocal, firstCapability, afterCapability, questionChapter, progressStages, canGoBack } from '../dist/journey.mjs';
 
 test('review navigation remains available without a trail; the welcome screen has no Back', () => {
   assert.equal(canGoBack('language',0,false),false);
@@ -17,13 +17,13 @@ test('each ordinary transition asks a single named question before review', () =
   const state={...DEFAULTS,device:'mark2',channel:'alpha'};
   const questions=[];
   for(let q='language';q!=='review';q=nextQuestion(q,state))questions.push(q);
-  assert.deepEqual(questions,['language','device','prepare','speech']);
+  assert.deepEqual(questions,['language','device','prepare','speech','telemetry']);
   assert.throws(()=>nextQuestion('invented',state));
 });
 
 test('headless setup skips speech, skill confirmation and unavailable integrations', () => {
   const state={...DEFAULTS,device:'server',experience:'hub'};
-  assert.equal(nextQuestion('device',state),'prepare');assert.equal(nextQuestion('prepare',state),'review');
+  assert.equal(nextQuestion('device',state),'prepare');assert.equal(nextQuestion('prepare',state),'telemetry');assert.equal(nextQuestion('telemetry',state),'review');
   assert.equal(nextQuestion('skills',state),'review');
   assert.equal(canExploreLocal(state),false);
   assert.equal(progressStages('purpose',{...state,device:null},new Set(['language']))[1].status,'upcoming');
@@ -65,6 +65,7 @@ test('adaptive questions keep a compact four-chapter progress indicator', () => 
   assert.equal(questionChapter('language'),1);assert.equal(questionChapter('guidance'),4);
   assert.equal(questionChapter('device'),2);assert.equal(questionChapter('memory'),2);
   assert.equal(questionChapter('homeassistant'),4);assert.equal(questionChapter('review'),4);
+  assert.equal(questionChapter('telemetry'),4);
 });
 
 test('progress marks only accepted stages complete and keeps capability questions in Device',()=>{
@@ -81,7 +82,7 @@ test('hub progress names skipped Speech without claiming it was completed',()=>{
   assert.deepEqual(stages.map(stage=>stage.number),[1,2,3,4]);
 });
 test('targeted review edits retain other accepted stages and a single current stage',()=>{
-  const accepted=new Set(['language','device','prepare','speech']);
+  const accepted=new Set(['language','device','prepare','speech','telemetry']);
   const state={...DEFAULTS,device:'mark2'};
   for(const question of ['language','device','speech','homeassistant']){
     const stages=progressStages(question,state,accepted);
@@ -104,7 +105,8 @@ test('unsure or unsupported details lead to speech once without choosing it sile
     const next=afterCapability(question,state);
     assert.equal(next,'speech');
     assert.equal(speechEligibility(state).eligible,false);
-    assert.equal(nextQuestion(next,state),'review');
+    assert.equal(nextQuestion(next,state),'telemetry');
+    assert.equal(nextQuestion('telemetry',state),'review');
     assert.equal(questionChapter(next),3);
     assert.equal(state.speech,'auto');
   }
@@ -178,7 +180,7 @@ test('device details come before speech and stop at the first unavailable requir
     assert.deepEqual(result.path,path,device);
     assert.equal(speechEligibility(result.state).eligible,eligible,device);
     assert.equal(result.state.speech,'auto','Hardware answers cannot accept speech');
-    assert.equal(nextQuestion('speech',result.state),'review');
+    assert.equal(nextQuestion('speech',result.state),'telemetry');
   }
   assert.deepEqual(reachSpeech('pi',{},'hi-in').path,[]);
 });
@@ -191,8 +193,25 @@ test('starter skills never add a mandatory question, but remain a review edit de
       assert.ok(path.length<12,'The setup must terminate');path.push(question);
     }
     assert.equal(path.includes('skills'),false,`${expertise}/${experience}`);
+    assert.equal(path.filter(question=>question==='telemetry').length,1,`${expertise}/${experience}`);
     assert.equal(path.includes('homeassistant'),false);assert.equal(path.includes('llm'),false);assert.equal(path.includes('guidance'),false);assert.equal(path.includes('purpose'),false);
     assert.equal(questionChapter('skills'),4);
   }
   assert.deepEqual(progressStages('review', {...DEFAULTS,device:'computer'},new Set(['language','device','prepare','speech'])).map(stage=>stage.status),['complete','complete','complete','current']);
+});
+
+
+test('every supported device, purpose and language asks telemetry once before review without assuming consent',()=>{
+ for(const device of Object.keys(DEVICES))for(const experience of allowedExperiences(device))for(const locale of Object.keys(LANGUAGES)){
+  const state=chooseHardware({...DEFAULTS,experience,locale},device),path=[];
+  for(let question='language';question!=='review';question=nextQuestion(question,state)){
+   assert.ok(path.length<12,'Every route must reach review');path.push(question);
+  }
+  assert.equal(path.at(-1),'telemetry',`${device}/${experience}/${locale}`);
+  assert.equal(path.filter(question=>question==='telemetry').length,1);
+  assert.equal(path.includes('speech'),experience!=='hub');
+  assert.equal(state.telemetry,true,'Navigation retains the default; the telemetry step still requires Continue');
+ }
+ assert.equal(RECIPE_QUESTIONS.includes('telemetry'),false,'A shared recipe cannot imply telemetry consent');
+ for(const question of ['skills','homeassistant','llm'])assert.equal(nextQuestion(question,{...DEFAULTS,device:'computer'}),'review');
 });

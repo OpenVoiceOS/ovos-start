@@ -27,7 +27,7 @@ function harness(){
  const title={textContent:'Next'},paste={textContent:'Paste'},status={textContent:''},expiry={textContent:''};
  const nodes={'.command-fallback':manual,'[data-install-action]':button,'#install-command':command,'#share-link':link,'[data-copy="link"]':linkButton,'[data-paste-title]':title,'.paste-step p':paste,'[data-copy-status]':status,'[data-code-expiry]':expiry};
  const prerequisiteGate=new PrerequisiteGate();prerequisiteGate.selectDevice('computer');prerequisiteGate.selectFamily('debian');prerequisiteGate.confirm(true);prerequisiteGate.accept('computer');
- const context=vm.createContext({prerequisiteGate,manualCopyFor:null,commandCopyAttempt:0,previewOnly:false,Date:{now:()=>now*1000},Math,setupStatus:(s,t=now)=>setupStatus(s,t),buildShortCommand,revealCopyFallback,updateHandoffStep,DEVICES,state:{...setup.state},setupSession:setup,step:'review',expiryTimer:null,
+ const context=vm.createContext({answered:new Set(['telemetry']),go:target=>{context.step=target;events.push('go:'+target);},finish:()=>context.render(true),prerequisiteGate,manualCopyFor:null,commandCopyAttempt:0,previewOnly:false,Date:{now:()=>now*1000},Math,setupStatus:(s,t=now)=>setupStatus(s,t),buildShortCommand,revealCopyFallback,updateHandoffStep,DEVICES,state:{...setup.state},setupSession:setup,step:'review',expiryTimer:null,
  navigator:{clipboard:{writeText(value){writes.push(value);return new Promise((a,b)=>{resolve=a;reject=b;});}}},
  document:{querySelector:s=>nodes[s]??null},wizard:{querySelector:s=>nodes[s]??null,querySelectorAll:s=>s==='[data-prerequisite-required]'?gatedRegions:handoffSteps},shareUrl:()=>`https://example.test/#setup=${setup.code}`,
  installTracker:{session:{launchToken:'L'.repeat(22)},code:setup.code},trackingShown:false,updateInstallProgress(){},icon:x=>`[${x}]`,toast:x=>toasts.push(x),localize:()=>events.push('localize'),applyTranslations(){},clearTimeout(){},setTimeout:()=>1,
@@ -68,7 +68,7 @@ test('late clipboard outcomes cannot update detached or replaced recipes',async(
   const h=harness(),pending=h.context.copy('command');h.context.step='speech';h.button.isConnected=false;h.command.isConnected=false;h[outcome]();await pending;
   assert.equal(h.button.innerHTML,'Copy install command');assert.equal(h.classes.has('copied'),false);assert.equal(h.events.length,0);assert.equal(h.toasts.length,0);
  }
- const h=harness(),pending=h.context.copy('command');h.context.setupSession=issueSetup({...h.context.state,telemetry:true},initialNow);h.resolve();await pending;
+ const h=harness(),pending=h.context.copy('command');h.context.setupSession=issueSetup({...h.context.state,telemetry:!h.context.state.telemetry},initialNow);h.resolve();await pending;
  assert.equal(h.button.innerHTML,'Copy install command');assert.equal(h.events.length,0);assert.equal(h.toasts.length,0);
 });
 test('expiration while copying clears stale command success and offers explicit renewal',async()=>{
@@ -107,7 +107,7 @@ test('manual fallback is cleared on expiry, failed attempts, missing readiness a
   if(change==='unconfirmed')h.context.prerequisiteGate.confirm(false);
   if(change==='token')h.context.installTracker.session.launchToken=null;
   if(change==='preview')h.context.previewOnly=true;
-  if(change==='recipe'){h.context.setupSession=issueSetup({...h.context.state,telemetry:true},initialNow);h.context.installTracker.code=h.context.setupSession.code;}
+  if(change==='recipe'){h.context.setupSession=issueSetup({...h.context.state,telemetry:!h.context.state.telemetry},initialNow);h.context.installTracker.code=h.context.setupSession.code;}
   h.context.updateExpiry();
   assert.equal(h.manual.hidden,true,change);assert.equal(h.command.value,'',change);
  }
@@ -350,4 +350,19 @@ test('report copy is scoped to the failed attempt and has a selectable fallback'
  tracker.session={id:'third',status:'failed',errorUrl:'https://evil.test/a'};await c.copyReportLink(button);assert.equal(writes.length,4);
  tracker.session={id:'fourth',status:'failed',errorUrl:value};delete navigator.clipboard;
  await c.copyReportLink(button);assert.equal(fallback.length,2);
+});
+
+test('telemetry approval gates copied commands, downloads and failed-install retries',async()=>{
+ for(const action of ['copy','script','yaml','retry']){
+  const h=harness();h.context.answered.delete('telemetry');
+  h.context.installTracker.session={status:'failed'};
+  vm.runInContext([declaration('download'),declaration('retryInstallation')].join('\n'),h.context);
+  const original=h.context.setupSession;
+  if(action==='copy')await h.context.copy('command');
+  else if(action==='retry')await h.context.retryInstallation();
+  else await h.context.download(action);
+  assert.equal(h.context.step,'telemetry',action);
+  assert.deepEqual(h.events,['go:telemetry']);
+  assert.equal(h.writes.length,0);assert.equal(h.context.setupSession,original);
+ }
 });

@@ -17,8 +17,8 @@ const source=readFileSync(new URL('../dist/app.mjs',import.meta.url),'utf8');
 /** Load production renderers with actual domain modules and controlled state. @returns {object} View scope. */
 function views(){
  const c=vm.createContext({prerequisiteGate:new PrerequisiteGate(),manualCopyFor:null,installTracker:{session:null},prerequisitesView,previewOnly:false,liveWizardUrl,...scenario,...flow,...journey,...recommendations,...handoff,...short,preparationFor,icon,deviceIcon,
- state:{...scenario.DEFAULTS,device:'pi'},answered:new Set(),step:'piModel',devicePane:'cards',unlistedDevice:false,platformUnsure:false,detailsOpen:false,setupSession:null,shareUrl:()=>'',launchToken:()=> 'L'.repeat(22),});
- const names=['escape','intro','card','answerCard','deviceView','platformView','experienceView','capabilityView','preparationView','detailsView','prerequisitePageView','reviewOptionsView','setupEditorView','manualCopyReady','resultView','tweakView'];
+ state:{...scenario.DEFAULTS,device:'pi'},answered:new Set(['telemetry']),telemetrySelection:scenario.DEFAULTS.telemetry,step:'piModel',devicePane:'cards',unlistedDevice:false,platformUnsure:false,detailsOpen:false,setupSession:null,shareUrl:()=>'',launchToken:()=> 'L'.repeat(22),});
+ const names=['escape','intro','card','answerCard','deviceView','platformView','experienceView','capabilityView','preparationView','detailsView','prerequisitePageView','reviewOptionsView','setupEditorView','manualCopyReady','resultView','tweakView','telemetryView'];
  const declarations=names.map(name=>source.match(new RegExp(`^function ${name}\\([^\\n]*\\) \\{[\\s\\S]*?^\\}`,'m'))?.[0]);
  // Escape is intentionally a one-line utility.
  declarations[0]=source.match(/^function escape\(.*$/m)[0];
@@ -31,18 +31,35 @@ function acceptPreparation(c){
  c.prerequisiteGate.selectFamily(['mark1','mark2','devkit'].includes(c.state.device)?'debian13':c.state.device==='windows'?'ubuntu-wsl':'debian');
  c.prerequisiteGate.confirm(true);assert.equal(c.prerequisiteGate.accept(c.state.device),true);
 }
-test('release choices show Alpha first and selected for new setups',()=>{
- const c=views();c.step='channel';
- const html=c.tweakView();
- const buttons=[...html.matchAll(/<button[^>]*data-answer="channel"[^>]*>[\s\S]*?<\/button>/g)].map(match=>match[0]);
- assert.equal(buttons.length,2);
- assert.match(buttons[0],/data-value="alpha"/);
- assert.match(buttons[0],/aria-pressed="true"/);
- assert.match(buttons[0],/The default for compatible devices/);
- assert.match(buttons[1],/data-value="testing"/);
- assert.doesNotMatch(buttons[1],/The default for compatible devices/);
- c.state.channel='testing';
- assert.match(c.tweakView(),/<button[^>]*data-value="testing"[^>]*aria-pressed="true"/);
+test('the release stays out of hardware, speech and review UI',()=>{
+ const c=views();
+ for(const device of Object.keys(scenario.DEVICES)){
+  c.state=scenario.selectDevice({...scenario.DEFAULTS},device);
+  const html=c.deviceView()+c.preparationView()+c.detailsView()+scenario.compatibility(c.state);
+  assert.doesNotMatch(html,/data-edit="channel"|data-answer="channel"|\bAlpha\b|\balpha\b|\bTesting\b|>Release/);
+ }
+ assert.doesNotMatch(source,/if \(step === 'channel'\)|channel:tweakView/);
+});
+test('telemetry has one on-by-default toggle switch, an explanation and optional Continue',()=>{
+ const c=views();c.step='telemetry';
+ let html=c.telemetryView();
+ assert.equal((html.match(/role="switch"/g)||[]).length,1);
+ assert.match(html,/<input[^>]*data-telemetry-confirm[^>]*checked/);
+ assert.match(html,/help us improve OVOS/);assert.match(html,/Optional\. You can continue without sharing/);
+ assert.match(html,/docs\/telemetry\.md/);assert.match(html,/aria-describedby="telemetry-optional"/);
+ assert.doesNotMatch(html,/data-install-action|data-download|data-answer="telemetry"|data-telemetry-continue[^>]*disabled/);
+ c.telemetrySelection=false;html=c.telemetryView();
+ assert.doesNotMatch(html,/<input[^>]*checked/);
+ assert.doesNotMatch(html,/data-telemetry-continue[^>]*disabled/);
+ const css=readFileSync(new URL('../dist/style.css',import.meta.url),'utf8');
+ assert.match(css,/\.telemetry-track::before[^}]*var\(--ack-pending\)[^}]*acknowledge-breathe/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)[\s\S]*\.telemetry-track::before\{animation:none/);
+});
+test('prepared shared recipes cannot expose commands before telemetry review',()=>{
+ const c=views();acceptPreparation(c);c.answered.delete('telemetry');
+ const html=c.resultView();
+ assert.match(html,/data-telemetry-continue/);
+ assert.doesNotMatch(html,/data-install-action|data-download|id="install-command"/);
 });
 test('hardware and purpose cards render with real helpers for every intended use',()=>{
  const c=views();
@@ -153,7 +170,7 @@ test('expert review exposes advanced controls and the reboot check has a keyboar
 test('Edit setup exposes every saved setting before preparation without granting installer access',()=>{
  const c=views();c.detailsOpen=true;const html=c.resultView();
  assert.match(html,/<h1[^>]*>Your setup<\/h1>/);
- for(const target of ['language','device','speech','skills','guidance','method','channel','telemetry'])assert.ok(html.includes(`data-edit="${target}"`),target);
+ for(const target of ['language','device','speech','skills','guidance','method','telemetry'])assert.ok(html.includes(`data-edit="${target}"`),target);
  assert.match(html,/data-edit="homeassistant"/);assert.match(html,/data-edit="llm"/);
  assert.match(html,/data-review-prerequisites>Continue/);
  assert.doesNotMatch(html,/data-install-action|id="install-command"|data-prerequisite-continue/);

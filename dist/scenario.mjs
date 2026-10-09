@@ -3,7 +3,7 @@ export const DEVICES = Object.freeze({
   pi: { name: 'Raspberry Pi', short: 'Raspberry Pi', icon: 'cpu', desc: 'Tiny computer. Big personality.', detail: 'Pi 3, 4 or 5 · Linux installed', badge: 'SMALL & MIGHTY' },
   computer: { name: 'Linux computer', short: 'Linux computer', icon: 'laptop', desc: 'Give your laptop a little voice.', detail: 'Laptop, desktop or mini PC' },
   mark1: { name: 'Mycroft Mark I', short: 'Mycroft Mark I', detail: '64-bit Debian 13' },
-  mark2: { name: 'Mycroft Mark II', short: 'Mycroft Mark II', icon: 'speaker', desc: 'A fresh chapter for your Mark II.', detail: 'Debian 13 · Alpha channel' },
+  mark2: { name: 'Mycroft Mark II', short: 'Mycroft Mark II', icon: 'speaker', desc: 'A fresh chapter for your Mark II.', detail: '64-bit Debian 13' },
   devkit: { name: 'Mycroft DevKit', short: 'Mycroft DevKit', detail: 'Pi 4 · 64-bit Debian 13' },
   jetson: { name: 'Jetson Orin Nano', short: 'Jetson Orin Nano', detail: 'Supported Ubuntu Linux' },
   server: { name: 'Home server', short: 'Home server', icon: 'server', desc: 'One brain. Room to grow.', detail: 'A hub for your future satellites' },
@@ -17,7 +17,7 @@ export const EXPERIENCES = Object.freeze({
   hub: { name: 'A brain for my home', icon: 'network', desc: 'A headless hub. Connect room satellites after setup.', result: 'Big ideas. One little hub.', summary: 'HiveMind server + skills', profile: 'server' },
 });
 export const LANGUAGES = Object.freeze({ 'en-us': 'English (US)', 'fr-fr': 'Français', 'de-de': 'Deutsch', 'es-es': 'Español', 'it-it': 'Italiano', 'nl-nl': 'Nederlands', 'pt-pt': 'Português', 'ca-es': 'Català', 'eu-es': 'Euskara', 'gl-es': 'Galego', 'hi-in': 'हिन्दी', 'kab-dz': 'Taqbaylit' });
-export const DEFAULTS = Object.freeze({ device: null, experience: 'ready', locale: 'en-us', method: 'virtualenv', channel: 'alpha', extraSkills: false, telemetry: false, expertise: 'guided', skills: true, speech: 'auto', memory: 'unknown', cpu: 'unknown', piModel: 'unknown', homeassistant: false, llmMode: 'off' });
+export const DEFAULTS = Object.freeze({ device: null, experience: 'ready', locale: 'en-us', method: 'virtualenv', channel: 'alpha', extraSkills: false, telemetry: true, expertise: 'guided', skills: true, speech: 'auto', memory: 'unknown', cpu: 'unknown', piModel: 'unknown', homeassistant: false, llmMode: 'off' });
 /** Describe every accepted option for optional browser agents; cross-field rules use validateState. */
 export const PRESET_SCHEMA = Object.freeze({ type: 'object', properties: {
   device: { type: 'string', enum: Object.keys(DEVICES) }, experience: { type: 'string', enum: Object.keys(EXPERIENCES) },
@@ -93,10 +93,10 @@ export function decodePreset(fragment) {
 }
 /** Describe device and profile prerequisites without inferring the visitor's hardware. @param {object} state @returns {string} */
 export function compatibility(state) {
-  if (state.device === 'mac') return 'Apple Silicon and macOS 15 or later are required. Install Homebrew, Bash 4+ and Xcode Command Line Tools first. Allow your terminal microphone access for voice. Uses virtualenv and alpha; no GUI.';
+  if (state.device === 'mac') return 'Apple Silicon and macOS 15 or later are required. Install Homebrew, Bash 4+ and Xcode Command Line Tools first. Allow your terminal microphone access for voice. Uses a Python environment; no GUI.';
   if (state.device === 'windows') return 'Run inside a 64-bit Ubuntu system on WSL2, with systemd=true under [boot] in /etc/wsl.conf. For voice, WSLg must provide working microphone and audio forwarding. This is not a PowerShell command.';
   if (state.device === 'other') return 'Use a supported 64-bit Linux distribution. A virtual machine needs audio and microphone access inside the guest for voice. Unlisted operating systems are not assumed compatible.';
-  if (usesScreenHardware(state.device)) return `${DEVICES[state.device].short} needs 64-bit Debian 13 (Trixie) on its Raspberry Pi 4. This preset uses alpha and includes the screen interface. It does not flash your SD card.`;
+  if (usesScreenHardware(state.device)) return `${DEVICES[state.device].short} needs 64-bit Debian 13 (Trixie) on its Raspberry Pi 4. Includes the screen interface. It does not flash your SD card.`;
   if (state.device === 'mark1') return 'Mark I needs 64-bit Debian 13. This preset uses a Python environment for its enclosure plugin. The installer detects the enclosure automatically. This installs OVOS; it does not flash an SD card.';
   if (state.device === 'jetson') return `Use supported 64-bit Linux on your Jetson Orin Nano, such as Ubuntu 22.04. This is a generic Linux preset; GPU and CUDA setup are not included.${state.experience === 'hub' ? ' Room satellites need separate installation and pairing.' : ' Connect a microphone and speaker.'} Original Jetson Nano stock images with Ubuntu 18.04 are not supported.`;
   if (state.device === 'server' || state.experience === 'hub') return 'Requires 64-bit Linux. This sets up the server only, without local voice input or playback. Room satellites need a separate install and pairing with your server.';

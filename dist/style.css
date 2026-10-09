@@ -1005,3 +1005,23 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .prerequisite-system-help .command-block{margin:14px 0}
 .prerequisite-help .command-block{margin:10px 0 18px}
 @media(max-width:540px){.command-block{grid-template-columns:minmax(0,1fr);gap:0}.command-copy{justify-self:end}.command-block pre{padding:8px}}
+
+/* Installation diagnostics remain editable until the visitor continues. */
+.telemetry-step{max-width:780px;margin-inline:auto}
+.telemetry-card{padding:32px}
+.telemetry-choice{display:flex;align-items:center;justify-content:space-between;gap:24px;cursor:pointer;font-size:18px;font-weight:600;line-height:1.5}
+.telemetry-switch{position:relative;display:inline-flex;align-items:center;flex:none;width:56px;height:44px}
+.telemetry-switch input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:inherit}
+.telemetry-track{position:relative;width:56px;height:32px;border:2px solid var(--muted);border-radius:20px;background:var(--paper);pointer-events:none;transition:background .2s,border-color .2s}
+.telemetry-track::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+.telemetry-switch input:checked+.telemetry-track{border-color:var(--accent);background:var(--accent)}
+.telemetry-switch input:checked+.telemetry-track::after{transform:translateX(24px);background:var(--paper)}
+.telemetry-track::before{content:"";position:absolute;inset:-6px;border-radius:24px;background:color-mix(in srgb,var(--ack-pending) 18%,transparent);box-shadow:0 0 16px 5px color-mix(in srgb,var(--ack-pending) 32%,transparent);opacity:.35;animation:acknowledge-breathe 2.8s ease-in-out infinite;pointer-events:none}
+.telemetry-switch input:focus-visible+.telemetry-track{outline:2px solid var(--accent);outline-offset:6px}
+.telemetry-note{margin:12px 0 8px;font-size:15px;line-height:1.6;color:var(--muted)}
+.telemetry-details{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);text-underline-offset:4px}
+.telemetry-details .ui-icon{width:16px;height:16px}
+.telemetry-continue{display:flex;margin-top:28px;margin-left:auto}
+@media(max-width:540px){.telemetry-card{padding:24px 20px}.telemetry-choice{gap:18px;font-size:16px}.telemetry-continue{width:100%;justify-content:center}}
+@media(prefers-reduced-motion:reduce){.telemetry-track,.telemetry-track::after{transition:none}.telemetry-track::before{animation:none;transform:none;opacity:.35}}
+@media(forced-colors:active){.telemetry-switch input{opacity:1;position:static;accent-color:auto}.telemetry-track{display:none}}

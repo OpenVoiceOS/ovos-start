@@ -2,7 +2,7 @@ import { errorReportUrl } from './report-link.mjs';
 import { loadLocale, applyTranslations, t, uiLocale } from './i18n.mjs';
 import { markOneFace, WELCOME_TEXT, WelcomePlayback, animateEyes } from './welcome.mjs';
 import { ChoiceInputGuard, focusCurrentChoice } from './interaction.mjs';
-import { DEFAULTS, PRESET_SCHEMA, DEVICES, LANGUAGES, usesVirtualenvPreset, usesAlphaPreset, validateState, buildYaml, compatibility, encodePreset } from './scenario.mjs';
+import { DEFAULTS, PRESET_SCHEMA, DEVICES, LANGUAGES, usesVirtualenvPreset, validateState, buildYaml, compatibility, encodePreset } from './scenario.mjs';
 import { suggestLanguage, browserLanguages, languageSource, localeFlag, speechEligibility, localSpeechOption, localModelGuidance } from './recommendations.mjs';
 import { hardwareCardsForExperience, platformTarget, chooseExperience, applySkillDefaults, chooseHardware, chooseSpeech, chooseCapability } from './flow.mjs';
 import { nextQuestion, canExploreLocal, firstCapability, afterCapability, questionChapter, progressStages, canGoBack, RECIPE_QUESTIONS } from './journey.mjs';
@@ -51,6 +51,7 @@ let replayWelcome=null;
 let welcomeHeard=false;
 let welcomeEnvelope=null;
 let answered = new Set();
+let telemetrySelection = DEFAULTS.telemetry;
 let languageChooserOpen = false;
 let localeRequest=0;
 let trail = [];
@@ -152,6 +153,7 @@ async function restoreRoute() {
   trail=routes.slice(browserBaseCursor,routeCursor);languageChooserOpen=false;platformUnsure=false;
   try{await loadLocale(state.locale);}catch{toast('Couldn’t load this language. Please try again.');}
   if(request!==localeRequest)return;
+  telemetrySelection=state.telemetry;
   confirmedState={...state};recordRoute(true);render(true);
 }
 
@@ -255,9 +257,9 @@ function preparationView() {
   return intro('Ready for <em>OVOS?</em>')+`<section class="preparation-card" aria-labelledby="preparation-device-title"><div class="preparation-art">${deviceIcon(state.device)}</div><div class="preparation-copy"><h2 id="preparation-device-title">${escape(DEVICES[state.device].name)}</h2><div class="preparation-requirement">${icon('chip')}<p>${escape(prep.help)}</p></div><p class="preparation-terminal">${icon('terminal')}<span>${escape(prep.description)}</span></p><div class="preparation-actions"><button class="button" data-prepared><span>${escape(prep.action)}</span>${icon('arrow')}</button><details class="preparation-help"><summary>Need help preparing it?</summary><div><a href="${prep.url}" target="_blank" rel="noopener noreferrer">${prep.link}</a><p>Come back here when you can open its terminal.</p></div></details></div></div></section>`;
 }
 
-/** Keep release/provider details optional while showing meaningful privacy tradeoffs. @returns {string} */
+/** Keep provider details optional while showing meaningful privacy tradeoffs. @returns {string} */
 function speechDetails() {
-  return `<p class="speech-preview">These speech options are experimental.</p><details class="speech-details"><summary>Technical details &amp; installer defaults</summary><div><p><a href="https://github.com/OpenVoiceOS/ovos-installer/tree/main" target="_blank" rel="noopener noreferrer">The installer uses the latest main branch.</a></p><p>Recognition (STT) and the spoken voice (TTS) are chosen together.</p><p>${escape(speechEligibility(state).reason)}</p><p>Local providers: onnx-asr and phoonnx. Local speech uses alpha and a Python environment. Models are downloaded during installation. Performance varies by device.</p><p>Online servers are community-run and may be unavailable. Installer defaults do not guarantee offline speech.</p><button class="text-button" data-answer="speech" data-value="auto" aria-pressed="${state.speech==='auto'}">Let the installer choose</button></div></details>`;
+  return `<p class="speech-preview">These speech options are experimental.</p><details class="speech-details"><summary>Technical details &amp; installer defaults</summary><div><p><a href="https://github.com/OpenVoiceOS/ovos-installer/tree/main" target="_blank" rel="noopener noreferrer">The installer uses the latest main branch.</a></p><p>Recognition (STT) and the spoken voice (TTS) are chosen together.</p><p>${escape(speechEligibility(state).reason)}</p><p>Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.</p><p>Online servers are community-run and may be unavailable. Installer defaults do not guarantee offline speech.</p><button class="text-button" data-answer="speech" data-value="auto" aria-pressed="${state.speech==='auto'}">Let the installer choose</button></div></details>`;
 }
 
 /** Present speech choices only after device details, keeping an unavailable option understandable. @returns {string} */
@@ -293,10 +295,28 @@ function aiView() {
 
 /** Edit one optional technical setting at a time. @returns {string} */
 function tweakView() {
-  if (step === 'method') return intro('How shall we <em>build it?</em>')+`<div class="answer-deck two">${answerCard('method','virtualenv',icon('python'),'Python environment','The guided default.',state.method==='virtualenv')}${answerCard('method','containers',icon('docker'),'Containers','For users comfortable with containers and their host setup.',state.method==='containers')}</div>`;
-  if (step === 'channel') return intro('How early <em>is your access?</em>','Both release channels are in development.')+`<div class="answer-deck two">${answerCard('channel','alpha',icon('science'),'Alpha','The default for compatible devices.',state.channel==='alpha')}${answerCard('channel','testing',icon('check'),'Testing','Changes go through Alpha first.',state.channel==='testing')}</div>`;
-  return intro('Share a little <em>installer feedback?</em>','Optional diagnostics help improve the installer. Voice-usage telemetry stays off.')+`<div class="answer-deck two">${answerCard('telemetry','no',icon('privacy_tip'),'Keep it private','Don’t share installer diagnostics.',!state.telemetry)}${answerCard('telemetry','yes',icon('favorite'),'Happy to help','Share installer diagnostics with OVOS.',state.telemetry)}</div>`;
+  return intro('How shall we <em>build it?</em>')+`<div class="answer-deck two">${answerCard('method','virtualenv',icon('python'),'Python environment','The guided default.',state.method==='virtualenv')}${answerCard('method','containers',icon('docker'),'Containers','For users comfortable with containers and their host setup.',state.method==='containers')}</div>`;
 }
+/** Ask for optional installation diagnostics before allowing installation exports. @returns {string} */
+function telemetryView() {
+  return `<div class="ready-wrap telemetry-step">${intro('Help improve <em>OVOS.</em>','Share installation details to help us improve OVOS on devices like yours.')}
+    <section data-install-progress hidden aria-label="Installation progress"></section>
+    <div class="install-card telemetry-card">
+      <label class="telemetry-choice"><span>Share installation diagnostics</span><span class="telemetry-switch"><input type="checkbox" role="switch" data-telemetry-confirm aria-describedby="telemetry-optional" ${telemetrySelection?'checked':''}><span class="telemetry-track" aria-hidden="true"></span></span></label>
+      <p id="telemetry-optional" class="telemetry-note">Optional. You can continue without sharing.</p>
+      <a class="telemetry-details" href="https://github.com/OpenVoiceOS/ovos-installer/blob/main/docs/telemetry.md" target="_blank" rel="noopener noreferrer">What is shared?${icon('arrow')}</a>
+      <button type="button" class="button telemetry-continue" data-telemetry-continue>Continue ${icon('arrow')}</button>
+    </div></div>`;
+}
+
+/** Commit the visitor's toggle choice before issuing their install recipe. @returns {void} */
+function confirmTelemetry() {
+  if(!['telemetry','review'].includes(step))return;
+  state={...state,telemetry:telemetrySelection===true};
+  answered.add('telemetry');
+  finish();
+}
+
 /** Ask for the target OS, never infer it from the browser used to configure. @returns {string} */
 function platformView() {
   const choices = [['windows', 'Windows', 'Ubuntu on Windows, through WSL2', 'windows'], ['mac', 'macOS', 'Apple Silicon · macOS 15+', 'apple'], ['linux', 'Linux', 'Desktop, mini PC or virtual machine', 'linux'], ['unknown', 'Something else', 'Or I’m not sure yet', null]];
@@ -309,7 +329,7 @@ function platformView() {
 /** Keep help, alternate exports and technical controls available on request. @returns {string} */
 function detailsView() {
   const handoff=installHandoff(state);
-  return `<details class="install-help advanced-install" ${state.expertise==='expert'?'open':''}><summary>Advanced settings${icon('expand_more')}</summary><div class="details-body"><div class="tweak-list"><button data-edit="guidance">Setup style <strong>${state.expertise==='expert'?'Advanced':state.expertise==='tinker'?'Tinker':'Guided'}</strong></button><button data-edit="method" ${usesVirtualenvPreset(state.device)||state.speech==='local'?'disabled':''}>Installation <strong>${state.method==='virtualenv'?'Python environment':'Containers'}</strong></button><button data-edit="channel" ${usesAlphaPreset(state.device)||state.speech==='local'?'disabled':''}>Release <strong>${state.channel}</strong></button><button data-edit="telemetry">Installer diagnostics <strong>${state.telemetry?'Shared':'Off'}</strong></button></div><p class="details-note">${handoff.requirement} ${handoff.audio} ${handoff.integrations}</p><button class="text-button" data-edit="prepare">Help prepare my device</button><p class="details-note">Run as your normal user. Internet, git, curl and sudo are needed; installation may reboot.</p><p class="setup-code-help" data-prerequisite-required ${!prerequisiteGate.ready(state.device)?'hidden':''}>Setup code ${setupSession?.code?`<code>${escape(setupSession.code)}</code>`:'<span>Copy new command</span>'}</p><div class="alternate-exports" data-prerequisite-required ${!prerequisiteGate.ready(state.device)?'hidden':''}><button class="text-button" data-download="script" ${previewOnly||!prerequisiteGate.ready(state.device)?'disabled':''}>Download install script</button></div><div class="tertiary-actions"><button class="text-button" data-download="yaml">Download scenario.yaml</button><a class="text-button" href="${LAUNCHER_URL}" target="_blank" rel="noopener noreferrer">View installer source</a></div><p class="details-note" data-prerequisite-required ${!prerequisiteGate.ready(state.device)?'hidden':''}>The downloaded script uses the same online launcher as the copied command.</p></div></details>`;
+  return `<details class="install-help advanced-install" ${state.expertise==='expert'?'open':''}><summary>Advanced settings${icon('expand_more')}</summary><div class="details-body"><div class="tweak-list"><button data-edit="guidance">Setup style <strong>${state.expertise==='expert'?'Advanced':state.expertise==='tinker'?'Tinker':'Guided'}</strong></button><button data-edit="method" ${usesVirtualenvPreset(state.device)||state.speech==='local'?'disabled':''}>Installation <strong>${state.method==='virtualenv'?'Python environment':'Containers'}</strong></button><button data-edit="telemetry">Installer diagnostics <strong>${state.telemetry?'Shared':'Off'}</strong></button></div><p class="details-note">${handoff.requirement} ${handoff.audio} ${handoff.integrations}</p><button class="text-button" data-edit="prepare">Help prepare my device</button><p class="details-note">Run as your normal user. Internet, git, curl and sudo are needed; installation may reboot.</p><p class="setup-code-help" data-prerequisite-required ${!prerequisiteGate.ready(state.device)?'hidden':''}>Setup code ${setupSession?.code?`<code>${escape(setupSession.code)}</code>`:'<span>Copy new command</span>'}</p><div class="alternate-exports" data-prerequisite-required ${!prerequisiteGate.ready(state.device)?'hidden':''}><button class="text-button" data-download="script" ${previewOnly||!prerequisiteGate.ready(state.device)?'disabled':''}>Download install script</button></div><div class="tertiary-actions"><button class="text-button" data-download="yaml">Download scenario.yaml</button><a class="text-button" href="${LAUNCHER_URL}" target="_blank" rel="noopener noreferrer">View installer source</a></div><p class="details-note" data-prerequisite-required ${!prerequisiteGate.ready(state.device)?'hidden':''}>The downloaded script uses the same online launcher as the copied command.</p></div></details>`;
 }
 
 /** Keep the preparation decision separate from every executable export. @returns {string} */
@@ -322,7 +342,8 @@ function prerequisitePageView() {
 /** Require the explicit acknowledgement and Continue action before handing over a command. @returns {void} */
 function continueToInstall() {
   if(step!=='review'||!prerequisiteGate.accept(state.device))return;
-  render(true);
+  if(!answered.has('telemetry')){go('telemetry');return;}
+  finish();
 }
 
 /** Reopen preparation and invalidate acknowledgement before changing the target OS. @returns {void} */
@@ -358,6 +379,7 @@ function setupEditorView() {
 function resultView() {
   prerequisiteGate.selectDevice(state.device,state.cpu);
   if(!prerequisiteGate.ready(state.device))return detailsOpen?setupEditorView():prerequisitePageView();
+  if(!answered.has('telemetry'))return telemetryView();
   return `<div class="ready-wrap">${previewOnly?`<aside class="preview-notice" role="note"><strong>Preview only — no installation will run.</strong><a class="button button-secondary" href="${escape(liveWizardUrl(setupSession))}">Open the live wizard</a></aside>`:''}${intro('Install <em>OVOS.</em>')}
     <section data-install-progress hidden aria-label="Installation progress"></section>
     <div class="install-card">
@@ -410,7 +432,7 @@ function render(focus = false) {
   welcomePlayback?.dispose();welcomePlayback=null;
   choiceInput.nextScreen();
   if(step!=='welcome'&&(!currentFact||focus))drawTrivia();
-  const views = {welcome:welcomeView,language:languageView,guidance:guidanceView,purpose:experienceView,device:deviceView,prepare:preparationView,speech:speechView,skills:skillsView,homeassistant:homeAssistantView,llm:aiView,review:resultView,memory:capabilityView,cpu:capabilityView,piModel:capabilityView,method:tweakView,channel:tweakView,telemetry:tweakView};
+  const views = {welcome:welcomeView,language:languageView,guidance:guidanceView,purpose:experienceView,device:deviceView,prepare:preparationView,speech:speechView,skills:skillsView,homeassistant:homeAssistantView,llm:aiView,review:resultView,memory:capabilityView,cpu:capabilityView,piModel:capabilityView,method:tweakView,telemetry:telemetryView};
   renderSteps();
   wizard.innerHTML = `<div class="screen ${focus?'entering':''}" data-question="${step}">${views[step]()}${step==='welcome'||(step==='review'&&!prerequisiteGate.ready(state.device))?'':projectTriviaView()}</div>`;
   document.querySelector('.workbench').dataset.question=step;
@@ -440,12 +462,13 @@ function cancelTransition() { clearTimeout(transitionTimer); transitionTimer = n
 function go(target) {
   const changed=step!==target;
   step=target;if(target!=='device')devicePane='cards';
+  if(target==='telemetry')telemetrySelection=state.telemetry;
   recordRoute(!changed);render(true);
 }
 
 /** Finish a valid recipe and preserve complete old/new shared-link behavior. @returns {void} */
 function finish() {
-  state = validateState(state); confirmedState={...state}; editing = false; editSnapshot = null; detailsOpen = state.expertise==='expert';
+  state = validateState({...state,channel:'alpha'}); confirmedState={...state}; editing = false; editSnapshot = null; detailsOpen = state.expertise==='expert';
   if(!sameSetupChoices(setupSession,state)){
     try{setupSession=issueSetup(state);}
     catch{setupSession={state:{...state},code:null,version:0,issuedAt:null,expiresAt:null};}
@@ -488,7 +511,7 @@ function acceptDevice(device) {
   if(state.device!==device){for(const key of ['speech','memory','cpu','piModel','prepare'])answered.delete(key);preparedFor=null;}
   state=next;confirmedState={...state};answered.add('device');
   if(preparedFor!==device)go('prepare');
-  else if(state.experience==='hub')finish();
+  else if(state.experience==='hub'){if(editing)finish();else go('telemetry');}
   else go(nextQuestion('prepare',state));
 }
 
@@ -512,10 +535,9 @@ function answer(key, value) {
   if (key==='skills') { state.skills=value!=='empty'; state.extraSkills=value==='extras'; skillsAnswered=true; complete(); return; }
   if (key==='homeassistant') { state.homeassistant=value==='yes'; complete(); return; }
   if (key==='llmMode') { state.llmMode=value; complete(); return; }
-  if (['method','channel','telemetry'].includes(key)) {
-    if(key==='method'&&(usesVirtualenvPreset(state.device)||state.speech==='local'))return;
-    if(key==='channel'&&(usesAlphaPreset(state.device)||state.speech==='local'))return;
-    state={...state,[key]:key==='telemetry'?value==='yes':value};
+  if (key==='method') {
+    if(usesVirtualenvPreset(state.device)||state.speech==='local')return;
+    state={...state,method:value};
     if(state.experience==='hub'&&state.method==='containers')state.extraSkills=false;
     finish();
   }
@@ -537,6 +559,7 @@ function back() {
 
 /** Open one optional setting with an exact cancellation baseline. @param {string} target Setting. @returns {void} */
 function editQuestion(target) {
+  if(target==='channel')return;
   cancelTransition();editSnapshot={...state};editAnswered=[...answered];editSkillsAnswered=skillsAnswered;editPreparedFor=preparedFor;editing=true;devicePane='cards';go(target);
 }
 
@@ -559,12 +582,12 @@ function restartWizard(target='language') {
   if(!['language','welcome'].includes(target))return;
   if(setupStatus(setupSession).kind==='clock'){toast('Check your clock, then try again.');return;}
   let fresh;
-  try{fresh=issueSetup(setupSession.state);}catch{toast('Check your clock, then try again.');return;}
+  try{fresh=issueSetup({...setupSession.state,channel:'alpha',telemetry:DEFAULTS.telemetry});}catch{toast('Check your clock, then try again.');return;}
   if(fresh.code===setupSession.code){toast('Please wait a second, then try again.');return;}
   cancelTransition();clearTimeout(expiryTimer);expiryTimer=null;installTracker.reset();
   state={...fresh.state};confirmedState={...state};setupSession=fresh;
   prerequisiteGate.confirm(false);trackingShown=false;progressSignature='';
-  answered=new Set();preparedFor=null;skillsAnswered=true;
+  answered=new Set();telemetrySelection=DEFAULTS.telemetry;preparedFor=null;skillsAnswered=true;
   editing=false;editSnapshot=null;editAnswered=[];editSkillsAnswered=false;editPreparedFor=null;
   languageChooserOpen=false;detailsOpen=false;devicePane='cards';unlistedDevice=false;platformUnsure=false;
   navigationId=crypto.randomUUID();routes=[];routeCursor=-1;browserBaseCursor=0;trail=[];step=target;
@@ -617,6 +640,7 @@ async function restore() {
     answered=new Set(restoredSession?[...RECIPE_QUESTIONS,'prepare','memory','cpu','piModel']:[]);
     editing=false;editSnapshot=null;editAnswered=[];editSkillsAnswered=false;devicePane='cards';unlistedDevice=false;
   }
+  telemetrySelection=state.telemetry;
   recordRoute(true);main.inert=false;main.removeAttribute('aria-busy');render();
 }
 /** Keep visible expiry current without rerendering choices, trivia or focus. @returns {void} */
@@ -723,6 +747,8 @@ async function retryInstallation() {
   if(step!=='review'||installTracker.code!==setupSession?.code||!['failed','cancelled'].includes(installTracker.session?.status))return;
   const status=setupStatus(setupSession);
   if(status.kind==='clock'){toast(status.message);return;}
+  if(!answered.has('telemetry')){go('telemetry');return;}
+  state={...state,channel:'alpha'};
   const fresh=issueSetup(state);
   if(fresh.code===setupSession.code){toast('Please wait a second, then try again.');return;}
   setupSession=fresh;persist();render();
@@ -782,6 +808,7 @@ async function copyPrerequisites(button) {
 /** Copy a generated artifact, opening a selectable fallback if needed. @param {string} kind @returns {Promise<void>} */
 async function copy(kind) {
   if(previewOnly&&kind==='command'){toast('Preview only — no installation will run.');return;}
+  if(kind==='command'&&!answered.has('telemetry')){go('telemetry');return;}
   if(kind==='command'&&!prerequisiteGate.ready(state.device)){toast('Confirm the required tools above to unlock the install command.');return;}
   const now=Math.floor(Date.now()/1000);
   if(kind==='command'&&setupStatus(setupSession,now).kind!=='active'){updateExpiry();toast('Copy a new command first. Your choices are saved.');return;}
@@ -830,6 +857,7 @@ async function copy(kind) {
 /** Save the same validated recipe as YAML or a runnable shell file. @param {string} kind @returns {Promise<void>} */
 async function download(kind) {
   if(previewOnly&&kind!=='yaml'){toast('Preview only — no installation will run.');return;}
+  if(!answered.has('telemetry')){go('telemetry');return;}
   const yaml = kind === 'yaml';
   if(!yaml&&!prerequisiteGate.ready(state.device)){toast('Confirm the required tools above to unlock the install command.');return;}
   const now=Math.floor(Date.now()/1000);
@@ -859,6 +887,7 @@ document.addEventListener('click', event => {
   if(target.hasAttribute('data-progress-retry')){void installTracker.retry();return;}
   if(target.hasAttribute('data-rerun-wizard')){restartWizard();return;}
   if(target.hasAttribute('data-restart-install')){void retryInstallation();return;}
+  if(target.hasAttribute('data-telemetry-continue')){confirmTelemetry();return;}
   if(target.hasAttribute('data-prerequisite-continue')){continueToInstall();return;}
   if(target.hasAttribute('data-review-prerequisites')){reviewPrerequisites();return;}
   if(target.hasAttribute('data-copy-prerequisites')){void copyPrerequisites(target);return;}
@@ -874,7 +903,7 @@ document.addEventListener('click', event => {
   if(target.hasAttribute('data-next-trivia')){drawTrivia();updateTriviaNote(wizard.querySelector('.project-fact'),currentFact);applyTranslations(wizard.querySelector('.project-fact'),state.locale);return;}
   if(target.hasAttribute('data-change-language')){languageChooserOpen=!languageChooserOpen;render();wizard.querySelector(languageChooserOpen?'[data-language-select]':'[data-change-language]').focus({preventScroll:true});return;}
   if(target.hasAttribute('data-confirm-language')){react(target,()=>complete());return;}
-  if(target.hasAttribute('data-prepared')){preparedFor=state.device;answered.add('prepare');if(state.experience==='hub'||(editing&&editSnapshot?.device===state.device&&answered.has('speech')))finish();else go(nextQuestion('prepare',state));return;}
+  if(target.hasAttribute('data-prepared')){preparedFor=state.device;answered.add('prepare');if(editing&&(state.experience==='hub'||(editSnapshot?.device===state.device&&answered.has('speech'))))finish();else go(nextQuestion('prepare',state));return;}
   if(target.hasAttribute('data-answer')){react(target,()=>answer(target.dataset.answer,target.dataset.value));return;}
   if(target.hasAttribute('data-check-specs')){go(firstCapability(state));return;}
   if(target.hasAttribute('data-other')){showDevicePane('platform',true);return;}
@@ -931,6 +960,7 @@ async function selectLanguage(locale) {
 }
 
 wizard.addEventListener('change',event=>{
+  if(event.target.matches('[data-telemetry-confirm]')){telemetrySelection=event.target.checked;return;}
   if(event.target.matches('[data-prerequisite-confirm]')){prerequisiteGate.confirm(event.target.checked);wizard.querySelector('[data-install-action]')?.classList.remove('copied');updateExpiry();return;}
   if(event.target.matches('[data-language-select]'))selectLanguage(event.target.value);
 });

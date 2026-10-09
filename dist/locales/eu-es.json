@@ -928,5 +928,6 @@
   "Includes the screen interface.": "Pantailako interfazea barne dakar.",
   "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Tokiko hornitzaileak: onnx-asr eta phoonnx. Gailuko ahotsak Python ingurunea erabiltzen du. Modeloak instalazioan deskargatzen dira. Errendimendua gailuaren araberakoa da.",
   "View installation statistics": "Ikusi instalazio-estatistikak",
-  "On": "Aktibatuta"
+  "On": "Aktibatuta",
+  "Raspberry Pi tuning is included.": "Raspberry Pi-rako optimizazioak barne daude."
 }

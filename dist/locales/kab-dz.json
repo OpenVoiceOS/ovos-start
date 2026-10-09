@@ -928,5 +928,6 @@
   "Includes the screen interface.": "Yegber agrudem n ugdil.",
   "Local providers: onnx-asr and phoonnx. Local speech uses a Python environment. Models are downloaded during installation. Performance varies by device.": "Imsefraken idiganen: onnx-asr d phoonnx. Ameslay adigan yesseqdac tawennaḍt Python. Timudmiwin ad ttusadrent deg usebded. Tamellit tettemgirid seg yibenk ɣer wayeḍ.",
   "View installation statistics": "Wali tidaddanin n usebded",
-  "On": "Yermed"
+  "On": "Yermed",
+  "Raspberry Pi tuning is included.": "Aseggem n Raspberry Pi yella deg usebded."
 }

@@ -5,11 +5,23 @@ import { DEFAULTS, DEVICES, LANGUAGES, allowedExperiences, selectDevice, validat
 /** Return a fresh complete configuration. @param {object} overrides @returns {object} */
 function setup(overrides = {}) { return { ...DEFAULTS, device: 'pi', ...overrides }; }
 
-test('default recipe shares installer statistics while voice usage and tuning remain off', () => {
+test('default Pi recipe includes tuning and installer statistics while voice usage remains off', () => {
   assert.equal(DEFAULTS.telemetry, true);
   const yaml = buildYaml(setup());
-  for (const line of ['uninstall: false', 'method: virtualenv', 'channel: alpha', 'profile: ovos', '  skills: true', '  gui: false', '  homeassistant: false', '  llm: false', 'raspberry_pi_tuning: false', 'share_telemetry: true', 'share_usage_telemetry: false']) assert.ok(yaml.split('\n').includes(line));
+  for (const line of ['uninstall: false', 'method: virtualenv', 'channel: alpha', 'profile: ovos', '  skills: true', '  gui: false', '  homeassistant: false', '  llm: false', 'raspberry_pi_tuning: true', 'share_telemetry: true', 'share_usage_telemetry: false']) assert.ok(yaml.split('\n').includes(line));
   assert.ok(!yaml.includes('locale:') && !yaml.includes('hardware:'));
+});
+
+test('tuning follows the selected hardware through shared links and device changes', () => {
+  for (const device of Object.keys(DEVICES)) {
+    const state = selectDevice(setup(), device);
+    const expected = ['pi', 'mark1', 'mark2', 'devkit'].includes(device);
+    for (const recipe of [state, decodePreset(encodePreset(state))]) {
+      assert.match(buildYaml(recipe), new RegExp(`^raspberry_pi_tuning: ${expected}$`, 'm'), device);
+    }
+    assert.match(buildYaml(selectDevice(state, 'computer')), /^raspberry_pi_tuning: false$/m);
+    assert.match(buildYaml(selectDevice(state, 'pi')), /^raspberry_pi_tuning: true$/m);
+  }
 });
 
 test('Mark II and DevKit force the supported channel, method and exact hardware override', () => {

@@ -22,7 +22,7 @@ export function validateCatalog(catalog){
  */
 export async function loadLocale(locale){
   if(!UI_LOCALES.includes(locale)||catalogs.has(locale))return;
-  if(!pending.has(locale))pending.set(locale,fetch(`./locales/${locale}.json?v=0.57.0`).then(response=>{
+  if(!pending.has(locale))pending.set(locale,fetch(`./locales/${locale}.json?v=0.58.0`).then(response=>{
     if(!response.ok)throw new Error('Language unavailable.');return response.json();
   }).then(value=>{catalogs.set(locale,validateCatalog(value));}).finally(()=>pending.delete(locale)));
   await pending.get(locale);

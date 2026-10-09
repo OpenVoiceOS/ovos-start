@@ -112,6 +112,9 @@ for(const [device,hardware] of Object.entries(scenario.DEVICES)){
     assert.doesNotMatch(c.resultView(),/data-install-action|>Tools confirmed<|id="install-command"/);
     acceptPreparation(c);
     const html=c.resultView();
+    const tuningNote='<p class="setup-tuning-note">Raspberry Pi tuning is included.</p>';
+    assert.equal(html.includes(tuningNote),['pi','mark1','mark2','devkit'].includes(device));
+    if(html.includes(tuningNote))assert.ok(html.indexOf(tuningNote)<html.indexOf('data-install-action'));
     const header=html.slice(html.indexOf('<div class="install-target install-target-summary">'),html.indexOf('<ul class="setup-icon-summary"'));
     const row=html.match(/<ul class="setup-icon-summary"[\s\S]*?<\/ul>/)[0];
     assert.ok(header.includes(`<strong>${hardware.name}</strong><span>English (US)</span>`));

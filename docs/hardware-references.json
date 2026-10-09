@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-06",
+  "generation_method": "Built-in image_gen style transfer, five parallel calls, no retries. Reference files viewed locally before generation.",
+  "asset_dimensions": [
+    1254,
+    1254
+  ],
+  "asset_mode": "RGBA with alpha transparency",
+  "references": [
+    {
+      "asset": "hardware-mark1.png",
+      "source_type": "Original Mycroft industrial designer Derick Schweppe",
+      "source_page": "https://derickschweppe.com/mycroft-ai-mark-i",
+      "reference_file": "refs/mark-i-designer-alt-1.png",
+      "direct_image": "https://cdn.myportfolio.com/aa185ff97b588493a2da212ca97df648/a26f2b9e-593f-4787-808a-07edc254c701_rw_1200.png?h=5a3f355d1a4311a2c1213b3ea7ba7ac9",
+      "validation_page": "https://certification.oshwa.org/exemplar/us000049.html",
+      "validation_image": "https://images.ctfassets.net/9mu5fp12mbct/5TM7WcleRqWi0s2Y4oQQCa/20927f35957da70825a4edd3d06b9430/mark1.png",
+      "identity": "Low white capsule/oval body, four short feet, black oval face, segmented cyan ring eyes, dot-matrix smile, top rotary control."
+    },
+    {
+      "asset": "hardware-mark2.png",
+      "source_type": "Original Mycroft industrial designer Derick Schweppe",
+      "source_page": "https://derickschweppe.com/mycroft-ai-mark-ii",
+      "reference_files": [
+        "refs/mark-ii-designer-hero.jpg",
+        "refs/mark-ii-designer.png"
+      ],
+      "direct_images": [
+        "https://cdn.myportfolio.com/aa185ff97b588493a2da212ca97df648/62147092-1a5c-450c-a0a7-72a6a1fecd17_rw_1920.jpg?h=fdb76823990a8e5f375522481f4a0a18",
+        "https://cdn.myportfolio.com/aa185ff97b588493a2da212ca97df648/37e87617-7f2e-4e35-b941-419503d8eff9_rw_1920.png?h=c2a452c7d7b883ff078687f4cf86190d"
+      ],
+      "identity": "Production white rectangular ribbed case, projecting tilted black screen bezel, camera above screen, perforated white lower speaker panel."
+    },
+    {
+      "asset": "hardware-devkit.png",
+      "source_type": "Original Mycroft industrial designer and official-linked assembly guide",
+      "source_pages": [
+        "https://derickschweppe.com/mycroft-ai-mark-ii",
+        "https://www.instructables.com/Mycroft-Mark-II-Developer-Kit-Assembly/"
+      ],
+      "official_linking_page": "https://mycroft-ai.gitbook.io/docs/using-mycroft-ai/get-mycroft/mark-ii/mark-ii-dev-kit",
+      "official_hardware_repository": "https://github.com/MycroftAI/hardware-mycroft-mark-II",
+      "reference_files": [
+        "refs/mycroft-devkit-designer.png",
+        "refs/mycroft-devkit-assembly.jpg"
+      ],
+      "direct_images": [
+        "https://cdn.myportfolio.com/aa185ff97b588493a2da212ca97df648/8177492a-6bcb-4e5a-bd01-d4a343281dd1_rw_3840.png?h=8a4b7888796787a5dbb38d97b6487ae1",
+        "https://content.instructables.com/FSK/712V/KKFFUNUG/FSK712VKKFFUNUG.jpg"
+      ],
+      "identity": "Mycroft Mark II Dev Kit, 2021. Clear laser-cut acrylic cube frame, exposed green SJ201 board, landscape front LCD above dual round speakers, side fan, white internal audio chamber."
+    },
+    {
+      "asset": "hardware-jetson.png",
+      "source_type": "NVIDIA official developer blog",
+      "source_page": "https://developer.nvidia.com/blog/develop-ai-powered-robots-smart-vision-systems-and-more-with-nvidia-jetson-orin-nano-developer-kit/",
+      "reference_file": "refs/jetson-orin-nano.png",
+      "direct_image": "https://developer-blogs.nvidia.com/wp-content/uploads/2023/03/jetson-orin-nano-developer-kit-3d-render--1024x576.png",
+      "supplemental_reference": "refs/jetson-orin-nano-angles.png",
+      "supplemental_image": "https://developer-blogs.nvidia.com/wp-content/uploads/2023/03/jetson-orin-nano-developer-kit.png",
+      "identity": "Jetson Orin Nano Developer Kit, black carrier and large black heatsink/fan assembly."
+    },
+    {
+      "asset": "hardware-pi.png",
+      "source_type": "Raspberry Pi official launch article by Eben Upton",
+      "source_page": "https://www.raspberrypi.com/news/introducing-raspberry-pi-5/",
+      "reference_file": "refs/raspberry-pi-5.jpg",
+      "direct_image": "https://www.raspberrypi.com/app/uploads/2023/09/aa7841cb-421a-4000-8ab9-c77478a4f83b-1024x683.jpg",
+      "identity": "Bare Raspberry Pi 5 board, with Pi 5 Ethernet/USB layout, silver BCM2712 package, two micro-HDMI ports, two FPC connectors, GPIO header."
+    }
+  ]
+}

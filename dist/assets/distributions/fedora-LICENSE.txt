@@ -1,0 +1,3 @@
+The contents of this repository are licensed under the CC-BY-SA 4.0 license, 
+excepting for the Fedora which are trademark Red Hat, 
+as well as any other trademarks which are trademark their respective trademark holders.

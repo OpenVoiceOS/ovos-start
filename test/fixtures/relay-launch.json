@@ -1,0 +1,107 @@
+{
+  "source": "ovos-install-status/server/{launch,launch-errors}.mjs; reviewed 2026-10-08",
+  "launcher": "https://raw.githubusercontent.com/goldyfruit/ovos-start-launcher/aa528a5e0ce50ccc43c26e1964067a0e0464f272/v2.sh",
+  "code": "4400-00G0-DD4X-406N",
+  "writeToken": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "bootstrap": "(\nset -eu\nset +x\n# Read the entire pinned launcher before executing it.\novos=$(curl -qfsS --proto '=https' --connect-timeout 15 -m 120 'https://raw.githubusercontent.com/goldyfruit/ovos-start-launcher/aa528a5e0ce50ccc43c26e1964067a0e0464f272/v2.sh') || { printf '%s\\n' 'Could not download the installer. Please try again.' >&2; exit 1; }\n[ -n \"$ovos\" ] || { printf '%s\\n' 'The installer download was empty. Please try again.' >&2; exit 1; }\n# Keep interactive installer prompts on the terminal, not the download pipe.\n[ -r /dev/tty ] && ( : < /dev/tty ) 2>/dev/null || { printf '%s\\n' 'Open Terminal on your OVOS device and paste the command there.' >&2; exit 1; }\nexec sh -c \"$ovos\" -- '4400-00G0-DD4X-406N' --track 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' < /dev/tty\n)",
+  "messages": {
+    "ca-es": [
+      "Aquesta ordre no està disponible o ha caducat. Torna a l’assistent i copia’n una de nova.",
+      "El servei de descàrrega no està disponible ara mateix. Torna-ho a provar d’aquí a una estona."
+    ],
+    "de-de": [
+      "Dieser Befehl ist nicht verfügbar oder abgelaufen. Kehre zum Assistenten zurück und kopiere einen neuen Befehl.",
+      "Der Download-Dienst ist gerade nicht erreichbar. Versuche es in Kürze erneut."
+    ],
+    "en-us": [
+      "This command is unavailable or expired. Return to the wizard and copy a new command.",
+      "The download service is temporarily unavailable. Please try again shortly."
+    ],
+    "es-es": [
+      "Este comando no está disponible o ha caducado. Vuelve al asistente y copia uno nuevo.",
+      "El servicio de descarga no está disponible en este momento. Vuelve a intentarlo dentro de un rato."
+    ],
+    "eu-es": [
+      "Komando hau ez dago erabilgarri edo iraungi egin da. Itzuli morroira eta kopiatu komando berri bat.",
+      "Deskarga-zerbitzua ez dago erabilgarri une honetan. Saiatu berriro hemendik gutxira."
+    ],
+    "fr-fr": [
+      "Cette commande est indisponible ou a expiré. Revenez à l’assistant pour en copier une nouvelle.",
+      "Le téléchargement est temporairement indisponible. Réessayez dans un instant."
+    ],
+    "gl-es": [
+      "Esta orde non está dispoñible ou caducou. Volve ao asistente e copia unha nova.",
+      "O servizo de descarga non está dispoñible neste momento. Téntao de novo dentro dun pouco."
+    ],
+    "hi-in": [
+      "यह कमांड उपलब्ध नहीं है या इसकी समय-सीमा समाप्त हो गई है। विज़ार्ड पर लौटकर नया कमांड कॉपी करें।",
+      "डाउनलोड सेवा अभी उपलब्ध नहीं है। थोड़ी देर बाद फिर कोशिश करें।"
+    ],
+    "it-it": [
+      "Questo comando non è disponibile o è scaduto. Torna alla procedura guidata e copiane uno nuovo.",
+      "Il servizio di download è temporaneamente indisponibile. Riprova tra poco."
+    ],
+    "kab-dz": [
+      "Taladna-a ur telli ara neɣ tfat. Uɣal ɣer umarag sakin nɣel taladna tamaynut.",
+      "Ameẓlu n usader ur yelli ara akka tura. Ɛreḍ tikkelt nniḍen seld kra n wakud."
+    ],
+    "nl-nl": [
+      "Deze opdracht is niet beschikbaar of verlopen. Ga terug naar de wizard en kopieer een nieuwe opdracht.",
+      "De downloadservice is tijdelijk niet bereikbaar. Probeer het zo nog eens."
+    ],
+    "pt-pt": [
+      "Este comando está indisponível ou expirou. Volta ao assistente e copia um novo.",
+      "O serviço de descarga está temporariamente indisponível. Tenta novamente daqui a pouco."
+    ]
+  },
+  "errors": {
+    "ca-es": [
+      "(\nprintf '%s\\n' 'Aquesta ordre no està disponible o ha caducat. Torna a l’assistent i copia’n una de nova.' >&2\nexit 1\n)",
+      "(\nprintf '%s\\n' 'El servei de descàrrega no està disponible ara mateix. Torna-ho a provar d’aquí a una estona.' >&2\nexit 1\n)"
+    ],
+    "de-de": [
+      "(\nprintf '%s\\n' 'Dieser Befehl ist nicht verfügbar oder abgelaufen. Kehre zum Assistenten zurück und kopiere einen neuen Befehl.' >&2\nexit 1\n)",
+      "(\nprintf '%s\\n' 'Der Download-Dienst ist gerade nicht erreichbar. Versuche es in Kürze erneut.' >&2\nexit 1\n)"
+    ],
+    "en-us": [
+      "(\nprintf '%s\\n' 'This command is unavailable or expired. Return to the wizard and copy a new command.' >&2\nexit 1\n)",
+      "(\nprintf '%s\\n' 'The download service is temporarily unavailable. Please try again shortly.' >&2\nexit 1\n)"
+    ],
+    "es-es": [
+      "(\nprintf '%s\\n' 'Este comando no está disponible o ha caducado. Vuelve al asistente y copia uno nuevo.' >&2\nexit 1\n)",
+      "(\nprintf '%s\\n' 'El servicio de descarga no está disponible en este momento. Vuelve a intentarlo dentro de un rato.' >&2\nexit 1\n)"
+    ],
+    "eu-es": [
+      "(\nprintf '%s\\n' 'Komando hau ez dago erabilgarri edo iraungi egin da. Itzuli morroira eta kopiatu komando berri bat.' >&2\nexit 1\n)",
+      "(\nprintf '%s\\n' 'Deskarga-zerbitzua ez dago erabilgarri une honetan. Saiatu berriro hemendik gutxira.' >&2\nexit 1\n)"
+    ],
+    "fr-fr": [
+      "(\nprintf '%s\\n' 'Cette commande est indisponible ou a expiré. Revenez à l’assistant pour en copier une nouvelle.' >&2\nexit 1\n)",
+      "(\nprintf '%s\\n' 'Le téléchargement est temporairement indisponible. Réessayez dans un instant.' >&2\nexit 1\n)"
+    ],
+    "gl-es": [
+      "(\nprintf '%s\\n' 'Esta orde non está dispoñible ou caducou. Volve ao asistente e copia unha nova.' >&2\nexit 1\n)",
+      "(\nprintf '%s\\n' 'O servizo de descarga non está dispoñible neste momento. Téntao de novo dentro dun pouco.' >&2\nexit 1\n)"
+    ],
+    "hi-in": [
+      "(\nprintf '%s\\n' 'यह कमांड उपलब्ध नहीं है या इसकी समय-सीमा समाप्त हो गई है। विज़ार्ड पर लौटकर नया कमांड कॉपी करें।' >&2\nexit 1\n)",
+      "(\nprintf '%s\\n' 'डाउनलोड सेवा अभी उपलब्ध नहीं है। थोड़ी देर बाद फिर कोशिश करें।' >&2\nexit 1\n)"
+    ],
+    "it-it": [
+      "(\nprintf '%s\\n' 'Questo comando non è disponibile o è scaduto. Torna alla procedura guidata e copiane uno nuovo.' >&2\nexit 1\n)",
+      "(\nprintf '%s\\n' 'Il servizio di download è temporaneamente indisponibile. Riprova tra poco.' >&2\nexit 1\n)"
+    ],
+    "kab-dz": [
+      "(\nprintf '%s\\n' 'Taladna-a ur telli ara neɣ tfat. Uɣal ɣer umarag sakin nɣel taladna tamaynut.' >&2\nexit 1\n)",
+      "(\nprintf '%s\\n' 'Ameẓlu n usader ur yelli ara akka tura. Ɛreḍ tikkelt nniḍen seld kra n wakud.' >&2\nexit 1\n)"
+    ],
+    "nl-nl": [
+      "(\nprintf '%s\\n' 'Deze opdracht is niet beschikbaar of verlopen. Ga terug naar de wizard en kopieer een nieuwe opdracht.' >&2\nexit 1\n)",
+      "(\nprintf '%s\\n' 'De downloadservice is tijdelijk niet bereikbaar. Probeer het zo nog eens.' >&2\nexit 1\n)"
+    ],
+    "pt-pt": [
+      "(\nprintf '%s\\n' 'Este comando está indisponível ou expirou. Volta ao assistente e copia um novo.' >&2\nexit 1\n)",
+      "(\nprintf '%s\\n' 'O serviço de descarga está temporariamente indisponível. Tenta novamente daqui a pouco.' >&2\nexit 1\n)"
+    ]
+  }
+}

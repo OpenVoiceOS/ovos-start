@@ -1,0 +1,23 @@
+Verified: 2026-10-08
+Command: /usr/bin/python3 ovos-start/test/optional-dnf/run_solver_tests.py
+CPython: 3.14.8
+DNF4: 4.24.0 (libdnf 0.76.0)
+DNF5: 5.4.6.0
+libsolv: 0.7.40
+
+test_dnf4 (test_dnf_rich_dependency.TestRichDependency.test_dnf4)
+Exercise five cases with DNF4's hawkey solver. ... ok
+test_dnf5 (test_dnf_rich_dependency.TestRichDependency.test_dnf5)
+Exercise five cases with DNF5 and the process-local fixture shim. ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.238s
+
+OK
+
+Exit status: 0
+Two unittest methods, five subcases each; no skipped engines.
+No package transaction API called; only synthetic in-memory dependency resolution.
+
+Formatting/lint: black --line-length 79 and ruff check passed.
+

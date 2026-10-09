@@ -1,0 +1,316 @@
+{
+  "schema_version": 1,
+  "retrieved_on": "2026-10-08",
+  "purpose": "Recognizable distribution marks beside OS names in the installer dropdown; descriptive identification, no affiliation asserted.",
+  "simple_icons_revision": "98820a4dc8c363ca72fa2c0d294ea4a0a9bba75d",
+  "asset_integrity": "Source hashes refer to downloaded originals; deployed hashes cover metadata cleanup, viewBox normalization and published brand fills listed per asset. Raspberry Pi PNG is unchanged.",
+  "assets": [
+    {
+      "id": "debian",
+      "name": "Debian",
+      "file": "debian.svg",
+      "source_url": "https://www.debian.org/logos/openlogo-nd.svg",
+      "official": true,
+      "provenance_url": "https://www.debian.org/logos/",
+      "copyright_license": "LGPL-3.0-or-later OR CC-BY-SA-3.0",
+      "copyright": "Copyright 1999 Software in the Public Interest, Inc.; design Raul Silva.",
+      "brand_guidance_url": "https://www.debian.org/logos/",
+      "notes": "Open-use swirl without wordmark. Keep original red; a light backing improves dark-surface contrast. Debian requests linking logo to debian.org.",
+      "sha256": "89a3ca1a1bc91610edcc637457e7275a159309f4621829b2a0170e28970cac20",
+      "bytes": 6863,
+      "svg_viewbox": "0 0 87.041 108.445",
+      "source_file": "debian.svg",
+      "modifications": [
+        "Removed nonvisual editor metadata and comments; visible paths/colors preserved."
+      ],
+      "deployed_sha256": "4b2abbb747f53ecf76f30b5224d0164aa6073f3e1883c6847cba406936b69c59",
+      "deployed_bytes": 4977
+    },
+    {
+      "id": "ubuntu",
+      "name": "Ubuntu",
+      "file": "ubuntu.svg",
+      "source_url": "https://drive.google.com/uc?export=download&id=1FdksWTDREMNjnfBtN6HbxO7dZUQSchFm",
+      "official": true,
+      "provenance_url": "https://discourse.ubuntu.com/t/ubuntu-merchandise-assets/67314",
+      "copyright_license": null,
+      "brand_guidance_url": "https://design.ubuntu.com/brand",
+      "notes": "Official Ubuntu community Circle of Friends round sticker SVG linked from Canonical's Ubuntu Discourse. Original orange and white, no wordmark. No separate open-source asset license established.",
+      "sha256": "19eb7347a17e95c8443e1db05a7baf646df81d8fec2aa4338ff7e467cd99c2cb",
+      "bytes": 1257,
+      "svg_viewbox": "0 0 390 390",
+      "source_file": "ubuntu-official.svg",
+      "modifications": [
+        "Removed nonvisual editor metadata and comments; visible paths/colors preserved."
+      ],
+      "deployed_sha256": "f527c4764cb323498ba959cb71dcc18e07a80d6741da0f7ad601324b0a1be08e",
+      "deployed_bytes": 1218
+    },
+    {
+      "id": "linuxmint",
+      "name": "Linux Mint",
+      "file": "mint.svg",
+      "source_url": "https://raw.githubusercontent.com/linuxmint/brand-logo/540ac3b08e987866d77a340f557f994c988ac2ae/ring-mono-green.svg",
+      "official": true,
+      "provenance_url": "https://github.com/linuxmint/brand-logo/tree/540ac3b08e987866d77a340f557f994c988ac2ae",
+      "copyright_license": null,
+      "brand_guidance_url": "https://github.com/linuxmint/brand-logo/blob/540ac3b08e987866d77a340f557f994c988ac2ae/README.md",
+      "notes": "Official green ring mark; reference repository publishes logo alternatives. No explicit asset license found in inspected README.",
+      "sha256": "f7fcd2428a5f98417fc2421743f3ed7b85f03f45feb2c94ea004f7a0249ea0a8",
+      "bytes": 1321,
+      "svg_viewbox": "0 0 256 256",
+      "source_file": "linuxmint-mark.svg",
+      "modifications": [
+        "Removed nonvisual editor metadata and comments; visible paths/colors preserved."
+      ],
+      "deployed_sha256": "50fa36b5bb620ce11b628f262d3f93f03fb768afd2559d1f88aff95733bed6ac",
+      "deployed_bytes": 1077
+    },
+    {
+      "id": "raspberrypi",
+      "name": "Raspberry Pi OS",
+      "file": "raspberrypi.png",
+      "source_url": "https://www.raspberrypi.com/app/uploads/2022/02/COLOUR-Raspberry-Pi-Symbol-Registered.png",
+      "official": true,
+      "provenance_url": "https://www.raspberrypi.com/trademark-rules/",
+      "copyright_license": null,
+      "brand_guidance_url": "https://www.raspberrypi.com/trademark-rules/",
+      "notes": "Official full-color registered Raspberry Pi mark. Current rules were updated June 17, 2026; rules restrict logo use to genuine products/services and require an applicable website logo to link to raspberrypi.com. This is the company mark used to identify Raspberry Pi OS, not an invented OS-specific logo. Original PNG has transparent padding; 591×592 canvas and visible bounding box [146,104,519,488]. A light backing preserves black outlines on dark surfaces.",
+      "sha256": "24209629d7d89fbe57408c83a87c3e7b98a234f0900cddfdf575193ef7e4a93c",
+      "bytes": 8241,
+      "source_file": "raspberrypi.png",
+      "modifications": [],
+      "deployed_sha256": "24209629d7d89fbe57408c83a87c3e7b98a234f0900cddfdf575193ef7e4a93c",
+      "deployed_bytes": 8241
+    },
+    {
+      "id": "fedora",
+      "name": "Fedora",
+      "file": "fedora.svg",
+      "source_url": "https://gitlab.com/fedora/design/team/logos/fedora-project-logos/-/raw/main/brand-book-assets/logo-svgs/fedora_white-and-blue-f-white-text.svg",
+      "official": true,
+      "provenance_url": "https://docs.fedoraproject.org/en-US/project/brand/",
+      "copyright_license": "Custom Fedora logo terms; Simple Icons metadata explicitly identifies custom licensing for this mark.",
+      "brand_guidance_url": "https://fedoraproject.org/wiki/Legal:Trademark_guidelines",
+      "notes": "Official white-and-blue mark; the two original paths and colors are unchanged. The wordmark is excluded using the standalone mark bounds.",
+      "sha256": "2b42cf13253454fe8a7bdadf43d357000992143215c1a0f68aca389256a11dc1",
+      "bytes": 12812,
+      "svg_viewbox": "65.67 206.33 17.06 17.06",
+      "source_file": "fedora_white-and-blue-f-white-text.svg",
+      "modifications": [
+        "Extracted the two original mark paths without changing their geometry or colors; fitted viewBox to standalone mark."
+      ],
+      "deployed_sha256": "9f35a333cfafeda6abfdc329ab272a8e0233115609f50c7be80d7dbf9b2513aa",
+      "deployed_bytes": 2820
+    },
+    {
+      "id": "rockylinux",
+      "name": "Rocky Linux",
+      "file": "rocky.svg",
+      "source_url": "https://raw.githubusercontent.com/rocky-linux/brand-kit/47a9c09f66e9139380ba48b8c8f004e0992d5e30/Logomark.svg",
+      "official": true,
+      "provenance_url": "https://github.com/rocky-linux/brand-kit/tree/47a9c09f66e9139380ba48b8c8f004e0992d5e30",
+      "copyright_license": null,
+      "brand_guidance_url": "https://github.com/rocky-linux/brand-kit/blob/47a9c09f66e9139380ba48b8c8f004e0992d5e30/README.md",
+      "notes": "Original green logomark. RESF policy prohibits altered mark/colors or endorsement implications. README's CC-BY-4.0 statement applies to policy text, not an inferred separate license for the logo.",
+      "sha256": "c9c0520d5858d3c252aeaea8aac5a6db1d706edf6e6975d5baba3af025ec4f6a",
+      "bytes": 487,
+      "svg_viewbox": "0 0 192 192",
+      "source_file": "rockylinux.svg",
+      "modifications": [
+        "Removed nonvisual editor metadata and comments; visible paths/colors preserved."
+      ],
+      "deployed_sha256": "96ab5dbb6c095331f2f5be4ea906ce514324daa0d47a8afe751d423aaf977648",
+      "deployed_bytes": 486
+    },
+    {
+      "id": "almalinux",
+      "name": "AlmaLinux",
+      "file": "almalinux.svg",
+      "source_url": "https://almalinux.org/branding/AlmaLinux%20Icon.svg",
+      "official": true,
+      "provenance_url": "https://almalinux.org/branding/",
+      "copyright_license": null,
+      "brand_guidance_url": "https://almalinux.org/p/the-almalinux-os-trademark-usage-policy/",
+      "notes": "Official color icon without wordmark. Preserve colors/proportions. Official SVG has large Adobe metadata/foreignObject blocks (~793 KB); remove only nonvisual editor metadata before deployment if desired. Do not claim the trademark policy text's CC license applies to logo art.",
+      "sha256": "17ce98db4172718311513492be092d867456f9360efcfada808d786851aee5fa",
+      "bytes": 792631,
+      "svg_viewbox": "0 0 100 100",
+      "source_file": "almalinux.svg",
+      "modifications": [
+        "Removed nonvisual editor metadata and comments; visible paths/colors preserved."
+      ],
+      "deployed_sha256": "5aff7b71bb3117d3805a659523dcf776bbd4e764600171d60d0380616fd7dbe3",
+      "deployed_bytes": 3209
+    },
+    {
+      "id": "centos",
+      "name": "CentOS",
+      "file": "centos.svg",
+      "source_url": "https://www.centos.org/assets/icons/favicon.svg",
+      "official": true,
+      "provenance_url": "https://www.centos.org/",
+      "copyright_license": null,
+      "brand_guidance_url": "https://www.centos.org/legal/trademarks/",
+      "notes": "Current official site's small-size favicon SVG: multicolor CentOS mark in a purple circle. Copyright license not established; trademark guidelines apply.",
+      "sha256": "56c9de98c7b78263bf0fc39198a80799574e7bc0e2d95b30bf0f778d14dd7189",
+      "bytes": 1706,
+      "svg_viewbox": "0 0 42.333 42.333",
+      "source_file": "centos.svg",
+      "modifications": [
+        "Removed nonvisual editor metadata and comments; visible paths/colors preserved."
+      ],
+      "deployed_sha256": "56c9de98c7b78263bf0fc39198a80799574e7bc0e2d95b30bf0f778d14dd7189",
+      "deployed_bytes": 1706
+    },
+    {
+      "id": "archlinux",
+      "name": "Arch Linux",
+      "file": "arch.svg",
+      "source_url": "https://raw.githubusercontent.com/simple-icons/simple-icons/98820a4dc8c363ca72fa2c0d294ea4a0a9bba75d/icons/archlinux.svg",
+      "official": false,
+      "provenance_url": "https://archlinux.org/art/",
+      "copyright_license": "Simple Icons distribution CC0-1.0; Arch trademark rights remain separate.",
+      "brand_guidance_url": "https://terms.archlinux.org/docs/trademark-policy/",
+      "display_fill": "#1793D1",
+      "notes": "Simple Icons mark-only fallback traced to Arch's official artwork page. Official press SVGs on that page include wordmark. Use published blue with unchanged paths.",
+      "sha256": "2b1d26b4a1194c40dc068b2aba4b3a5f9ea83b6a8f1da04c229d03fe80308bfa",
+      "bytes": 765,
+      "svg_viewbox": "0 0 24 24",
+      "source_file": "archlinux.svg",
+      "modifications": [
+        "Removed nonvisual editor metadata and comments; visible paths/colors preserved.",
+        "Set published brand fill #1793D1"
+      ],
+      "deployed_sha256": "f96a684b228619816e4bc28e5e119ba9a583f9e3567f4dd103cb889f1edfd662",
+      "deployed_bytes": 780
+    },
+    {
+      "id": "manjaro",
+      "name": "Manjaro",
+      "file": "manjaro.svg",
+      "source_url": "https://manjaro.org/logo.svg",
+      "official": true,
+      "provenance_url": "https://manjaro.org/",
+      "copyright_license": null,
+      "brand_guidance_url": null,
+      "notes": "Official site logo, original teal. No explicit asset copyright license or brand guidance established. SVG has width/height but no viewBox; preserve scaling or add equivalent 0 0 100.61127 100.61127 viewBox without changing paths.",
+      "sha256": "adb4088f1be9267be1a94c6affd76684352d44a1ded6ebd06a3c1a576c270102",
+      "bytes": 2116,
+      "svg_viewbox": null,
+      "source_file": "manjaro.svg",
+      "modifications": [
+        "Removed nonvisual editor metadata and comments; visible paths/colors preserved.",
+        "Added equivalent viewBox for proportional scaling."
+      ],
+      "deployed_sha256": "c831d3e527d2fd61b716b19ac1d6cbd4285e89b905f1cba2a3c11c0891295de0",
+      "deployed_bytes": 701
+    },
+    {
+      "id": "endeavouros",
+      "name": "EndeavourOS",
+      "file": "endeavouros.svg",
+      "source_url": "https://raw.githubusercontent.com/endeavouros-team/Branding/b0b0b3453216d2e1daacd0dd20ecdbe697ae098a/EndeavourOS-logo-files/endeavouros.svg",
+      "official": true,
+      "provenance_url": "https://endeavouros.com/media-images/",
+      "copyright_license": "Official branding repository contains GPL-3.0 LICENSE; trademarks remain separate.",
+      "brand_guidance_url": "https://github.com/endeavouros-team/Branding/tree/b0b0b3453216d2e1daacd0dd20ecdbe697ae098a",
+      "notes": "Original multicolor mark only; use this filename rather than endeavouros.svg in staging, which is a different upstream variant with tiny wordmark. LICENSE copy is endeavouros-LICENSE.txt.",
+      "sha256": "8b69b1cfd399573fd1aa8d97019938c59d032e95b86100e24a516086a26bfe5a",
+      "bytes": 4022,
+      "svg_viewbox": "0 0 52.815434 45.68232",
+      "source_file": "endeavouros-mark.svg",
+      "modifications": [
+        "Removed nonvisual editor metadata and comments; visible paths/colors preserved."
+      ],
+      "deployed_sha256": "d167f519e3d0c02797f91a0f9b0af3286809acfc42c21b1f9262e9f561e65053",
+      "deployed_bytes": 1420
+    },
+    {
+      "id": "cachyos",
+      "name": "CachyOS",
+      "file": "cachyos.svg",
+      "source_url": "https://raw.githubusercontent.com/CachyOS/CachyOS-icons/59a065bb7bfb4bdc16719439d98f48902c1da42c/Colored/CachyOS.svg",
+      "official": true,
+      "provenance_url": "https://github.com/CachyOS/CachyOS-icons/tree/59a065bb7bfb4bdc16719439d98f48902c1da42c",
+      "copyright_license": null,
+      "brand_guidance_url": "https://github.com/CachyOS/CachyOS-icons/blob/59a065bb7bfb4bdc16719439d98f48902c1da42c/README.md",
+      "notes": "Official icon repository colored geometric CachyOS mark. Inspected tree has no LICENSE; do not invent an open-source art license.",
+      "sha256": "abf22811b8623d905e04330ab2091e46763e8a88e0d7670dd7f19062b0ef5689",
+      "bytes": 11712,
+      "svg_viewbox": "0 0 64 64",
+      "source_file": "cachyos.svg",
+      "modifications": [
+        "Removed nonvisual editor metadata and comments; visible paths/colors preserved."
+      ],
+      "deployed_sha256": "871fdd133eb9b7d298fbff5b7335cf1d8895b2389e15f7287ecaba40ce905981",
+      "deployed_bytes": 8953
+    },
+    {
+      "id": "opensuse",
+      "name": "openSUSE",
+      "file": "opensuse.svg",
+      "source_url": "https://raw.githubusercontent.com/openSUSE/artwork/33e94aa76837c09f03d1712705949b71a246a53b/logos/buttons/button-colour.svg",
+      "official": true,
+      "provenance_url": "https://github.com/openSUSE/artwork/tree/33e94aa76837c09f03d1712705949b71a246a53b/logos/buttons",
+      "copyright_license": null,
+      "brand_guidance_url": "https://en.opensuse.org/Portal:Artwork",
+      "notes": "Original green Gecko button artwork from official repository, the official source recorded by Simple Icons. Prefer this file over monochrome opensuse.svg downloaded from official website.",
+      "sha256": "7754061f5183be382cec88d7f017607c4211f86e1da7a248a98c97e8d3822621",
+      "bytes": 3540,
+      "svg_viewbox": "0 0 256 256.00001",
+      "source_file": "opensuse-color.svg",
+      "modifications": [
+        "Removed nonvisual editor metadata and comments; visible paths/colors preserved."
+      ],
+      "deployed_sha256": "f7701dc0ea52e24e27e2f13438ddfe5284b32cff2700af6548d0d0cf7e398180",
+      "deployed_bytes": 2866
+    },
+    {
+      "id": "kde-neon",
+      "name": "KDE neon",
+      "file": "kde-neon.svg",
+      "source_url": "https://neon.kde.org/content/neon-logo.svg",
+      "official": true,
+      "provenance_url": "https://neon.kde.org/",
+      "copyright_license": "No asset-specific license found in source SVG; KDE trademark rules apply. KDE clipart page LGPL statement specifically covers KDE logo, not confirmed for neon mark.",
+      "sha256": "dff13781451fcf7bea33228274588f5a69ca8c6a939c7485907436e92a9ea3c8",
+      "deployed_sha256": "6ebf9e6e9e3f469fcc889ad848bc61890ad7754ac8e761373cd15593905a4399",
+      "deployed_bytes": 10460,
+      "modifications": [
+        "Removed editor metadata; paths, transforms, colors preserved."
+      ]
+    },
+    {
+      "id": "pop-os",
+      "name": "Pop!_OS / System76",
+      "file": "pop-os.svg",
+      "source_url": "https://raw.githubusercontent.com/system76/brand/bed1fd3fd39d3f3371c57f15878195888c617777/Pop_OS%20branding/Pop_icon.svg",
+      "official": true,
+      "provenance_url": "https://github.com/system76/brand",
+      "copyright_license": "Official System76 brand repository; no explicit Pop!_OS asset license supplied in repository root or SVG.",
+      "sha256": "86d91f72b1e140086b5c8ac67bf41d4d5395e3e372e0911c714e6a017b32b1bc",
+      "deployed_sha256": "097c4b3072518d6d7d403caa993321ef86b5cdbf344fc7168c2d2cece19071a8",
+      "deployed_bytes": 1385,
+      "modifications": [
+        "Removed editor metadata; paths, transforms, colors preserved. Cropped empty canvas to circular mark bounds."
+      ]
+    },
+    {
+      "id": "zorin-os",
+      "name": "Zorin OS",
+      "file": "zorin-os.svg",
+      "source_url": "https://assets.zorincdn.com/zorin.com/downloads/press/logos/zorin-logomark-blue.zip",
+      "official": true,
+      "provenance_url": "https://zorin.com/press/",
+      "copyright_license": "Official press kit: non-commercial use permitted; journalistic use permitted in fair and non-damaging contexts. Trademark use does not imply endorsement.",
+      "sha256": "970a2b526f9abe399f097b20e64e7ac1abc113430525dedd6283323bc7ecab3a",
+      "deployed_sha256": "c517898c53eb07ef931925b55fed2b4ef9d8f494353d3a22a75f545d06dce52b",
+      "deployed_bytes": 267,
+      "modifications": [
+        "Removed editor metadata; paths, transforms, colors preserved. Added native viewBox for scaling."
+      ],
+      "required_disclosure": "Zorin marks are registered trademarks of Zorin Technology Group Ltd."
+    }
+  ]
+}

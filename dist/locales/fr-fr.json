@@ -911,7 +911,6 @@
   "Tools confirmed": "Outils confirmés",
   "Copy link": "Copier le lien",
   "Installation report": "Rapport d’installation",
-  "If installation fails, logs are automatically uploaded to paste.uoi.io. Anyone with the report link can read them.": "Si l’installation échoue, les journaux sont automatiquement envoyés à paste.uoi.io. Toute personne disposant du lien du rapport peut les lire.",
   "Installation progress and report links are shown here for 24 hours.": "La progression de l’installation et les liens des rapports restent visibles ici pendant 24 heures.",
   "Show examples": "Afficher les exemples",
   "Hide examples": "Masquer les exemples"

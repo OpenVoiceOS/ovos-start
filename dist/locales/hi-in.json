@@ -911,7 +911,6 @@
   "Tools confirmed": "ज़रूरी टूल की पुष्टि हो गई",
   "Copy link": "लिंक कॉपी करें",
   "Installation report": "इंस्टॉलेशन रिपोर्ट",
-  "If installation fails, logs are automatically uploaded to paste.uoi.io. Anyone with the report link can read them.": "इंस्टॉलेशन विफल होने पर लॉग अपने आप paste.uoi.io पर अपलोड हो जाते हैं। रिपोर्ट का लिंक रखने वाला कोई भी व्यक्ति उन्हें पढ़ सकता है।",
   "Installation progress and report links are shown here for 24 hours.": "इंस्टॉलेशन की प्रगति और रिपोर्ट के लिंक यहाँ 24 घंटे तक दिखाए जाते हैं।",
   "Show examples": "उदाहरण दिखाएँ",
   "Hide examples": "उदाहरण छिपाएँ"

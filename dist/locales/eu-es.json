@@ -911,7 +911,6 @@
   "Tools confirmed": "Tresnak baieztatuta",
   "Copy link": "Kopiatu esteka",
   "Installation report": "Instalazio-txostena",
-  "If installation fails, logs are automatically uploaded to paste.uoi.io. Anyone with the report link can read them.": "Instalazioak huts egiten badu, erregistroak automatikoki igotzen dira paste.uoi.io gunera. Txostenaren esteka duen edonork irakur ditzake.",
   "Installation progress and report links are shown here for 24 hours.": "Instalazioaren aurrerapena eta txostenen estekak hemen erakusten dira 24 orduz.",
   "Show examples": "Erakutsi adibideak",
   "Hide examples": "Ezkutatu adibideak"

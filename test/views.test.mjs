@@ -184,14 +184,17 @@ test('install handoff exposes one instruction and keeps recovery and tracking de
 });
 
 
-test('automatic failure-report notice is visible before copying for every device',()=>{
+test('install handoff omits the report notice without leaving a broken copy-button description',()=>{
  const c=views();
  for(const device of Object.keys(scenario.DEVICES)){
   c.state.device=device;acceptPreparation(c);const html=c.resultView();
-  const primary=html.slice(0,html.indexOf('<ol class="handoff-actions"'));
-  assert.match(primary,/<p class="details-note progress-privacy" id="install-report-note" data-report-notice>If installation fails, logs are automatically uploaded to paste.uoi.io. Anyone with the report link can read them.<\/p>/);
-  assert.doesNotMatch(primary,/<details[\s\S]*data-report-notice|data-report-notice[^>]*hidden/);
-  assert.match(html,/<button[^>]+aria-describedby="install-report-note"[^>]+data-install-action/);
+  assert.doesNotMatch(html,/install-report-note|data-report-notice|If installation fails, logs are automatically uploaded/);
+  const button=html.match(/<button[^>]+data-install-action[^>]*>/)?.[0];
+  assert.ok(button,'copy action remains available');
+  assert.doesNotMatch(button,/\bdisabled\b/,'acknowledged prerequisites still unlock copying');
+  for(const match of html.matchAll(/aria-describedby="([^"]+)"/g)){
+   for(const id of match[1].split(/\s+/))assert.ok(html.includes(`id="${id}"`),`missing description: ${id}`);
+  }
   assert.doesNotMatch(html,/No logs or passwords are sent here/);
  }
 });

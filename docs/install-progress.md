@@ -1,8 +1,10 @@
+Last Edit: Codex - 2026-10-08 - Motive: Remove the pre-install report notice from the interface.
+
 # Installation follow-up
 
 ## Version 0.55.1: automatic wizard failure reports
 
-Wizard-started installs automatically upload a filtered current-run failure report to the fixed paste service without a Terminal consent question. The install card explains this before copying, including that anyone with the report link can read it. Standalone installer runs retain their consent prompt. After a successful upload, the failure screen displays the returned `https://paste.uoi.io/…` URL and **Copy link**. [`recoveryView`](../dist/post-install.mjs) retains Terminal guidance when upload is unavailable or invalid. [`errorReportUrl`](../dist/report-link.mjs) accepts only a direct HTTPS paste path; the wizard never fetches the report contents.
+Wizard-started installs automatically upload a filtered current-run failure report to the fixed paste service without a Terminal consent question. Standalone installer runs retain their consent prompt. After a successful upload, the failure screen displays the returned `https://paste.uoi.io/…` URL and **Copy link**. [`recoveryView`](../dist/post-install.mjs) retains Terminal guidance when upload is unavailable or invalid. [`errorReportUrl`](../dist/report-link.mjs) accepts only a direct HTTPS paste path; the wizard never fetches the report contents.
 
 [`copyReportLink`](../dist/app.mjs) copies the exact validated URL, selects it if clipboard access fails, and ignores results from a previous attempt. [`InstallTracker`](../dist/install-progress.mjs) accepts optional metadata only on failure. The [launcher](../../ovos-start-launcher/docs/index.md) enables automatic reporting only for its tracked installer child, reads a private per-attempt descriptor receipt and sends failure plus URL in one callback; the [relay](../../ovos-install-status/docs/index.md) stores it under the existing owner scope and 24-hour deadline. A fresh install command is required; old sessions are not backfilled. [Rendering/tracker tests](../test/install-progress.test.mjs), [clipboard regressions](../test/copy.test.mjs), [proxy tests](../test/status-api.test.mjs).
 

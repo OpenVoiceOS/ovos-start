@@ -911,7 +911,6 @@
   "Tools confirmed": "Eines confirmades",
   "Copy link": "Copia l’enllaç",
   "Installation report": "Informe d’instal·lació",
-  "If installation fails, logs are automatically uploaded to paste.uoi.io. Anyone with the report link can read them.": "Si la instal·lació falla, els registres es pugen automàticament a paste.uoi.io. Qualsevol persona amb l’enllaç de l’informe els pot llegir.",
   "Installation progress and report links are shown here for 24 hours.": "El progrés de la instal·lació i els enllaços dels informes es mostren aquí durant 24 hores.",
   "Show examples": "Mostra exemples",
   "Hide examples": "Amaga exemples"

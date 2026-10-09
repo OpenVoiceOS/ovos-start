@@ -48,7 +48,13 @@ test('completion shows phrases as readable content and preserves language-specif
 test('pending checks expose optional future examples while failures expose no onboarding',()=>{
  for(const status of ['installed','services_ready']){
   const html=progressView(model(status),state);assert.match(html,/Voice check pending/);
-  assert.match(html,/<details class="voice-examples-preview"[^>]*><summary[^>]*>Things to try after the voice check/);
+  const summary=html.match(/<details class="voice-examples-preview"[^>]*><summary[^>]*>([\s\S]*?)<\/summary>/)?.[1];
+  assert.ok(summary,'examples use a native disclosure');
+  assert.match(summary,/Things to try after the voice check/);
+  assert.match(summary,/class="examples-show">Show examples/);
+  assert.match(summary,/class="examples-hide">Hide examples/);
+  assert.match(summary,/class="examples-disclosure-action"/);
+  assert.doesNotMatch(summary,/<button|<a\b|aria-expanded=/,'one native control owns expansion');
   assert.doesNotMatch(html,/<details class="voice-examples-preview"[^>]* open/);
   assert.doesNotMatch(html,/Your voice check passed/);assert.match(html,/Next steps/);
  }
@@ -65,7 +71,7 @@ test('hub guide uses a verified pairing URL and never asks the server to listen'
 });
 
 test('onboarding chrome is translated in every catalog while source phrases stay separate',()=>{
- const keys=['Try a few things','Things to try after the voice check','Time','Date','Timer','Weather','Next steps','Examples for your language','Weather needs internet and a configured location.'];
+ const keys=['Try a few things','Things to try after the voice check','Show examples','Hide examples','Time','Date','Timer','Weather','Next steps','Examples for your language','Weather needs internet and a configured location.'];
  for(const locale of UI_LOCALES){
   const catalog=JSON.parse(readFileSync(new URL(`../dist/locales/${locale}.json`,import.meta.url),'utf8'));
   for(const key of keys){assert.ok(catalog[key],`${locale}: ${key}`);assert.equal(translateMessage(key,catalog),catalog[key]);}

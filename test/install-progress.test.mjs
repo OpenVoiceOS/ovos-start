@@ -229,7 +229,7 @@ test('installed services never imply verified voice; pending instructions match 
   assert.match(html,/At the first prompt, enter 1 and press Enter/);
   assert.match(html,/Terminal already closed/);assert.match(html,/data-copy-check/);
   assert.doesNotMatch(html,/Your voice check passed|A check needs your attention|installation-stages|activity-spinner/);
-  assert.match(html,/<details class="voice-examples-preview"[^>]*><summary[^>]*>Things to try after the voice check/);
+  assert.match(html,/<details class="voice-examples-preview"[^>]*><summary[^>]*>[\s\S]*?Things to try after the voice check[\s\S]*?Show examples[\s\S]*?<\/summary>/);
   assert.doesNotMatch(html,/<details class="voice-examples-preview"[^>]* open/);
   assert.equal((html.match(/id="post-check-command"/g)||[]).length,1);
   assert.equal(html.includes('Keep this page open for the check result.'),!error);

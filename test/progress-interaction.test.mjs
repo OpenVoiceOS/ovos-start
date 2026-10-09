@@ -65,6 +65,17 @@ test('closed disclosures stay closed across updates',()=>{
   const detail=h.node(null,{dataset:{progressDisclosure:'check'},open:false});restore();assert.equal(detail.open,false);
 });
 
+test('an expanded examples card preserves its open state and summary focus during polling',()=>{
+  const h=harness(),oldDetail=h.node(null,{dataset:{progressDisclosure:'examples'},open:true});
+  const summary=h.node('examples-summary');h.doc.activeElement=summary;
+  const restore=preserveProgressInteraction(h.root);
+  oldDetail.isConnected=false;summary.isConnected=false;
+  const detail=h.node(null,{dataset:{progressDisclosure:'examples'},open:false});
+  h.node('examples-summary');restore();
+  assert.equal(detail.open,true);
+  assert.deepEqual(h.focus,[{key:'examples-summary',options:{preventScroll:true}}]);
+});
+
 
 test('an unchanged post-install guide link keeps keyboard focus after a live refresh',()=>{
   for(const key of ['next-skills','next-homeassistant','next-ai','next-help','guide-satellite','guide-language','demo-0']){

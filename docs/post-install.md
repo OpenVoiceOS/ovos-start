@@ -1,10 +1,12 @@
+Last Edit: Codex - 2026-10-08 - Motive: Make the examples disclosure easier to discover.
+
 # Post-install starting points
 
 Version **0.42.0** gives users examples and practical next actions after a successful installation. [`progressView` and `gettingStartedView`](../dist/post-install.mjs#L76) render the guide; [`starterExamples` and `nextSteps`](../dist/post-install-content.mjs#L17) choose content from the confirmed recipe.
 
 ## Verification and visibility
 
-- `installed` and `services_ready` keep **Check your speaker and microphone** primary. Supported examples are available in a closed **Things to try after the voice check** disclosure.
+- `installed` and `services_ready` keep **Check your speaker and microphone** primary. Supported examples are available in a closed **Things to try after the voice check** card. The full header is clickable, with a voice icon, **Show examples** / **Hide examples** labels and a rotating chevron. Keyboard focus remains visible, and the action wraps below the title on narrow screens.
 - `voice_ready` displays the examples directly. This is the user's confirmed reply in the terminal checker, not browser measurement of audio.
 - A hub receives satellite-pairing instructions and service checks, with no local microphone or wake-word prompt.
 - Failed, cancelled and still-running installations receive no completion guide.
@@ -35,4 +37,4 @@ The two demonstrations retain bundled YouTube thumbnails, explicit Dutch audio l
 
 ## Verification
 
-**229 Node + 24 pytest tests pass.** [Content tests](../test/post-install-content.test.mjs) cover provenance, all locales, recipe selection, verification boundaries and safe links; [interaction tests](../test/progress-interaction.test.mjs) cover retained focus across replacement. Local browser checks cover pending and verified states, dark/light themes, loaded thumbnails, hub/no-skills recipes and all 12 locales at 320px with no horizontal overflow. No real installation or device audio test was executed. Native-language and actual-device acceptance remain separate from these checks.
+The examples-disclosure update passes 57 focused Node tests for content, localization, progress and interaction. [Content tests](../test/post-install-content.test.mjs) cover provenance, all locales, recipe selection, verification boundaries and safe links; [interaction tests](../test/progress-interaction.test.mjs) cover retained focus across replacement. The disclosure is also checked locally for click/keyboard expansion and narrow-screen layout in dark and light themes. No real installation or device audio test was executed. Native-language and actual-device acceptance remain separate from these checks.

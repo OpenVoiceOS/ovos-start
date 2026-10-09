@@ -912,5 +912,7 @@
   "Copy link": "Copiar ligazón",
   "Installation report": "Informe de instalación",
   "If installation fails, logs are automatically uploaded to paste.uoi.io. Anyone with the report link can read them.": "Se a instalación falla, os rexistros súbense automaticamente a paste.uoi.io. Calquera persoa coa ligazón do informe pode lelos.",
-  "Installation progress and report links are shown here for 24 hours.": "O progreso da instalación e as ligazóns dos informes móstranse aquí durante 24 horas."
+  "Installation progress and report links are shown here for 24 hours.": "O progreso da instalación e as ligazóns dos informes móstranse aquí durante 24 horas.",
+  "Show examples": "Mostrar exemplos",
+  "Hide examples": "Ocultar exemplos"
 }

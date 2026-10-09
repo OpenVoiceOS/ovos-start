@@ -912,5 +912,7 @@
   "Copy link": "Copy link",
   "Installation report": "Installation report",
   "If installation fails, logs are automatically uploaded to paste.uoi.io. Anyone with the report link can read them.": "If installation fails, logs are automatically uploaded to paste.uoi.io. Anyone with the report link can read them.",
-  "Installation progress and report links are shown here for 24 hours.": "Installation progress and report links are shown here for 24 hours."
+  "Installation progress and report links are shown here for 24 hours.": "Installation progress and report links are shown here for 24 hours.",
+  "Show examples": "Show examples",
+  "Hide examples": "Hide examples"
 }

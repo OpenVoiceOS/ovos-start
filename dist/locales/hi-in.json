@@ -913,5 +913,9 @@
   "Installation report": "इंस्टॉलेशन रिपोर्ट",
   "Installation progress and report links are shown here for 24 hours.": "इंस्टॉलेशन की प्रगति और रिपोर्ट के लिंक यहाँ 24 घंटे तक दिखाए जाते हैं।",
   "Show examples": "उदाहरण दिखाएँ",
-  "Hide examples": "उदाहरण छिपाएँ"
+  "Hide examples": "उदाहरण छिपाएँ",
+  "Try asking": "ये सवाल पूछकर देखें",
+  "After your voice check": "आवाज़ की जाँच के बाद",
+  "Say “Hey Mycroft”": "“Hey Mycroft” कहें",
+  "Wait for the listening sound, then ask.": "सुनने का संकेत बजने दें, फिर पूछें।"
 }

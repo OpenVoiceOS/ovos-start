@@ -22,6 +22,16 @@ test('untrusted icon names cannot inject markup or access inherited properties',
   }
 });
 
+test('example icons remain decorative local SVGs with consistent bounds',()=>{
+  for(const name of ['calendar','timer']){
+    const markup=icon(name);
+    assert.match(markup,/viewBox="0 0 24 24"/);
+    assert.match(markup,/aria-hidden="true" focusable="false"/);
+    assert.match(markup,/stroke="currentColor"/);
+    assert.doesNotMatch(markup,/<script|<text|https?:|undefined/);
+  }
+});
+
 test('every setup device has bundled decorative artwork without accepting arbitrary asset paths',()=>{
   for(const device of Object.keys(DEVICES)){
     const markup=deviceIcon(device);

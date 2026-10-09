@@ -1,6 +1,10 @@
-Last Edit: Codex - 2026-10-08 - Motive: Fix links after moving repositories to OpenVoiceOS.
+Last Edit: Codex - 2026-10-08 - Motive: Document local calendar and timer interface icons.
 
 # Identity and artwork
+
+## Starter question icons
+
+[`icons.mjs`](../dist/icons.mjs) adds locally drawn calendar and timer SVGs for [`gettingStartedView`](../dist/post-install.mjs). Both use 24×24 bounds, rounded strokes and `currentColor`, with no font or network dependency. They are decorative beside translated text and share the repository’s Apache-2.0 license. Clock, cloud and voice symbols reuse the bundled Material icons. [Icon tests](../test/icons.test.mjs) cover decorative semantics and local markup.
 
 ## README sponsorship logo
 

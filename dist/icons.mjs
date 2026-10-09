@@ -1,5 +1,7 @@
-/** Bundled Material Symbols Rounded and Simple Icons. See docs/assets.md for pinned sources. */
+/** Bundled Material Symbols Rounded, Simple Icons and local calendar/timer drawings. See docs/assets.md. */
 const ICONS = {
+  "calendar": {"viewBox":"0 0 24 24","markup":"<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"M7 3v4m10-4v4M3 10h18m-14 4h3m4 0h3m-10 3h3\"/></g>"},
+  "timer": {"viewBox":"0 0 24 24","markup":"<g fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"14\" r=\"8\"/><path d=\"M10 2h4m-2 0v4m6.2 1.8L20 6m-8 4v4l2.5 1.5\"/></g>"},
   "play": {"viewBox": "0 -960 960 960", "markup": "<path d=\"M320-273v-414q0-17 12-28.5t28-11.5q5 0 10.5 1.5T381-721l326 207q9 6 13.5 15t4.5 19q0 10-4.5 19T707-446L381-239q-5 3-10.5 4.5T360-233q-16 0-28-11.5T320-273Zm80-207Zm0 134 210-134-210-134v268Z\"/>"},
   "dark_mode": {
     "viewBox": "0 -960 960 960",

@@ -2,7 +2,7 @@ Last Edit: Codex (GPT-6) - 2026-10-09 - Motive: Explain the first-question onboa
 
 # Post-install starting points
 
-Version **0.64.0** makes **Try asking** one clear first conversation: say the wake word, wait for the listening sound, then ask the first reviewed question. The featured phrase is larger and centered; the remaining phrases sit below **More to try**. [`progressView`, `audioChecksView`, `gettingStartedView` and `spokenExampleView`](../dist/post-install.mjs) render the guide; [`starterExamples` and `nextSteps`](../dist/post-install-content.mjs) choose content from the confirmed recipe.
+Version **0.64.0** makes **Try asking** one clear first conversation: say the wake word, wait for the listening sound, then ask the first reviewed question. The featured phrase is larger and centered; the remaining phrases sit below **More to try**. After audio succeeds, a quiet heading and open layout replace the enclosing card. Pending audio retains its clearly framed native disclosure. [`progressView`, `audioChecksView`, `gettingStartedView` and `spokenExampleView`](../dist/post-install.mjs) render the guide; [`starterExamples` and `nextSteps`](../dist/post-install-content.mjs) choose content from the confirmed recipe.
 
 ## Verification and visibility
 

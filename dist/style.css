@@ -898,6 +898,14 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .post-install-guide .voice-example .example-hint,.post-install-guide .voice-example-featured .example-hint{font-size:12px;line-height:1.6;color:var(--muted);margin:6px 0 0;max-width:30em}
 .voice-examples,.voice-examples-preview{border:1px solid var(--line);border-radius:18px;background:var(--card);margin:24px 0;text-align:left}
 .voice-examples-preview>summary,.post-install-guide .examples-heading{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:20px 24px 16px;min-height:72px;border-radius:17px;font-size:16px;font-weight:600;line-height:1.5;color:var(--ink);margin:0}
+/* After success, let the conversation breathe without another enclosing card. */
+.voice-examples{border:0;background:transparent;border-radius:0}
+.post-install-guide .voice-examples>.examples-heading{display:flex;justify-content:center;gap:9px;min-height:0;padding:0;margin:0 0 20px}
+.voice-examples .onboarding-symbol{width:24px;height:24px;border-radius:0;background:transparent}
+.voice-examples .onboarding-symbol>.ui-icon{width:22px;height:22px}
+.voice-examples .examples-title{font-size:16px;font-weight:550;color:var(--muted);letter-spacing:0}
+.voice-examples>.examples-disclosure-content{padding:0}
+.voice-examples .first-question{padding-top:0}
 .voice-examples-preview>summary{cursor:pointer;list-style:none;transition:background .16s}
 .voice-examples-preview>summary::marker{content:''}
 .voice-examples-preview>summary::-webkit-details-marker{display:none}

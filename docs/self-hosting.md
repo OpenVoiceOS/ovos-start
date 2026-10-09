@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-09 - Motive: Separate branded installer downloads from the unchanged progress API.
+Last Edit: Codex - 2026-10-09 - Motive: Record the validated branded installer hostname and its DNS TTL.
 
 # Host the wizard API
 
@@ -64,6 +64,6 @@ GitHub Pages publishes the frontend from the `dev` branch of `OpenVoiceOS/ovos-s
 | --- | --- | --- |
 | CNAME `start.openvoiceos.pt` | `openvoiceos.github.io` | TTL 300, DNS only |
 | CNAME `start-api.smartgic.io` | `961cc898-6447-4079-adff-0bc3e74386e1.cfargotunnel.com` | Cloudflare proxied, automatic TTL |
-| CNAME `installer.openvoiceos.pt` | `start-api.smartgic.io` | TTL 300; requires alias routing and HTTPS certificate validation |
+| CNAME `installer.openvoiceos.pt` | `start-api.smartgic.io` | TTL 3600; Cloudflare custom hostname with validated HTTPS |
 
 The `ovos-start-api` tunnel runs as `cloudflared-ovos-start.service` on `agh01.home.lan`. It forwards approved hostnames to `http://127.0.0.1:8787`, with a final 404 rule for every other hostname. The branded download alias must route to this same origin after its HTTPS certificate is validated. The existing tunnel service has separate configuration and credentials.

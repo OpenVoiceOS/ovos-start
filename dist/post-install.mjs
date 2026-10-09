@@ -1,6 +1,6 @@
 import { errorReportUrl } from './report-link.mjs';
 import { icon, deviceIcon } from './icons.mjs';
-import { CHECK_COMMAND, DEMOS, guideKind, progressCopy, installationMilestones, installationStages, installationTiming, installationUpdate, audioChecks, installationReceipts } from './install-progress.mjs';
+import { CHECK_COMMAND, DEMOS, guideKind, progressCopy, installationMilestones, installationStages, installationTiming, installationUpdate, audioChecks } from './install-progress.mjs';
 import { mark1Eye } from './mark1-eye.mjs';
 import { sudoPasswordNotice } from './terminal-notice.mjs';
 import { DEVICES } from './scenario.mjs';
@@ -29,12 +29,16 @@ export function timingView(model,now) {
   return `${timing?`<span class="timing-elapsed">${icon('schedule')}<span>${escape(timing.elapsedText)}</span></span>${timing.remaining?`<span class="timing-estimate"><span>Estimated time left</span><strong>${escape(timing.remaining)}</strong></span>`:''}${timing.note&&timing.note!=='Time varies by device and connection.'?`<span class="timing-note">${escape(timing.note)}</span>`:''}`:''}${update?`<span class="timing-update">${escape(update.text)}</span>${update.note?`<span class="timing-hint">${escape(update.note)}</span>`:''}`:''}`;
 }
 
-/** A short list of finished device tasks, without invented or skipped milestones.
- * @param {object} model Tracker state. @returns {string} Receipt list, if reported.
+/** Keep the complete path visible; attach only explicitly reported task receipts.
+ * @param {object} model Confirmed tracker state. @returns {string} Non-live checklist.
  */
-function completedStepsView(model) {
-  const steps=installationReceipts(model);
-  return steps.length?`<ul class="installation-completed-steps" aria-label="Completed" aria-live="polite" aria-atomic="true">${steps.map(step=>`<li data-completed-step="${step.id}">${icon('check')}<span>${step.label}</span></li>`).join('')}</ul>`:'';
+function installationChecklistView(model) {
+  const steps=installationStages(model);
+  if(!steps.length)return '';
+  return `<ol class="installation-stages" role="list" aria-label="Installation progress">${steps.map((stage,index)=>{
+    const status=stage.state==='complete'?'Completed':stage.state==='current'?(model.error||model.session?.attention?'Last reported step':'In progress'):stage.state==='stopped'?'Last reported step':stage.state==='unknown'?'Not confirmed':'Not started';
+    return `<li class="stage-${stage.state}" data-install-step="${stage.id}" ${stage.state==='current'?'aria-current="step"':''}><span class="stage-symbol" aria-hidden="true">${stage.state==='complete'?icon('check'):['current','stopped'].includes(stage.state)?icon(stage.icon):index+1}</span><div class="stage-copy"><div class="stage-heading"><span class="stage-label">${stage.label}</span><span class="stage-status${['complete','upcoming'].includes(stage.state)?' sr-only':''}">${status}</span></div>${stage.receipts.length?`<ul class="stage-receipts" role="list" aria-label="Completed">${stage.receipts.map(receipt=>`<li data-completed-step="${receipt.id}">${icon('check')}<span>${receipt.label}</span></li>`).join('')}</ul>`:''}</div></li>`;
+  }).join('')}</ol>`;
 }
 
 /** A stopped run needs recovery, not another handoff or a guessed next step.
@@ -54,9 +58,7 @@ function recoveryView(model,state,preview,prerequisitesReady) {
     <section class="recovery-panel" aria-label="${headline}">
       <div class="recovery-diagnosis"><span class="recovery-symbol" aria-hidden="true">${icon(cancelled?'info':reportUrl?'link':'terminal')}</span><div class="recovery-copy"><h2>${cancelled?'Installation was cancelled on your device.':reportUrl?'Installation report':'Check the error in Terminal'}</h2>${reportUrl?`<div class="recovery-report" data-error-report><a class="report-url" data-progress-focus="report-link" href="${escape(reportUrl)}" target="_blank" rel="noopener noreferrer" data-no-translate>${escape(reportUrl)}</a><button class="button button-secondary" type="button" data-progress-focus="copy-report" data-copy-report>${icon('copy')}<span>Copy link</span></button><span class="sr-only" role="status" aria-live="polite" data-report-copy-status></span></div>`:cancelled?'':'<p>This page doesn’t receive the error details.</p>'}</div><a class="button button-secondary" href="https://matrix.to/#/#openvoiceos:matrix.org" target="_blank" rel="noopener noreferrer">${icon('forum')}<span>Get help in Matrix</span></a></div>
       <div class="recovery-retry"><div class="recovery-copy"><h2>Ready to try again?</h2><p>${cancelled?'You can start again with the same choices.':'After fixing the error, copy a new command. Your choices are saved.'}</p></div><button class="button" type="button" data-progress-focus="retry-install" data-restart-install ${preview?'disabled':''}>${icon('copy')}<span>${prerequisitesReady?'Copy retry command':'Prepare to retry'}</span></button></div>
-      <details class="recovery-history" data-progress-disclosure="history"><summary data-progress-focus="history-summary">Installation details</summary>${unknown?'<p class="recovery-unknown">The exact step wasn’t reported.</p>':''}
-        ${installationReceipts(model).length?completedStepsView(model):milestones.length?`<ol class="recovery-checkpoints">${milestones.map((milestone,index)=>`<li class="recovery-${milestone.state}"><span class="recovery-checkpoint-icon" aria-hidden="true">${milestone.state==='unknown'?String(index+1).padStart(2,'0'):icon(milestone.state==='complete'?'check':'terminal')}</span><span>${milestone.label}</span><small>${milestone.state==='complete'?'Completed':milestone.state==='stopped'?'Last reported step':'Not confirmed'}</small></li>`).join('')}</ol>`:''}
-      </details>
+      <section class="recovery-history" aria-label="Installation details"><h2>Installation details</h2>${unknown?'<p class="recovery-unknown">The exact step wasn’t reported.</p>':''}${installationChecklistView(model)}</section>
     </section>
   </div>`;
 }
@@ -69,17 +71,24 @@ function checkCommandView(label,hub=false) {
   return `<details class="check-action device-check-command" data-progress-disclosure="check"><summary data-progress-focus="check-summary">${label}</summary><p>Copy the check command, paste it in Terminal and press Enter.</p><button class="button button-secondary" data-progress-focus="copy-check" data-copy-check>${icon('terminal')}<span>Copy check command</span></button><textarea id="post-check-command" data-progress-focus="check-field" aria-label="${hub?'Check OVOS services':'Check sound and microphone'}" class="command check-command" readonly rows="2" data-no-translate>${escape(CHECK_COMMAND)}</textarea></details>`;
 }
 
+/** A small local celebration, decorative and silent.
+ * @returns {string} Confetti and a confirmed check in theme colors.
+ */
+function celebrationArt() {
+  return `<svg class="celebration-art" viewBox="0 0 144 128" aria-hidden="true" focusable="false"><circle class="celebration-halo" cx="72" cy="66" r="42"/><circle class="celebration-medal" cx="72" cy="66" r="31"/><path class="celebration-checkmark" d="m57 66 10 10 21-23"/><g class="celebration-blue"><path d="m25 17 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/><rect x="113" y="49" width="6" height="15" rx="3" transform="rotate(25 116 56)"/><circle cx="43" cy="110" r="3"/></g><g class="celebration-pink"><rect x="101" y="17" width="6" height="14" rx="3" transform="rotate(-28 104 24)"/><path d="m117 92 2 6 6 2-6 2-2 6-2-6-6-2 6-2Z"/></g><g class="celebration-gold"><circle cx="69" cy="12" r="4"/><rect x="14" y="73" width="6" height="13" rx="3" transform="rotate(-20 17 79)"/><circle cx="94" cy="115" r="3"/></g></svg>`;
+}
+
 /** Installed services are not proof of a successful microphone/speaker check.
  * @param {object} model Current connection status.
  * @returns {string} One clear next action that matches the terminal menu.
  */
 function audioChecksView(model) {
-  const checks=audioChecks(model),complete=progressCopy(model).complete;
-  const started=checks.some(check=>check.status!=='pending');
-  return `<section class="voice-check-panel ${complete?'audio-checks-passed':''}" aria-label="${complete?'Speaker and microphone checks passed':'Voice check pending'}"><div class="voice-check-heading"><span class="voice-check-symbol" aria-hidden="true">${icon(complete?'check':'terminal')}</span><div><span class="voice-check-pending">Final audio checks</span><h2>${complete?'Speaker and microphone checks passed':'Check your speaker and microphone'}</h2></div></div>
-    <p class="voice-check-instruction">${complete?'Confirmed on your device.':started?'Answer the questions in Terminal. Results appear here.':'Follow the checks in Terminal. At the first prompt, enter 1 and press Enter.'}</p>
-    <ul class="audio-check-results" aria-live="polite" aria-atomic="true">${checks.map(check=>`<li class="audio-result audio-result--${check.status}" data-audio-result="${check.id}"><span class="audio-result-symbol" aria-hidden="true">${icon(check.icon)}</span><div class="audio-result-copy"><div class="audio-result-heading"><h3>${escape(check.label)}</h3><span class="audio-result-status">${icon(check.status==='passed'?'check':check.status==='failed'?'info':'schedule')}<span>${check.statusLabel}</span></span></div><p>${check.description}</p></div></li>`).join('')}</ul>
-    ${complete?'':`${!model.error?'<p class="voice-check-wait">Keep this page open for the check result.</p>':''}${checkCommandView(model.session?.attention?'Run the check again':'Terminal already closed?')}`}</section>`;
+  if(progressCopy(model).complete)return '';
+  const checks=audioChecks(model),started=checks.some(check=>check.status!=='pending');
+  return `<section class="voice-check-panel" aria-label="Voice check pending"><div class="voice-check-heading"><span class="voice-check-symbol" aria-hidden="true">${icon('terminal')}</span><div><span class="voice-check-pending">Final audio checks</span><h2>Check your speaker and microphone</h2></div></div>
+    <p class="voice-check-instruction">${started?'Answer the questions in Terminal. Results appear here.':'Follow the checks in Terminal. At the first prompt, enter 1 and press Enter.'}</p>
+    <ul class="audio-check-results" role="list" aria-live="polite" aria-atomic="true">${checks.map(check=>`<li class="audio-result audio-result--${check.status}" data-audio-result="${check.id}"><span class="audio-result-symbol" aria-hidden="true">${icon(check.icon)}</span><div class="audio-result-copy"><div class="audio-result-heading"><h3>${escape(check.label)}</h3><span class="audio-result-status">${icon(check.status==='passed'?'check':check.status==='failed'?'info':'schedule')}<span>${check.statusLabel}</span></span></div><p>${check.description}</p></div></li>`).join('')}</ul>
+    ${!model.error?'<p class="voice-check-wait">Keep this page open for the check result.</p>':''}${checkCommandView(model.session?.attention?'Run the check again':'Terminal already closed?')}</section>`;
 }
 
 /** Curated examples stay optional until voice is confirmed; hubs get pairing guidance.
@@ -108,35 +117,37 @@ export function progressView(model,state,{preview=false,prerequisitesReady=true}
 
   const working=['started','downloading','installing'].includes(model.session?.status);
   const active=!model.error&&!model.session?.attention&&working;
-  const showPasswordNotice=working&&!model.session?.attention&&model.error!=='expired';
+  // The launcher reports installing only after its initial sudo command succeeds.
+  const showPasswordNotice=['started','downloading'].includes(model.session?.status)&&!model.session?.attention&&model.error!=='expired';
   const reconnecting=!!model.error&&model.error!=='expired'&&!['failed','cancelled'].includes(model.session?.status);
-  const stages=installationStages(model),receipts=completedStepsView(model);
+  const checklist=copy.installed?'':installationChecklistView(model);
   const current=installationMilestones(model).find(step=>step.state==='current');
   const detailed=working&&model.session?.phase>0?current:null;
   const attention=!model.error&&model.session?.attention;
   const task=attention?phase:detailed?{title:detailed.label,description:detailed.description}:phase;
-  const headline=model.error==='expired'?copy.title:working?'Installing OVOS':copy.installed&&!copy.complete?'OVOS is installed':phase.title;
+  const celebrate=copy.complete&&kind!=='hub';
+  const headline=celebrate?'OVOS is ready!':model.error==='expired'?copy.title:working?'Installing OVOS':copy.installed?'OVOS is installed':phase.title;
+  const heading=`<h1 class="progress-title" tabindex="-1" data-progress-focus="heading" aria-live="polite" aria-atomic="true">${escape(preview?`Preview: ${headline}`:headline).replace(/\bOVOS\b/g,'<em>OVOS</em>')}</h1>`;
   return `<div class="install-progress install-dashboard ${copy.installed?'is-installed':''} ${active?'is-working':''} ${reconnecting?'is-reconnecting':''}">
     <header class="installation-heading"><p class="progress-device">${deviceIcon(state.device)}<span>${escape(DEVICES[state.device]?.name||'OVOS')}</span></p>
-    <div class="installation-title-row"><h1 class="progress-title" tabindex="-1" data-progress-focus="heading" aria-live="polite" aria-atomic="true">${escape(preview?`Preview: ${headline}`:headline).replace(/\bOVOS\b/g,'<em>OVOS</em>')}</h1>${copy.installed?`<button type="button" class="button button-secondary rerun-wizard" data-rerun-wizard data-progress-focus="rerun-wizard" aria-describedby="rerun-wizard-note">${icon('refresh')}<span>Run the wizard again</span></button>`:''}</div>
-    ${copy.installed?'<p class="rerun-wizard-note" id="rerun-wizard-note">Your choices are kept. Review them before installing again.</p>':''}
+    ${celebrate?`<div class="installation-success">${celebrationArt()}<div class="celebration-copy"><p class="celebration-kicker">You did it!</p>${heading}<p class="celebration-description">Your device can hear you and talk back. Say hello!</p></div></div>`:`<div class="installation-title-row">${heading}</div>`}
     ${copy.installed||working?'':`<p class="progress-description">${phase.description}</p>`}</header>
     ${showPasswordNotice?sudoPasswordNotice(state.device):''}
-    ${copy.installed?`<div class="installation-receipt"><span class="installation-confirmed">${icon('check')}<span>Installation complete</span></span>${installationReceipts(model).some(step=>step.id==='services_started')?`<span class="installation-confirmed">${icon('check')}<span>Services started</span></span>`:''}<div class="installation-timing" data-install-timing>${timingView(model)}</div></div>`:`<section class="installation-flow" aria-label="${model.error?'Last confirmed progress':'Installation progress'}">
+    ${copy.installed?'':`<section class="installation-flow" aria-label="${model.error?'Last confirmed progress':'Installation progress'}">
       ${working?`<div class="installation-current${attention?' installation-current--attention':''}" role="status" aria-live="polite" aria-atomic="true">${mark1Eye({animated:active})}<div><h2>${task.title}</h2><p>${task.description}</p></div>${mark1Eye({animated:active})}</div>`:''}
-      ${receipts||`<ol class="installation-stages ${stages.length===5?'installation-stages--detailed':''}" aria-live="polite" aria-atomic="true">${stages.map(stage=>`<li class="stage-${stage.state}" ${stage.state==='current'?'aria-current="step"':''}><span class="stage-symbol" aria-hidden="true">${stage.state==='complete'?icon('check'):icon(stage.icon)}</span><span class="stage-label">${stage.label}</span><span class="sr-only">${stage.state==='complete'?'Completed':stage.state==='current'?(model.error?'Last confirmed progress':'In progress'):'Not reached'}</span></li>`).join('')}</ol>`}
+      ${checklist}
       <div class="installation-meta"><div class="installation-timing" data-install-timing>${timingView(model)}</div>${reconnecting?`<span class="connection-badge is-reconnecting">${icon('refresh')}<span>Reconnecting…</span></span>`:''}</div>
     </section>`}
     ${active?`<p class="installation-instruction">${icon('terminal')}<span>Keep this page open. Follow any prompts in Terminal.${kind!=='hub'?'<span class="audio-check-reminder">At the end, answer the speaker and microphone questions in Terminal.</span>':''}</span></p>`:''}
     ${model.error&&copy.description?`<div class="connection-notice"><p>${copy.description}</p>${reconnecting?'<button class="button button-secondary progress-retry" data-progress-focus="refresh" data-progress-retry>'+icon('refresh')+'<span>Try again</span></button>':''}</div>`:model.session?.attention&&!copy.installed&&!working?`<p class="progress-description">${phase.description}</p>`:''}
     ${!copy.installed&&working?`<details class="install-help-short" data-progress-disclosure="check"><summary data-progress-focus="check-summary">After a restart</summary><p>Open Terminal on your device and run this check. It checks services and helps you test your voice.</p><button class="text-button" data-progress-focus="copy-check" data-copy-check>Copy check command</button><textarea id="post-check-command" data-progress-focus="check-field" aria-label="Check sound and microphone" class="command check-command" readonly rows="2" data-no-translate>${escape(CHECK_COMMAND)}</textarea></details>`:''}
-    ${copy.installed&&receipts?`<details class="install-help-short completed-install-details" data-progress-disclosure="history"><summary data-progress-focus="history-summary">Installation details</summary>${receipts}</details>`:''}
     ${copy.installed?`<div class="post-install-guide">
-      ${kind!=='hub'?audioChecksView(model):''}
+      ${kind!=='hub'&&!celebrate?audioChecksView(model):''}
       ${gettingStartedView(state,copy.complete)}
       <section class="post-next-steps" aria-label="Next steps"><h2>Next steps</h2><div class="next-step-grid">${nextSteps(state).map(item=>`<a class="next-step-card" href="${item.url}" target="_blank" rel="noopener noreferrer" data-next-step="${item.id}" data-progress-focus="next-${item.id}"><span class="next-step-symbol" aria-hidden="true">${icon(item.icon)}</span><div class="next-step-copy"><h3>${item.title}</h3><p>${item.description}</p><span class="next-step-action">${item.action}</span></div></a>`).join('')}</div>${state.locale!=='en-us'?'<p class="details-note">Guides may be in English.</p>':''}</section>
       ${copy.complete||kind==='hub'?checkCommandView(kind==='hub'?'Check OVOS services':'Run the check again',kind==='hub'):''}
       <section class="post-demos" aria-label="See OVOS in action"><h2>See OVOS in action</h2><div class="demo-links">${DEMOS.map((demo,index)=>`<a class="demo-link" data-progress-focus="demo-${index}" href="${demo.url}" target="_blank" rel="noopener noreferrer"><span class="demo-thumbnail" aria-hidden="true"><img src="${demo.thumbnail}" width="480" height="360" alt="" loading="lazy" decoding="async"><span class="demo-play">${icon('play')}</span></span><span class="demo-caption"><strong>${demo.title}</strong><small>${demo.meta}</small></span></a>`).join('')}</div><p class="details-note">These demos use extra integrations. Captions may be available on YouTube.</p></section>
+      <div class="rerun-footer"><button type="button" class="text-button rerun-wizard" data-rerun-wizard data-progress-focus="rerun-wizard" aria-describedby="rerun-wizard-note">${icon('refresh')}<span>Run the wizard again</span></button><p class="rerun-wizard-note" id="rerun-wizard-note">Your choices are kept. Review them before installing again.</p></div>
     </div>`:''}
   </div>`;
 }

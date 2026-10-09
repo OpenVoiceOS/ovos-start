@@ -17,7 +17,9 @@ test('waiting stays in the handoff; actual installation replaces it with progres
  c.trackingShown=true;c.updateInstallProgress();assert.equal(waiting.hidden,false);assert.equal(region.hidden,true);assert.match(waiting.innerHTML,/Waiting for your device/);
  for(const status of ['started','downloading','installing','installed','services_ready','voice_ready']){
   model={session:{status}};c.updateInstallProgress();assert.equal(waiting.hidden,true,status);assert.equal(region.hidden,false,status);assert.equal(card.hidden,true,status);assert.equal(intro.hidden,true,status);assert.equal(setup.hidden,true,status);assert.equal(navigation.hidden,true,status);assert.equal((region.innerHTML.match(/<h1/g)||[]).length,1);
-  if(INSTALLED_STATES.includes(status))assert.match(region.innerHTML,/demo-thumbnail/);
+  assert.equal(region.innerHTML.includes('class="sudo-notice"'),['started','downloading'].includes(status),`${status}: password notice follows the actual device status without reloading`);
+  if(INSTALLED_STATES.includes(status)){assert.match(region.innerHTML,/demo-thumbnail/);assert.doesNotMatch(region.innerHTML,/installation-flow|installation-receipt|data-install-step/);}
+  else assert.equal((region.innerHTML.match(/data-install-step=/g)||[]).length,5);
  }
  model={session:{status:'services_ready',audioStatus:'checking',microphoneStatus:'pending'}};c.updateInstallProgress();
  assert.match(region.innerHTML,/audio-result--checking" data-audio-result="audio"/);

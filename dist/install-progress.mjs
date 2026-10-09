@@ -33,6 +33,13 @@ export const CHECK_COMMAND='sh "$HOME/.config/ovos-installer/check-setup.sh"';
 export const INSTALLED_STATES=Object.freeze(['installed','services_ready','voice_ready']);
 const CHECK_STATES=Object.freeze(['pending','checking','passed','failed']);
 const COMPLETED_STEPS=Object.freeze({packages_installed:'System packages installed',audio_configured:'Audio configured',components_installed:'OVOS components installed',services_started:'Services started'});
+const INSTALLATION_CHECKPOINTS=Object.freeze([
+  {id:'download',label:'Download installer',description:'Fetch the tools for your setup.',icon:'download',receiptIds:[]},
+  {id:'system',label:'Prepare your device',description:'Check the system and configure your hardware.',icon:'terminal',receiptIds:['audio_configured']},
+  {id:'components',label:'Install OVOS',description:'Install OVOS and your selected skills.',icon:'widgets',receiptIds:['packages_installed','components_installed']},
+  {id:'services',label:'Set up services',description:'Prepare OVOS to run on your device.',icon:'settings',receiptIds:['services_started']},
+  {id:'finish',label:'Finish installation',description:'Save settings and finish the installer.',icon:'schedule',receiptIds:[]},
+].map(checkpoint=>Object.freeze({...checkpoint,receiptIds:Object.freeze(checkpoint.receiptIds)})));
 
 /** Show only explicit completed tasks; installer phases never imply these receipts.
  * @param {object} model Tracker state. @returns {Array<object>} Confirmed steps.
@@ -78,7 +85,7 @@ const messages={
 /** Derive accessible, honest status text without fake percentages. @param {object} model @returns {object} */
 export function progressCopy(model) {
   const installed=INSTALLED_STATES.includes(model.session?.status);
-  const complete=model.session?.status==='voice_ready'&&audioChecks(model).every(check=>check.status==='passed');
+  const complete=installed&&audioChecks(model).every(check=>check.status==='passed');
   let [title,description]=messages[model.session?.status]||messages.waiting;
   if(model.session?.status==='voice_ready'&&!complete)[title,description]=messages.services_ready;
   if(['failed','cancelled'].includes(model.session?.status))return {title,description,installed:false,complete:false};
@@ -102,29 +109,21 @@ export function installationMilestones(model) {
   // preparation checkpoint, including after those installations have stopped.
   const coarse=!installed&&rank>=3&&phase===0;
   const current=installed?5:rank>=3?phase:0;
-  const steps=[
-    ['Download installer','Fetch the tools for your setup.'],
-    ['Prepare your device','Check the system and configure your hardware.'],
-    ['Install OVOS','Install OVOS and your selected skills.'],
-    ['Set up services','Prepare OVOS to run on your device.'],
-    ['Finish installation','Save settings and finish the installer.'],
-  ];
-  return steps.map(([label,description],index)=>({label,description,state:coarse?(index===0?'complete':'unknown'):index<current?'complete':index===current?(interrupted?'stopped':'current'):interrupted?'unknown':'upcoming'}));
+  return INSTALLATION_CHECKPOINTS.map(({label,description},index)=>({label,description,state:coarse?(index===0?'complete':'unknown'):index<current?'complete':index===current?(interrupted?'stopped':'current'):interrupted?'unknown':'upcoming'}));
 }
 
-/** Show reported checkpoints, with a coarse path when detailed updates are absent.
- * @param {object} model Confirmed tracker state. @returns {Array<object>}
+/** Keep every checkpoint visible and attach only its explicitly reported receipts.
+ * Coarse or interrupted runs retain unknown rows instead of inventing progress.
+ * @param {object} model Confirmed tracker state. @returns {Array<object>} Stable checklist rows.
  */
 export function installationStages(model) {
   const status=model.session?.status;
-  if(!['started','downloading','installing',...INSTALLED_STATES].includes(status))return [];
-  if(model.session.phase>0){
-    const icons=['download','terminal','widgets','settings','schedule'];
-    return installationMilestones(model).map((stage,index)=>({...stage,icon:icons[index]}));
-  }
-  const installed=INSTALLED_STATES.includes(status);
-  const current=installed?3:status==='installing'?1:0;
-  return [['Downloading','download'],['Installing','settings'],['Installed','schedule']].map(([label,icon],index)=>({label,icon,state:index<current?'complete':index===current?'current':'upcoming'}));
+  if(!['started','downloading','installing',...INSTALLED_STATES,'failed','cancelled'].includes(status))return [];
+  const milestones=installationMilestones(model),receipts=installationReceipts(model);
+  return INSTALLATION_CHECKPOINTS.map(({id,label,description,icon,receiptIds},index)=>({
+    id,label,description,icon,state:milestones[index]?.state||'unknown',
+    receipts:receipts.filter(receipt=>receiptIds.includes(receipt.id)),
+  }));
 }
 
 /** Age the last device event, never the browser's successful polling timestamp.

@@ -137,7 +137,7 @@ test('real milestones retain their last confirmed phase through reconnects and n
   const live=progressView(model,base),offline=progressView({...model,error:'unavailable'},base);
   assert.equal((live.match(/<h1/g)||[]).length,1);assert.doesNotMatch(live,/class="eyebrow"/);
   if(['started','downloading','installing'].includes(status))assert.match(offline,/Last confirmed progress/);assert.doesNotMatch(offline,/Updates paused|mark1-eye--animated|aria-valuenow|progressbar/);
-  assert.ok(offline.replace(/<\/?em>/g,'').includes(['started','downloading','installing'].includes(status)?'Installing OVOS':progressCopy(model).title));
+  assert.ok(offline.replace(/<\/?em>/g,'').includes(progressCopy(model).complete?'OVOS is ready!':['started','downloading','installing'].includes(status)?'Installing OVOS':progressCopy(model).title));
   if(status!=='voice_ready')assert.match(offline,/data-progress-retry/);
   if(['installed','services_ready'].includes(status)){assert.match(offline,/Voice check pending/);assert.doesNotMatch(offline,/Try your first question/);assert.equal(progressCopy(model).complete,false);}
  }
@@ -174,8 +174,8 @@ test('legacy stopped runs keep download evidence without inventing the step that
   assert.deepEqual(stages.map(stage=>stage.state),['complete','unknown','unknown','unknown','unknown']);
   const html=progressView(model,base);
   assert.match(html,/The exact step wasn’t reported/);
-  assert.match(html,/Download installer<\/span><small>Completed/);
-  assert.equal((html.match(/<small>Not confirmed<\/small>/g)||[]).length,4);
+  assert.match(html,/Download installer<\/span><span class="stage-status sr-only">Completed/);
+  assert.equal((html.match(/<span class="stage-status">Not confirmed<\/span>/g)||[]).length,4);
   assert.doesNotMatch(html,/Up next|Not reached|In progress|Last reported step|steps done|mark1-eye--animated|installation-layout|data-progress-retry|post-install-guide/);
   assert.match(html,/data-restart-install/);
   assert.equal(progressCopy(model).title,status==='failed'?'Installation stopped':'Installation cancelled');
@@ -190,10 +190,10 @@ test('recovery shows help and an explicit retry without a duplicate device or si
  assert.match(html,/href="https:\/\/matrix.to\/#\/#openvoiceos:matrix.org"/);
  assert.match(html,/After fixing the error, copy a new command. Your choices are saved./);
  assert.match(html,/data-restart-install disabled/);
- assert.match(html,/<details class="recovery-history"[^>]*><summary[^>]*>Installation details/);
+ assert.match(html,/<section class="recovery-history"[^>]*><h2>Installation details/);
  assert.doesNotMatch(html,/steps done|Estimated time left|Copy new command|Your setup|The exact step wasn’t reported/);
- assert.equal((html.match(/<small>Completed<\/small>/g)||[]).length,3);
- assert.match(html,/Set up services<\/span><small>Last reported step/);
+ assert.equal((html.match(/<span class="stage-status sr-only">Completed<\/span>/g)||[]).length,3);
+ assert.match(html,/Set up services<\/span><span class="stage-status">Last reported step/);
  const cancelled=progressView({session:{...model.session,status:'cancelled'}},base);
  assert.match(cancelled,/You can start again with the same choices/);
  assert.doesNotMatch(cancelled,/Check the error|After fixing the error/);
@@ -259,26 +259,26 @@ test('device freshness ages real events, without mistaking polling for a heartbe
 });
 
 
-test('coarse progress stays understandable without presenting unreported phases as problems',()=>{
+test('coarse progress keeps the full path without claiming which detailed phase is running',()=>{
  const model={session:{...session,status:'installing',phase:0,progressRank:3}};
- for(const status of ['waiting','failed','cancelled','invented'])assert.deepEqual(installationStages({session:{status}}),[]);
- assert.deepEqual(installationStages(model).map(x=>x.state),['complete','current','upcoming']);
+ for(const status of ['waiting','invented'])assert.deepEqual(installationStages({session:{status}}),[]);
+ assert.deepEqual(installationStages(model).map(x=>x.state),['complete','unknown','unknown','unknown','unknown']);
  const html=progressView(model,base);
- assert.match(html,/aria-current="step"/);assert.doesNotMatch(html,/Not confirmed|exact step|steps done|Live updates|installation-companion|Time varies/);
- assert.equal((html.match(/<li class="stage-/g)||[]).length,3);
+ assert.doesNotMatch(html,/aria-current="step"|exact step|steps done|Live updates|installation-companion|Time varies/);assert.equal((html.match(/Not confirmed/g)||[]).length,4);
+ assert.equal((html.match(/<li class="stage-/g)||[]).length,5);
  assert.deepEqual(installationStages({...model,error:'unavailable'}),installationStages(model));
  for(const phase of [1,2,3,4]){const view=progressView({session:{...model.session,phase}},base);assert.ok(view.includes(installationMilestones({session:{...model.session,phase}})[phase].description));}
- assert.deepEqual(installationStages({session:{...session,status:'installed'}}).map(x=>x.state),['complete','complete','complete']);
+ assert.deepEqual(installationStages({session:{...session,status:'installed'}}).map(x=>x.state),['complete','complete','complete','complete','complete']);
 });
 
 
 test('installed services never imply verified voice; pending instructions match the terminal menu',()=>{
  for(const status of ['installed','services_ready'])for(const attention of [false,true])for(const error of [null,'unavailable','expired']){
   const html=progressView({session:{...session,status,attention},error},base);
-  assert.match(html,/Installation complete/);assert.match(html,/Voice check pending/);
+  assert.doesNotMatch(html,/Installation complete|installation-flow|data-install-step/);assert.match(html,/Voice check pending/);
   assert.match(html,/At the first prompt, enter 1 and press Enter/);
   assert.match(html,attention?/Run the check again/:/Terminal already closed/);assert.match(html,/data-copy-check/);
-  assert.doesNotMatch(html,/Your voice check passed|A check needs your attention|installation-stages|mark1-eye--animated/);
+  assert.doesNotMatch(html,/Your voice check passed|A check needs your attention|mark1-eye--animated/);
   assert.match(html,/<details class="voice-examples-preview"[^>]*><summary[^>]*>[\s\S]*?Try asking[\s\S]*?After your voice check[\s\S]*?Show examples[\s\S]*?<\/summary>/);
   assert.doesNotMatch(html,/<details class="voice-examples-preview"[^>]* open/);
   assert.equal((html.match(/id="post-check-command"/g)||[]).length,1);
@@ -289,9 +289,9 @@ test('installed services never imply verified voice; pending instructions match 
 test('voice confirmation reveals the guide and keeps a check-again disclosure',()=>{
  for(const error of [null,'unavailable']){
   const html=progressView({session:{...session,status:'voice_ready'},error},base);
-  assert.match(html,/Your voice check passed/);assert.match(html,/Try asking/);
+  assert.match(html,/<em>OVOS<\/em> is ready!/);assert.match(html,/You did it!/);assert.match(html,/Try asking/);
   assert.match(html,/Run the check again/);assert.match(html,/What time is it/);
-  assert.doesNotMatch(html,/Voice check pending|At the first prompt|Terminal already closed|installation-stages/);
+  assert.doesNotMatch(html,/Voice check pending|At the first prompt|Terminal already closed/);
  }
 });
 
@@ -323,8 +323,8 @@ test('a later failed voice check replaces old success without undoing installati
  assert.match(html,/<em>OVOS<\/em> is installed/);assert.match(html,/audio-result--failed/);
  assert.doesNotMatch(html,/Your voice check passed|Speaker and microphone checks passed/);
  const complete=progressView({session:{...rerun.session,microphoneStatus:'passed',attention:false}},base);
- assert.match(complete,/Speaker and microphone checks passed/);
- assert.equal((complete.match(/audio-result--passed/g)||[]).length,2);
+ assert.match(complete,/You did it!/);
+ assert.doesNotMatch(complete,/data-audio-result=/);
  assert.match(complete,/Run the check again/);
 });
 
@@ -346,23 +346,30 @@ test('tracker rejects unknown check values and accepts legacy absent fields',asy
  }
 });
 
-test('completed task receipts stay factual across progress, failure and completion',()=>{
+test('task receipts stay factual and the full checklist gives way to audio checks after installation',()=>{
  const completedSteps=['packages_installed','components_installed'];
  for(const status of ['installing','failed','installed','services_ready','voice_ready']){
   const model={session:{...session,status,phase:4,progressRank:status==='installing'?3:4,completedSteps}};
   assert.deepEqual(installationReceipts(model).map(step=>step.id),completedSteps);
   const html=progressView(model,base);
+  if(['installed','services_ready','voice_ready'].includes(status)){
+   assert.doesNotMatch(html,/installation-flow|installation-receipt|data-install-step|data-completed-step/);
+   continue;
+  }
   assert.match(html,/System packages installed/);assert.match(html,/OVOS components installed/);
   assert.doesNotMatch(html,/Audio configured|Services started/);
-  if(status==='installing')assert.doesNotMatch(html,/class="installation-stages/);
+  assert.equal((html.match(/data-install-step=/g)||[]).length,5,'task receipts must never replace or collapse the full checklist');
+  assert.doesNotMatch(html,/<details[^>]+(?:recovery-history|completed-install-details)/);
  }
  for(const status of ['installing','installed','voice_ready']){
   assert.deepEqual(installationReceipts({session:{status,phase:4}}),[]);
   assert.doesNotMatch(progressView({session:{...session,status,phase:4}},base),/data-completed-step/);
  }
- const all=progressView({session:{...session,status:'services_ready',completedSteps:[...completedSteps,'audio_configured','services_started']}},base);
+ const all=progressView({session:{...session,status:'installing',phase:4,completedSteps:[...completedSteps,'audio_configured','services_started']}},base);
  assert.match(all,/Audio configured/);assert.match(all,/Services started/);
- assert.match(all,/<details class="install-help-short completed-install-details"/);
+ assert.equal((all.match(/class="stage-complete"/g)||[]).length,4);
+ assert.match(all,/<section class="installation-flow"/);
+ assert.doesNotMatch(all,/<ol class="installation-stages"[^>]*aria-live|completed-install-details/);
 });
 
 test('tracker validates task receipts and permits older sessions without them',async()=>{
@@ -450,7 +457,7 @@ test('failure reports use direct safe paste links and fall back to Terminal othe
 });
 
 
-test('live installation highlights OVOS, frames the task and explains sudo without claiming a detected prompt',()=>{
+test('live installation highlights OVOS, frames the task and only explains passwords during startup',()=>{
  const hint='Terminal may ask for your password';
  for(const status of ['started','downloading','installing']){
   const model={session:{...session,status,phase:1}};
@@ -459,16 +466,21 @@ test('live installation highlights OVOS, frames the task and explains sudo witho
   assert.match(html,/<h1[^>]+>Installing <em>OVOS<\/em><\/h1>/);
   assert.equal((html.match(/class="mark1-eye-ring"/g)||[]).length,2);
   assert.match(html,/<p>[^<]+<\/p><\/div><svg class="mark1-eye/);
-  assert.ok(html.includes(hint));
-  assert.match(html,/<aside class="sudo-notice" role="note">/);
-  assert.equal(html.split(hint).length-1,1);
-  assert.ok(html.indexOf(hint)<html.indexOf('<section class="installation-flow"'),'password guidance is visible before the progress dashboard');
-  assert.match(html,/Type the password you use to sign in to your device, then press Enter\./);
-  assert.match(html,/You may not see any characters as you type\. This is normal\./);
-  assert.doesNotMatch(html,/<input[^>]+type="password"|role="alert"/);
-  assert.ok(progressView({...model,error:'unavailable'},base).includes(hint),'a tracking outage must not hide useful Terminal guidance');
-  assert.ok(!progressView({...model,error:'expired'},base).includes(hint));
-  assert.ok(!progressView({session:{...model.session,attention:true}},base).includes(hint),'the reported audio action takes priority');
+  if(status==='installing'){
+   assert.ok(!html.includes(hint),'installation has already passed the initial sudo prompt');
+   assert.ok(!progressView({...model,error:'unavailable'},base).includes(hint),'reconnecting must not revive obsolete password guidance');
+  }else{
+   assert.ok(html.includes(hint));
+   assert.match(html,/<aside class="sudo-notice" role="note">/);
+   assert.equal(html.split(hint).length-1,1);
+   assert.ok(html.indexOf(hint)<html.indexOf('<section class="installation-flow"'),'password guidance is visible before the progress dashboard');
+   assert.match(html,/Type the password you use to sign in to your device, then press Enter\./);
+   assert.match(html,/You may not see any characters as you type\. This is normal\./);
+   assert.doesNotMatch(html,/<input[^>]+type="password"|role="alert"/);
+   assert.ok(progressView({...model,error:'unavailable'},base).includes(hint),'a tracking outage must not hide useful Terminal guidance');
+   assert.ok(!progressView({...model,error:'expired'},base).includes(hint));
+   assert.ok(!progressView({session:{...model.session,attention:true}},base).includes(hint),'the reported audio action takes priority');
+  }
   for(const paused of [{...model,error:'unavailable'},{session:{...model.session,attention:true}}]){
    const stopped=progressView(paused,base);
    assert.doesNotMatch(stopped,/ is-working |mark1-eye--animated/);
@@ -485,4 +497,11 @@ test('Windows progress asks for the Ubuntu password rather than the Windows logi
  const html=progressView({session:{...session,status:'started'}},{...base,device:'windows'});
  assert.match(html,/Type the password you set for Ubuntu, then press Enter\./);
  assert.doesNotMatch(html,/password you use to sign in to your device/);
+});
+
+test('all installation phases omit startup password guidance after sudo succeeds',()=>{
+ for(const phase of [0,1,2,3,4])for(const error of [undefined,'unavailable','expired']){
+  const html=progressView({session:{...session,status:'installing',phase},error},base);
+  assert.doesNotMatch(html,/class="sudo-notice"|Terminal may ask for your password/);
+ }
 });

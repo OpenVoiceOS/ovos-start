@@ -781,35 +781,32 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .recovery-report .button{min-height:44px;padding:9px 12px;font-size:14px}
 .recovery-retry{border-top:1px solid var(--line);align-items:center}
 .recovery-history{margin:0 30px;border-top:1px solid var(--line);font-size:15px;color:var(--muted)}
-.recovery-history summary{padding:19px 0;cursor:pointer;min-height:44px}
-.recovery-history summary:hover{color:var(--ink)}
 .recovery-unknown{font-size:15px;line-height:1.6;margin:0 0 12px}
-.recovery-checkpoints{list-style:none;padding:0;margin:0 0 20px}
-.recovery-checkpoints li{display:flex;align-items:center;gap:12px;min-height:48px;padding:8px 0;font-size:15px;line-height:1.5}
-.recovery-checkpoints li>span:nth-child(2){flex:1;min-width:0}
-.recovery-checkpoints small{font-size:14px;max-width:35%;text-align:right}
-.recovery-checkpoint-icon{display:flex;justify-content:center;flex:none;width:20px;font-size:14px;font-variant-numeric:tabular-nums}.recovery-checkpoint-icon .ui-icon{width:20px;height:20px}
-.recovery-complete .recovery-checkpoint-icon,.recovery-complete small{color:var(--install-done)}
-.recovery-complete>span:nth-child(2),.recovery-stopped>span:nth-child(2){color:var(--ink)}
-.recovery-stopped .recovery-checkpoint-icon{color:var(--accent)}
 @media(max-width:900px){.recovery-diagnosis{display:grid;grid-template-columns:48px minmax(0,1fr);gap:16px}.recovery-diagnosis>.button{grid-column:2;justify-self:start}.recovery-retry{align-items:flex-start;flex-direction:column;gap:18px}}
-@media(max-width:540px){.recovery-diagnosis,.recovery-retry{padding:20px}.recovery-diagnosis{grid-template-columns:minmax(0,1fr)}.recovery-diagnosis>.button{grid-column:1}.recovery-symbol{display:none}.recovery-copy h2{font-size:19px}.recovery-panel .button{width:100%}.recovery-history{margin:0 20px}.recovery-checkpoints li{flex-wrap:wrap;gap:8px}.recovery-checkpoints li>span:nth-child(2){flex-basis:calc(100% - 28px)}.recovery-checkpoints small{margin-left:28px;max-width:100%;text-align:left}}
+@media(max-width:540px){.recovery-diagnosis,.recovery-retry{padding:20px}.recovery-diagnosis{grid-template-columns:minmax(0,1fr)}.recovery-diagnosis>.button{grid-column:1}.recovery-symbol{display:none}.recovery-copy h2{font-size:19px}.recovery-panel .button{width:100%}.recovery-history{margin:0 20px}}
 
-/* Reported work leads, followed by confirmed steps and device update timing. */
+/* A connected path with a single active highlight, not a stack of status cards. */
 .installation-flow{border:1px solid var(--line);border-radius:22px;background:var(--card);overflow:hidden}
-.installation-stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));list-style:none;margin:0;padding:32px 24px}
-.installation-stages--detailed{grid-template-columns:repeat(5,minmax(0,1fr));padding:26px 18px;border-top:1px solid var(--line)}
-.installation-stages li{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;min-width:0;color:var(--muted)}
-.installation-stages li+li:before{content:"";position:absolute;top:24px;left:calc(-50% + 34px);width:calc(100% - 68px);height:2px;background:var(--line)}
-.installation-stages .stage-complete+.stage-complete:before,.installation-stages .stage-complete+.stage-current:before{background:var(--install-done)}
-.stage-symbol{display:grid;place-items:center;position:relative;width:50px;height:50px;border:1px solid var(--line);border-radius:50%;background:var(--card);color:var(--muted)}
-.stage-symbol>.ui-icon{width:23px;height:23px}
-.stage-label{font-size:16px;line-height:1.5;overflow-wrap:anywhere}
-.stage-current .stage-symbol{color:var(--accent);background:var(--soft);border-color:transparent}.stage-current .stage-label{color:var(--ink);font-weight:650}
-.stage-complete .stage-symbol{color:var(--install-done);background:color-mix(in srgb,var(--install-done) 10%,var(--card));border-color:transparent}.stage-complete .stage-label{color:var(--ink)}
+.installation-stages{display:grid;gap:0;list-style:none;margin:0;padding:12px 28px 20px;text-align:left}
+.installation-current+.installation-stages{border-top:1px solid var(--line)}
+.installation-stages>li{position:relative;display:grid;grid-template-columns:28px minmax(0,1fr);align-items:start;gap:16px;min-width:0;min-height:54px;padding:12px 0;color:var(--muted)}
+.installation-stages>li:not(:last-child):after{content:"";position:absolute;top:40px;bottom:-12px;left:13px;width:2px;background:var(--line)}
+.installation-stages>.stage-complete:not(:last-child):after{background:var(--install-done)}
+.stage-symbol{position:relative;z-index:1;display:grid;place-items:center;width:28px;height:28px;border:1px solid var(--line);border-radius:50%;background:var(--card);color:var(--muted);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.stage-symbol>.ui-icon{width:17px;height:17px}
+.stage-copy{min-width:0;padding-top:2px}.stage-heading{display:flex;align-items:baseline;justify-content:space-between;gap:6px 16px;flex-wrap:wrap}
+.stage-label{font-size:16px;line-height:1.5;overflow-wrap:anywhere;font-weight:550}.stage-status{font-size:12px;line-height:1.5;flex-shrink:0}
+.stage-current .stage-copy{background:var(--soft);padding:10px 12px;margin:-8px -12px -8px 0;border-radius:10px}
+.stage-current .stage-symbol{color:var(--accent);border-color:var(--accent)}.stage-current .stage-label{color:var(--ink);font-weight:650}.stage-current .stage-status{color:var(--accent);font-weight:650}
+.stage-complete .stage-symbol{color:var(--install-done);background:color-mix(in srgb,var(--install-done) 12%,var(--card));border-color:transparent}.stage-complete .stage-label{color:var(--install-done)}
+.stage-stopped .stage-symbol{color:var(--requirement-ink);border-color:var(--requirement-accent);background:var(--requirement-bg)}
+.stage-receipts{display:flex;flex-wrap:wrap;gap:3px 16px;list-style:none;margin:5px 0 0;padding:0}.stage-receipts>li{display:flex;align-items:center;gap:5px;font-size:13px;line-height:1.55;color:var(--muted)}.stage-receipts .ui-icon{width:14px;height:14px;flex:none;color:var(--install-done)}
+.recovery-history h2{font-size:16px;font-weight:600;margin:20px 0 10px}.recovery-history .installation-stages{padding:0 0 20px}.recovery-history .recovery-unknown{margin:0 0 14px}
+@media(max-width:540px){.installation-stages{padding:10px 20px 16px}.installation-stages>li{gap:12px;padding:10px 0;min-height:50px}.installation-stages>li:not(:last-child):after{top:38px;bottom:-10px}.stage-label{font-size:15px}.stage-status:not(.sr-only){flex-basis:100%;margin-top:2px}.stage-current .stage-copy{margin-right:-8px;padding:10px}.stage-receipts{gap:3px 12px}.stage-receipts>li{font-size:12px}}
+@media(forced-colors:active){.stage-complete .stage-label,.stage-receipts>li{color:CanvasText}.stage-complete .stage-symbol{color:CanvasText;background:Canvas;border-color:CanvasText}.installation-stages>li:not(:last-child):after{background:CanvasText}.stage-current .stage-copy{outline:1px solid Highlight}}
 .installation-current{display:flex;align-items:center;justify-content:center;gap:20px;padding:28px 30px;background:linear-gradient(110deg,var(--soft),var(--card) 80%)}
 .installation-current h2{font-size:20px;line-height:1.4;margin:0;font-weight:600}.installation-current p{font-size:15px;color:var(--muted);margin:5px 0 0;line-height:1.6}
-.installation-current>div{flex:0 1 auto;min-width:0;text-align:center}.installation-stages--detailed .stage-label{font-size:14px;overflow-wrap:normal}
+.installation-current>div{flex:0 1 auto;min-width:0;text-align:center}
 .installation-current--attention{background:var(--requirement-bg)}
 .installation-current--attention h2{color:var(--requirement-ink)}
 .installation-current--attention .mark1-eye{--eye-led:var(--requirement-accent)}
@@ -824,20 +821,15 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .timing-hint{flex-basis:100%;font-size:14px;line-height:1.65;color:var(--muted)}
 .installation-instruction{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.65;color:var(--muted);margin:20px 2px 0;text-align:left}
 .installation-instruction>.ui-icon{width:20px;height:20px;flex:none;margin-top:2px;color:var(--accent)}
-@media(max-width:540px){.installation-stages{padding:26px 12px}.stage-symbol{width:40px;height:40px}.installation-stages li+li:before{top:20px;left:calc(-50% + 27px);width:calc(100% - 54px)}.stage-label{font-size:14px}.installation-current{padding:20px 14px;gap:10px;text-align:center}.installation-current svg.mark1-eye{width:36px;height:36px}.installation-current h2{font-size:18px}.installation-meta{padding:16px 20px}.installation-meta .installation-timing{gap:10px}.installation-meta .timing-estimate{flex-basis:100%}}
-@media(max-width:420px){.installation-stages{display:flex;flex-direction:column;gap:18px;padding:22px 20px}.installation-stages li{flex-direction:row;gap:12px;text-align:left}.installation-stages li+li:before{top:-18px;left:19px;width:2px;height:18px}.stage-label{font-size:16px;overflow-wrap:normal}.stage-symbol{flex:none}}
-@media(max-width:650px){.installation-stages--detailed{display:flex;flex-direction:column;gap:14px;padding:22px 20px}.installation-stages--detailed li{flex-direction:row;gap:12px;text-align:left}.installation-stages--detailed .stage-symbol{width:32px;height:32px;flex:none}.installation-stages--detailed .stage-symbol>.ui-icon{width:17px;height:17px}.installation-stages--detailed li+li:before{top:-14px;left:15px;width:2px;height:14px}.installation-stages--detailed .stage-label{font-size:15px}.installation-current{gap:14px}.timing-update{margin-left:0}}
+@media(max-width:540px){.installation-current{padding:20px 14px;gap:10px;text-align:center}.installation-current svg.mark1-eye{width:36px;height:36px}.installation-current h2{font-size:18px}.installation-meta{padding:16px 20px}.installation-meta .installation-timing{gap:10px}.installation-meta .timing-estimate{flex-basis:100%}}
+@media(max-width:650px){.installation-current{gap:14px}.timing-update{margin-left:0}}
 @media(max-width:380px){.installation-current{gap:14px}}
 
-/* Completed installation hands off to verification, rather than a second checklist. */
-.installation-receipt{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;padding:0 0 22px;border-bottom:1px solid var(--line)}
-.installation-confirmed{display:inline-flex;align-items:center;gap:8px;font-size:15px;color:var(--install-done);line-height:1.5}
-.installation-confirmed>.ui-icon{width:22px;height:22px}.installation-receipt .timing-elapsed{font-size:14px;font-weight:400;color:var(--muted)}.installation-receipt .timing-elapsed .ui-icon{width:18px;height:18px;color:var(--muted)}
 .voice-check-panel{padding:28px;border:1px solid var(--line);border-radius:20px;background:var(--card);margin:0 0 30px;text-align:left}
 .voice-check-heading{display:flex;align-items:center;gap:16px}.voice-check-symbol{display:grid;place-items:center;flex:none;width:48px;height:48px;border-radius:14px;background:var(--soft);color:var(--accent)}.voice-check-symbol>.ui-icon{width:25px;height:25px}
 .voice-check-pending{display:block;font-size:14px;line-height:1.5;color:var(--muted);margin-bottom:4px}.voice-check-panel h2{font-size:22px;line-height:1.35;margin:0;font-weight:650;letter-spacing:-.02em}.post-install-guide .voice-check-instruction{font-size:16px;line-height:1.65;color:var(--ink);margin:22px 0;max-width:44em}
 .device-check-command{border-top:1px solid var(--line);padding-top:0;margin:22px 0 0!important;text-align:left}.device-check-command>summary{padding:17px 0;cursor:pointer;font-size:15px;line-height:1.6;color:var(--muted);min-height:44px}.device-check-command>summary:hover{color:var(--ink)}.device-check-command>p{font-size:15px;line-height:1.6;margin:0 0 16px}.device-check-command>.button{margin:0 0 12px;font-size:16px;box-shadow:none}.device-check-command>textarea{margin:0 0 8px}
-@media(max-width:540px){.voice-check-panel{padding:20px}.voice-check-heading{align-items:flex-start;gap:12px}.voice-check-panel h2{font-size:20px}.voice-check-symbol{width:38px;height:38px;border-radius:10px}.voice-check-symbol>.ui-icon{width:22px;height:22px}.installation-receipt{gap:10px}.device-check-command>.button{width:100%;white-space:normal}}
+@media(max-width:540px){.voice-check-panel{padding:20px}.voice-check-heading{align-items:flex-start;gap:12px}.voice-check-panel h2{font-size:20px}.voice-check-symbol{width:38px;height:38px;border-radius:10px}.voice-check-symbol>.ui-icon{width:22px;height:22px}.device-check-command>.button{width:100%;white-space:normal}}
 
 .install-dashboard.is-installed>.post-install-guide{border-top:0;padding-top:0;margin-top:24px}.post-install-guide .voice-check-wait{font-size:14px;line-height:1.6;color:var(--muted);margin:-8px 0 20px}
 .audio-check-reminder{display:block;margin-top:4px}
@@ -848,11 +840,6 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .sudo-notice p{margin:4px 0 0;font-size:15px;line-height:1.6;color:inherit}
 @media(max-width:540px){.sudo-notice{padding:16px 14px;gap:10px}.sudo-notice>.ui-icon{width:22px;height:22px}.sudo-notice strong{font-size:16px}}
 @media(forced-colors:active){.sudo-notice{background:Canvas;color:CanvasText;border-color:CanvasText}.sudo-notice>.ui-icon{color:CanvasText}}
-.installation-completed-steps{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px;margin:0;padding:24px 30px;text-align:left}
-.installation-current+.installation-completed-steps{border-top:1px solid var(--line)}
-.installation-completed-steps li{display:flex;align-items:center;gap:10px;min-width:0;font-size:15px;line-height:1.5;color:var(--ink)}.installation-completed-steps .ui-icon{width:21px;height:21px;flex:none;color:var(--install-done)}
-.completed-install-details{margin:12px 0 0!important}.completed-install-details .installation-completed-steps,.recovery-history .installation-completed-steps{padding:12px 0 18px}
-@media(max-width:650px){.installation-completed-steps{grid-template-columns:minmax(0,1fr);padding:22px 20px;gap:12px}}
 :root{--audio-pass:#0c7454;--audio-fail:#b12d43;--audio-check:#215ea6;--audio-status-ink:#fff}
 @media(prefers-color-scheme:dark){:root:not([data-theme]){--audio-pass:#72deb1;--audio-fail:#ff98a3;--audio-check:#8ac3ff;--audio-status-ink:#101b22}}
 :root[data-theme="dark"]{--audio-pass:#72deb1;--audio-fail:#ff98a3;--audio-check:#8ac3ff;--audio-status-ink:#101b22}
@@ -865,7 +852,6 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .audio-result-status>.ui-icon{width:16px;height:16px}
 .audio-result--checking{--audio-tone:var(--audio-check)}.audio-result--passed{--audio-tone:var(--audio-pass)}.audio-result--failed{--audio-tone:var(--audio-fail)}
 .audio-result--passed .audio-result-status,.audio-result--failed .audio-result-status{color:var(--audio-status-ink);background:var(--audio-tone)}
-.audio-checks-passed .voice-check-symbol{color:var(--audio-pass);background:color-mix(in srgb,var(--audio-pass) 12%,var(--card))}.audio-checks-passed .audio-check-results{margin-bottom:0}
 @media(max-width:600px){.audio-result{padding:16px;gap:12px;align-items:start}.audio-result-symbol{margin-top:1px}.audio-result-heading{align-items:flex-start}.audio-result-copy h3{font-size:16px}}
 @media(forced-colors:active){.audio-result{border-color:CanvasText;box-shadow:none}.audio-result-status{border:1px solid CanvasText}.audio-result-symbol{outline:1px solid CanvasText}}
 
@@ -951,8 +937,15 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .mac-prerequisites{padding-left:24px;margin:14px 0;display:grid;gap:12px;font-size:16px}.mac-prerequisites code,.prerequisite-panel .details-note code{overflow-wrap:anywhere;font-size:14px}
 
 /* A completed installation leaves a visible route into a separate setup journey. */
-.installation-title-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px 24px}.installation-title-row .progress-title{flex:1 1 420px}.rerun-wizard{flex:0 1 auto;font-size:16px;min-height:48px;padding:12px 16px;white-space:normal;text-align:left}.rerun-wizard-note{font-size:14px;line-height:1.6;color:var(--muted);margin-top:16px}
-@media(max-width:600px){.installation-title-row .progress-title{flex-basis:100%}.rerun-wizard{max-width:100%}.rerun-wizard-note{margin-top:12px}}
+.installation-title-row{display:flex;align-items:center;flex-wrap:wrap;gap:18px 24px}.installation-title-row .progress-title{flex:1 1 420px}
+.rerun-footer{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;margin-top:30px;padding-top:20px;border-top:1px solid var(--line)}
+.rerun-wizard{display:inline-flex;align-items:center;gap:8px;font-size:14px;min-height:44px;white-space:normal;text-align:left}.rerun-wizard>.ui-icon{width:18px;height:18px;flex:none}.rerun-wizard-note{font-size:13px;line-height:1.6;color:var(--muted);margin:0;max-width:28em}
+.installation-success{display:flex;align-items:center;gap:22px;padding:28px;border:1px solid color-mix(in srgb,var(--install-done) 35%,var(--line));border-radius:22px;background:linear-gradient(120deg,color-mix(in srgb,var(--install-done) 8%,var(--card)),var(--card) 75%)}
+.celebration-art{width:116px;height:104px;flex:none;overflow:visible}.celebration-halo{fill:color-mix(in srgb,var(--install-done) 10%,transparent)}.celebration-medal{fill:var(--install-done)}.celebration-checkmark{fill:none;stroke:var(--card);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}.celebration-blue{fill:var(--accent)}.celebration-pink{fill:var(--audio-fail)}.celebration-gold{fill:var(--requirement-accent)}
+.celebration-copy{min-width:0;flex:1}.celebration-kicker{font-size:19px;line-height:1.5;font-weight:650;color:var(--install-done);margin:0 0 4px}.installation-success .progress-title{font-size:clamp(28px,3.5vw,42px);line-height:1.15;margin:0;letter-spacing:-.035em}.celebration-description{font-size:16px;line-height:1.6;color:var(--ink);margin:12px 0 0}
+@media(max-width:650px){.installation-success{gap:12px;padding:24px 20px;flex-direction:column;text-align:center}.celebration-art{width:88px;height:78px}.celebration-kicker{font-size:17px}.celebration-description{font-size:15px}.rerun-footer{display:block}.rerun-wizard-note{margin-top:5px}}
+@media(forced-colors:active){.installation-success{border-color:CanvasText;background:Canvas}.celebration-medal{fill:CanvasText}.celebration-checkmark{stroke:Canvas}.celebration-halo{fill:Canvas}.celebration-blue,.celebration-pink,.celebration-gold{fill:CanvasText}}
+
 
 /* Mandatory preparation is a separate handoff, with one unmistakable decision. */
 .preparation-required:has(.preparation-gate:not([hidden])){max-width:850px;margin-inline:auto}

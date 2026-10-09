@@ -256,3 +256,21 @@ test('progress heading emphasis and trivia controls retain their translations',(
   }
  }
 });
+
+test('all locales name upcoming installation steps without hiding their status',()=>{
+ for(const locale of UI_LOCALES){
+  const catalog=read(locale);assert.ok(catalog['Not started'],locale);
+  if(locale!=='en-us')assert.notEqual(catalog['Not started'],'Not started',locale);
+ }
+});
+
+test('all locales celebrate confirmed audio with OVOS emphasized',()=>{
+ for(const locale of UI_LOCALES){
+  const catalog=read(locale);
+  for(const key of ['You did it!','OVOS is ready!','<em>OVOS</em> is ready!','Your device can hear you and talk back. Say hello!']){
+   assert.ok(catalog[key],`${locale}: ${key}`);
+   if(locale!=='en-us')assert.notEqual(catalog[key],key,locale);
+  }
+  assert.match(catalog['<em>OVOS</em> is ready!'],/<em>OVOS<\/em>/);
+ }
+});

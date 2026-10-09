@@ -73,7 +73,7 @@ test('hub guide uses a verified pairing URL and never asks the server to listen'
 });
 
 test('onboarding chrome is translated in every catalog while source phrases stay separate',()=>{
- const keys=['Try asking','After your voice check','Say “Hey Mycroft”','Wait for the listening sound, then ask.','Show examples','Hide examples','Time','Date','Timer','Weather','Next steps','Examples for your language','Weather needs internet and a configured location.'];
+ const keys=['Try asking','After your voice check','Say “Hey Mycroft”','Wait for the listening sound, then ask.','More to try','Show examples','Hide examples','Time','Date','Timer','Weather','Next steps','Examples for your language','Weather needs internet and a configured location.'];
  for(const locale of UI_LOCALES){
   const catalog=JSON.parse(readFileSync(new URL(`../dist/locales/${locale}.json`,import.meta.url),'utf8'));
   for(const key of keys){assert.ok(catalog[key],`${locale}: ${key}`);assert.equal(translateMessage(key,catalog),catalog[key]);}
@@ -87,13 +87,35 @@ test('spoken examples are a noninteractive list with decorative icons and one re
   if(!examples.length){assert.doesNotMatch(html,/voice-example-grid/);continue;}
   const list=html.match(/<ul class="voice-example-grid" role="list">([\s\S]*?)<\/ul>/)?.[1];
   assert.ok(list,locale);
-  assert.equal((list.match(/<li class="voice-example">/g)||[]).length,examples.length);
-  assert.equal((list.match(/class="voice-example-symbol" aria-hidden="true"/g)||[]).length,examples.length);
+  assert.equal((list.match(/<li class="voice-example">/g)||[]).length,examples.length-1);
+  assert.equal((list.match(/class="voice-example-symbol" aria-hidden="true"/g)||[]).length,examples.length-1);
   assert.doesNotMatch(list,/<button|<a\b|tabindex=|undefined/,'phrases are spoken examples, not clickable controls');
   assert.equal((list.match(/Weather needs internet and a configured location\./g)||[]).length,examples.some(item=>item.kind==='weather')?1:0);
   assert.doesNotMatch(html,/Some skills need internet or extra setup\./);
   assert.match(html,/Say “Hey Mycroft”/);
   assert.match(html,/Wait for the listening sound, then ask\./);
   assert.match(html,/Your own wake word\? Use that instead\./);
+ }
+});
+
+
+test('the first question leads and each reviewed phrase appears exactly once',()=>{
+ for(const locale of UI_LOCALES)for(const status of ['installed','services_ready','voice_ready']){
+  const recipe={...state,locale},html=progressView(model(status),recipe),examples=starterExamples(recipe);
+  if(!examples.length){assert.doesNotMatch(html,/first-question|more-questions/);continue;}
+  const featured=html.match(/<div class="voice-example-featured">([\s\S]*?)<\/div>/)?.[1];
+  assert.ok(featured,`${locale}/${status}: one featured question`);
+  assert.ok(featured.includes(examples[0].phrase.replace(/'/g,'&#39;')));
+  for(const example of examples){
+   const phrase=example.phrase.replace(/'/g,'&#39;');
+   assert.equal(html.split(`data-no-translate>“${phrase}”</blockquote>`).length-1,1,`${locale}: each phrase appears once`);
+  }
+  const start=html.indexOf('class="first-question"'),end=html.indexOf('class="more-questions"');
+  const intro=html.slice(start,end);
+  assert.ok(intro.indexOf('Say “Hey Mycroft”')<intro.indexOf('Wait for the listening sound, then ask.'));
+  assert.ok(intro.indexOf('Wait for the listening sound, then ask.')<intro.indexOf('class="voice-example-featured"'));
+  assert.ok(intro.indexOf('class="voice-example-featured"')<intro.indexOf('Your own wake word? Use that instead.'));
+  assert.doesNotMatch(intro,/conversation-number|<button|<a\b|tabindex=|role="button"|<audio|autoplay/);
+  assert.match(html,/<h3>More to try<\/h3>/);
  }
 });

@@ -1,0 +1,1 @@
+ALTER TABLE `installs` ADD `error_url` text;

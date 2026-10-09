@@ -641,8 +641,7 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .waiting-indicator .ui-icon{width:24px;height:24px}
 .waiting-title{display:block;color:var(--ink);font-size:1rem;font-weight:650;line-height:1.4}
 .install-waiting>span[role="status"]{flex:1;min-width:0}
-.activity-spinner{display:block;width:26px;height:26px;border:3px solid color-mix(in srgb,var(--accent) 22%,transparent);border-top-color:var(--accent);border-right-color:var(--accent);border-radius:50%;animation:ovos-activity-spin 1.15s linear infinite}
-@keyframes ovos-activity-spin{to{transform:rotate(360deg)}}
+.install-waiting.is-waiting .waiting-indicator{flex-basis:80px;width:80px;border-radius:0;background:none}
 .install-waiting .text-button{font-size:14px;margin-left:auto}
 .handoff-help{border-top:1px solid var(--line);padding-top:14px;margin-top:20px}
 .handoff-help h3{font-size:16px;margin:20px 0 0}.handoff-help .text-button{font-size:14px;margin-top:12px}
@@ -666,7 +665,6 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .connection-badge.is-reconnecting{color:var(--muted)}
 .milestone-marker{position:relative;display:grid;place-items:center;flex-shrink:0;width:38px;height:38px;border:1px solid var(--line);border-radius:50%;font-size:14px;font-weight:550;font-variant-numeric:tabular-nums;color:var(--muted)}
 .milestone-marker .ui-icon{width:22px;height:22px}
-.milestone-marker .activity-spinner{width:23px;height:23px;border-width:2px}
 .milestone-content{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px}
 .milestone-label{font-size:16px;font-weight:550;color:var(--muted);overflow-wrap:anywhere}
 .milestone-description{font-size:14px;line-height:1.55;color:var(--muted)}
@@ -794,20 +792,22 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 @media(max-width:900px){.recovery-diagnosis{display:grid;grid-template-columns:48px minmax(0,1fr);gap:16px}.recovery-diagnosis>.button{grid-column:2;justify-self:start}.recovery-retry{align-items:flex-start;flex-direction:column;gap:18px}}
 @media(max-width:540px){.recovery-diagnosis,.recovery-retry{padding:20px}.recovery-diagnosis{grid-template-columns:minmax(0,1fr)}.recovery-diagnosis>.button{grid-column:1}.recovery-symbol{display:none}.recovery-copy h2{font-size:19px}.recovery-panel .button{width:100%}.recovery-history{margin:0 20px}.recovery-checkpoints li{flex-wrap:wrap;gap:8px}.recovery-checkpoints li>span:nth-child(2){flex-basis:calc(100% - 28px)}.recovery-checkpoints small{margin-left:28px;max-width:100%;text-align:left}}
 
-/* Installation has one reading path: three stages, current work, then timing. */
+/* Reported work leads, followed by confirmed steps and device update timing. */
 .installation-flow{border:1px solid var(--line);border-radius:22px;background:var(--card);overflow:hidden}
 .installation-stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));list-style:none;margin:0;padding:32px 24px}
+.installation-stages--detailed{grid-template-columns:repeat(5,minmax(0,1fr));padding:26px 18px;border-top:1px solid var(--line)}
 .installation-stages li{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;min-width:0;color:var(--muted)}
 .installation-stages li+li:before{content:"";position:absolute;top:24px;left:calc(-50% + 34px);width:calc(100% - 68px);height:2px;background:var(--line)}
 .installation-stages .stage-complete+.stage-complete:before,.installation-stages .stage-complete+.stage-current:before{background:var(--install-done)}
 .stage-symbol{display:grid;place-items:center;position:relative;width:50px;height:50px;border:1px solid var(--line);border-radius:50%;background:var(--card);color:var(--muted)}
-.stage-symbol>.ui-icon{width:23px;height:23px}.stage-symbol>.activity-spinner{width:26px;height:26px;border-width:2px}
+.stage-symbol>.ui-icon{width:23px;height:23px}
 .stage-label{font-size:16px;line-height:1.5;overflow-wrap:anywhere}
 .stage-current .stage-symbol{color:var(--accent);background:var(--soft);border-color:transparent}.stage-current .stage-label{color:var(--ink);font-weight:650}
 .stage-complete .stage-symbol{color:var(--install-done);background:color-mix(in srgb,var(--install-done) 10%,var(--card));border-color:transparent}.stage-complete .stage-label{color:var(--ink)}
-.installation-current{display:flex;gap:14px;padding:24px 30px;border-top:1px solid var(--line)}
+.installation-current{display:flex;align-items:center;gap:26px;padding:32px 30px;background:linear-gradient(110deg,var(--soft),transparent)}
 .installation-current>span{color:var(--accent);padding-top:2px;flex:none}.installation-current .ui-icon{width:23px;height:23px}
 .installation-current h2{font-size:19px;line-height:1.4;margin:0;font-weight:600}.installation-current p{font-size:15px;color:var(--muted);margin:7px 0 0;line-height:1.6}
+.installation-current>div{min-width:0}.installation-stages--detailed .stage-label{font-size:14px;overflow-wrap:normal}
 .installation-meta{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:18px 30px;border-top:1px solid var(--line)}
 .installation-meta:has(.installation-timing:empty):not(:has(.connection-badge)){display:none}
 .installation-meta .installation-timing{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;flex:1}
@@ -815,10 +815,14 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .installation-meta .timing-elapsed .ui-icon{width:18px;height:18px;color:var(--muted)}
 .timing-estimate{display:flex;gap:8px;font-size:14px;line-height:1.5;flex-wrap:wrap}.timing-estimate>span{color:var(--muted)}.timing-estimate strong{font-weight:600}
 .installation-meta .timing-note{flex-basis:100%;font-size:14px;line-height:1.5;margin:0}
+.timing-update{margin-left:auto;font-size:14px;line-height:1.5;color:var(--muted)}
+.timing-hint{flex-basis:100%;font-size:14px;line-height:1.65;color:var(--muted)}
 .installation-instruction{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.65;color:var(--muted);margin:20px 2px 0;text-align:left}
 .installation-instruction>.ui-icon{width:20px;height:20px;flex:none;margin-top:2px;color:var(--accent)}
 @media(max-width:540px){.installation-stages{padding:26px 12px}.stage-symbol{width:40px;height:40px}.installation-stages li+li:before{top:20px;left:calc(-50% + 27px);width:calc(100% - 54px)}.stage-label{font-size:14px}.installation-current{padding:20px;gap:10px}.installation-current h2{font-size:18px}.installation-meta{padding:16px 20px}.installation-meta .installation-timing{gap:10px}.installation-meta .timing-estimate{flex-basis:100%}}
 @media(max-width:420px){.installation-stages{display:flex;flex-direction:column;gap:18px;padding:22px 20px}.installation-stages li{flex-direction:row;gap:12px;text-align:left}.installation-stages li+li:before{top:-18px;left:19px;width:2px;height:18px}.stage-label{font-size:16px;overflow-wrap:normal}.stage-symbol{flex:none}}
+@media(max-width:650px){.installation-stages--detailed{display:flex;flex-direction:column;gap:14px;padding:22px 20px}.installation-stages--detailed li{flex-direction:row;gap:12px;text-align:left}.installation-stages--detailed .stage-symbol{width:32px;height:32px;flex:none}.installation-stages--detailed .stage-symbol>.ui-icon{width:17px;height:17px}.installation-stages--detailed li+li:before{top:-14px;left:15px;width:2px;height:14px}.installation-stages--detailed .stage-label{font-size:15px}.installation-current{gap:18px}.timing-update{margin-left:0}}
+@media(max-width:380px){.installation-current{align-items:flex-start;flex-direction:column;gap:14px}}
 
 /* Completed installation hands off to verification, rather than a second checklist. */
 .installation-receipt{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;padding:0 0 22px;border-bottom:1px solid var(--line)}
@@ -1037,3 +1041,30 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 @media(max-width:540px){.telemetry-card{padding:20px}.telemetry-choice{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px}.telemetry-symbol{display:none}.telemetry-copy strong{font-size:16px}.telemetry-control{gap:8px}.telemetry-copy>span{font-size:13px}.telemetry-links{gap:8px}.telemetry-continue{width:100%;justify-content:center}}
 @media(prefers-reduced-motion:reduce){.telemetry-track,.telemetry-track::after{transition:none}}
 @media(forced-colors:active){.telemetry-switch input{opacity:1;position:static;accent-color:auto}.telemetry-track{display:none}}
+
+/* Mark I's paired LED eyes: only the light travels; the rings stay still. */
+.mark1-eyes{display:block;flex:none;width:104px;height:44px;overflow:visible;fill:none;stroke:none}
+.mark1-eyes--compact{width:72px;height:32px}
+.mark1-eye-base{fill:#101b28;stroke:#334d65;stroke-width:1}
+.mark1-led{fill:none;stroke:#75dbf2;stroke-width:4.5;stroke-linecap:butt;opacity:.85}
+.mark1-led:nth-child(3n){stroke:#85baff}
+.mark1-eyes--animated .mark1-led{animation:mark1-led-chase 2.4s linear infinite}
+.mark1-led:nth-child(1){animation-delay:-2.4s}
+.mark1-led:nth-child(2){animation-delay:-2.2s}
+.mark1-led:nth-child(3){animation-delay:-2s}
+.mark1-led:nth-child(4){animation-delay:-1.8s}
+.mark1-led:nth-child(5){animation-delay:-1.6s}
+.mark1-led:nth-child(6){animation-delay:-1.4s}
+.mark1-led:nth-child(7){animation-delay:-1.2s}
+.mark1-led:nth-child(8){animation-delay:-1s}
+.mark1-led:nth-child(9){animation-delay:-.8s}
+.mark1-led:nth-child(10){animation-delay:-.6s}
+.mark1-led:nth-child(11){animation-delay:-.4s}
+.mark1-led:nth-child(12){animation-delay:-.2s}
+@keyframes mark1-led-chase{
+  0%,100%{opacity:1}
+  16%{opacity:.85}
+  42%,80%{opacity:.2}
+}
+@media(prefers-reduced-motion:reduce){.mark1-eyes--animated .mark1-led{animation:none;opacity:1}}
+@media(forced-colors:active){.mark1-eye-base{fill:Canvas;stroke:CanvasText}.mark1-eyes .mark1-led{stroke:Highlight;opacity:1}.mark1-eyes--animated .mark1-led{animation:none;opacity:1}}

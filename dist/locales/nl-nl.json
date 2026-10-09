@@ -930,5 +930,9 @@
   "View installation statistics": "Installatiestatistieken bekijken",
   "On": "Aan",
   "Raspberry Pi tuning is included.": "Optimalisaties voor Raspberry Pi zijn inbegrepen.",
-  "You may be asked for your sudo password.": "Er kan om je sudo-wachtwoord worden gevraagd."
+  "You may be asked for your sudo password.": "Er kan om je sudo-wachtwoord worden gevraagd.",
+  "Last device update just now": "Laatste bericht van je apparaat: zojuist",
+  "Last device update 1 min ago": "Laatste bericht van je apparaat: 1 min geleden",
+  "Last device update {minutes} min ago": "Laatste bericht van je apparaat: {minutes} min geleden",
+  "Some steps take a while. Check Terminal for progress or a password prompt.": "Sommige stappen duren even. Kijk in de terminal voor de voortgang of een vraag om je wachtwoord."
 }

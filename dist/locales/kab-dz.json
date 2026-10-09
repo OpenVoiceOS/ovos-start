@@ -930,5 +930,9 @@
   "View installation statistics": "Wali tidaddanin n usebded",
   "On": "Yermed",
   "Raspberry Pi tuning is included.": "Aseggem n Raspberry Pi yella deg usebded.",
-  "You may be asked for your sudo password.": "Yezmer ad ak-d-yettwasuter wawal n uɛeddi n sudo."
+  "You may be asked for your sudo password.": "Yezmer ad ak-d-yettwasuter wawal n uɛeddi n sudo.",
+  "Last device update just now": "Talɣut taneggarut seg yibenk: tura kan",
+  "Last device update 1 min ago": "Talɣut taneggarut seg yibenk: uqbel 1 min",
+  "Last device update {minutes} min ago": "Talɣut taneggarut seg yibenk: uqbel {minutes} min",
+  "Some steps take a while. Check Terminal for progress or a password prompt.": "Kra n yimecwaṛen ṭṭfen akud. Wali terminal akken ad twaliḍ amhaz neɣ ma yettusuter wawal n uɛeddi."
 }

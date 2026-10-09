@@ -1,3 +1,5 @@
+Last Edit: Codex - 2026-10-08 - Motive: Fix links after moving repositories to OpenVoiceOS.
+
 # Identity and artwork
 
 ## README sponsorship logo
@@ -116,7 +118,7 @@ The deployed logo had no asset-specific licensing statement visible. It is reuse
 
 **Exact prompt set:** [artwork-prompts.json](artwork-prompts.json). Briefs specify separate clay/ceramic 3D vignettes, consistent perspective, generous margins, and no text/logos. Colourful illustrations support the monochrome OVOS identity; they do not replace the logo and are not official mascots or product photographs.
 
-Historical initial implementation: [`card`, `experienceView`, `deviceView`, `resultView`](../dist/app.mjs) select the quadrant; [style.css](../dist/style.css) supplies automatic system appearance and reduced motion. Compatibility is tested in [flow.test.mjs](../test/flow.test.mjs); Python [canonical launcher tests](../../ovos-start-launcher/test/test_launcher.py) verifies mocked shell behavior.
+Historical initial implementation: [`card`, `experienceView`, `deviceView`, `resultView`](../dist/app.mjs) select the quadrant; [style.css](../dist/style.css) supplies automatic system appearance and reduced motion. Compatibility is tested in [flow.test.mjs](../test/flow.test.mjs); Python [canonical launcher tests](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/test/test_launcher.py) verifies mocked shell behavior.
 
 ## Referenced hardware drawings
 

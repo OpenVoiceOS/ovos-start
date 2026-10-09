@@ -1,4 +1,4 @@
-<!-- Last Edit: Codex - 2026-10-08 - Motive: Add the public wizard address and hosting guide. -->
+<!-- Last Edit: Codex - 2026-10-08 - Motive: Clarify public hosting and the launcher repository. -->
 
 # OVOS Start
 
@@ -9,6 +9,8 @@ A web wizard that helps you install [OpenVoiceOS](https://www.openvoiceos.org/) 
 Choose your device, language, and voice options. The wizard shows you how to prepare your device, then gives you an install command to copy into its terminal. Installation runs on your device, with progress shown in the browser.
 
 After installation, the wizard guides you through checking your speaker and microphone and suggests things to try. You can run it again to change your setup or reinstall.
+
+GitHub Pages hosts the wizard. Its API and SQLite database run on `agh01`. The [OVOS Start launcher](https://github.com/OpenVoiceOS/ovos-start-launcher) runs the installation on your device.
 
 ## Run locally
 

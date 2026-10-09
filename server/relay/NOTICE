@@ -12,5 +12,5 @@ files in server/node-*.mjs. Existing capability lifetimes, status transitions,
 report URL validation and SQL bindings remain in the original relay modules.
 
 Migration change: server/launch.mjs pins launcher commit
-8ecc2fa6be9b64a7bbbc7b9698a0986b9388efdb from
+c2e81097a0dcd33f9dc6747c969466e1cc2c9cbb from
 OpenVoiceOS/ovos-start-launcher, which reports to start-api.smartgic.io.

@@ -1,6 +1,6 @@
 {
   "name": "ovos-start",
-  "version": "0.56.0",
+  "version": "0.56.1",
   "private": true,
   "type": "module",
   "license": "Apache-2.0",
@@ -15,5 +15,21 @@
   },
   "engines": {
     "node": ">=24"
-  }
+  },
+  "description": "Web setup wizard for OpenVoiceOS, with device preparation and live installation progress.",
+  "homepage": "https://start.openvoiceos.pt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenVoiceOS/ovos-start.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OpenVoiceOS/ovos-start/issues"
+  },
+  "keywords": [
+    "openvoiceos",
+    "ovos",
+    "voice-assistant",
+    "installation",
+    "setup-wizard"
+  ]
 }

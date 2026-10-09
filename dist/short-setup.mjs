@@ -2,7 +2,7 @@ import { encodeRecipeCode, decodeRecipeCode, decodeRecipeEnvelope, RECIPE_TTL_SE
 import { validateState, decodePreset } from './scenario.mjs';
 
 /** Public launcher validates the code's one-hour start deadline on the target. */
-export const LAUNCHER_URL = 'https://raw.githubusercontent.com/OpenVoiceOS/ovos-start-launcher/8ecc2fa6be9b64a7bbbc7b9698a0986b9388efdb/v2.sh';
+export const LAUNCHER_URL = 'https://raw.githubusercontent.com/OpenVoiceOS/ovos-start-launcher/c2e81097a0dcd33f9dc6747c969466e1cc2c9cbb/v2.sh';
 export const INSTALL_LINK_ORIGIN = 'https://start-api.smartgic.io';
 
 /** Issue one immutable command artifact shared by display, copy, links and downloads.

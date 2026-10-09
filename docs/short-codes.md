@@ -1,8 +1,8 @@
-Last Edit: Codex - 2026-10-08 - Motive: Align launch-link documentation with the independent API.
+Last Edit: Codex - 2026-10-08 - Motive: Fix links after moving repositories to OpenVoiceOS.
 
 # One-hour installation links
 
-Launcher 2.4.1 is pinned by immutable commit. Its automatically uploaded failure-report URL is delivered with the failure event; [report recovery](install-progress.md) documents the UI and privacy boundary.
+Launcher 2.4.2 is pinned by immutable commit. Its automatically uploaded failure-report URL is delivered with the failure event; [report recovery](install-progress.md) documents the UI and privacy boundary.
 
 ## Manual recovery after clipboard failure (0.54.1)
 
@@ -30,16 +30,16 @@ The outer curl disables curlrc and redirects and has a120-second total limit. Na
 
 Downloaded setup scripts retain `mktemp`, curl success and nonempty-file gates. `mktemp` creates a unique0600 file rather than overwriting a local `v2.sh`; that file remains until system/user cleanup. This stricter outer transfer stays inside the file rather than appearing in the normal clipboard command.
 
-Relay [`launchError`](../../ovos-install-status/server/launch-errors.mjs#L56) returns a grouped diagnostic shell script for expired/unknown well-formed links or service outages. HTTP200 means that the diagnostic itself downloaded successfully; it prints a next step and exits1. The response is private/no-store and includes no recipe, callback token, identity or status. Expired retained recipes select their locale; unknown records/outages use English. Malformed token shapes, wrong methods and query parameters remain404. Neither download nor shell exit is used as proof of installation; success requires an authenticated callback.
+Relay [`launchError`](../server/relay/server/launch-errors.mjs#L56) returns a grouped diagnostic shell script for expired/unknown well-formed links or service outages. HTTP200 means that the diagnostic itself downloaded successfully; it prints a next step and exits1. The response is private/no-store and includes no recipe, callback token, identity or status. Expired retained recipes select their locale; unknown records/outages use English. Malformed token shapes, wrong methods and query parameters remain404. Neither download nor shell exit is used as proof of installation; success requires an authenticated callback.
 
 Executable downloads require the same valid launch session as copying. [`buildSetupScript`](../dist/short-setup.mjs) fully downloads the relay body over HTTPS into a private 0700 directory / 0600 file, rejects failed or empty transfers and invalid shell syntax, preserves the child exit code, and removes the directory on exit, INT or TERM. Failed session creation exposes neither a fallback command nor a runnable download.
 
-The canonical [v2 launcher](../../ovos-start-launcher/docs/index.md) retains 64-bit/user/OS validation, private scenario backups, existing-checkout protection, target-only credential prompts and post-reboot checks. It clears inherited Git repository/index/ref context before fetching, preserving ordinary Git and network configuration. The browser codec remains for choices; unused local launcher mirrors and old inline generators are removed. The relay sends the callback write token only inside the target bootstrap, not the create-session JSON response.
+The canonical [v2 launcher](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/docs/index.md) retains 64-bit/user/OS validation, private scenario backups, existing-checkout protection, target-only credential prompts and post-reboot checks. It clears inherited Git repository/index/ref context before fetching, preserving ordinary Git and network configuration. The browser codec remains for choices; unused local launcher mirrors and old inline generators are removed. The relay sends the callback write token only inside the target bootstrap, not the create-session JSON response.
 
 ## Verification
 
 The Node and Python suites exercise sh, Bash and Dash. [`launch-download.test.mjs`](../test/launch-download.test.mjs) tests every byte prefix, all localized error responses, failed/empty pinned downloads, true PTY replies and launcher exits0/7/130 using controlled curl stubs. It explicitly tests the empty-transfer status and complete-body/failed-curl cases. [`copy.test.mjs`](../test/copy.test.mjs#L74) verifies session failure/retry, clipboard truth and no fallback disclosure; [`views.test.mjs`](../test/views.test.mjs#L135) checks initial handoff rendering.
 
-Reviewed actual relay bodies are stored in [`relay-launch.json`](../test/fixtures/relay-launch.json), allowing standalone wizard tests without a sibling checkout. Set `OVOS_RELAY_ROOT` to compare those bytes against the real relay modules; this release ran with that comparison enabled. Set `DASH_BIN` when Dash is outside PATH. Relay Python [`test_every_truncated_prefix_has_no_side_effects`](../../ovos-install-status/test/test_bootstrap.py) independently exercises the generator; `test_success_forwards_arguments_and_tty_and_exit_status` uses a real PTY. No real installation or production Python plugin classes are involved.
+Reviewed actual relay bodies are stored in [`relay-launch.json`](../test/fixtures/relay-launch.json), allowing standalone wizard tests without a sibling checkout. Set `OVOS_RELAY_ROOT` to compare those bytes against the real relay modules; this release ran with that comparison enabled. Set `DASH_BIN` when Dash is outside PATH. The [bootstrap regressions](../test/launch-download.test.mjs) exercise every truncated prefix and preserve interactive input through a real PTY. No real installation or production Python plugin classes are involved.
 
 Python [`test_export_cleans_private_downloads`](../test/test_export_safety.py) covers success, failed/empty/truncated transfers, installer failure and signals under sh, Bash and Dash. Set `OVOS_LAUNCHER_ROOT` for canonical decoder parity and `OVOS_RELAY_ROOT` for bootstrap fixture parity.

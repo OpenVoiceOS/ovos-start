@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-08 - Motive: Describe browser ownership and the independent API.
+Last Edit: Codex - 2026-10-08 - Motive: Fix links after moving repositories to OpenVoiceOS.
 
 # Installation follow-up
 
@@ -6,7 +6,7 @@ Last Edit: Codex - 2026-10-08 - Motive: Describe browser ownership and the indep
 
 Wizard-started installs automatically upload a filtered current-run failure report to the fixed paste service without a Terminal consent question. Standalone installer runs retain their consent prompt. After a successful upload, the failure screen displays the returned `https://paste.uoi.io/…` URL and **Copy link**. [`recoveryView`](../dist/post-install.mjs) retains Terminal guidance when upload is unavailable or invalid. [`errorReportUrl`](../dist/report-link.mjs) accepts only a direct HTTPS paste path; the wizard never fetches the report contents.
 
-[`copyReportLink`](../dist/app.mjs) copies the exact validated URL, selects it if clipboard access fails, and ignores results from a previous attempt. [`InstallTracker`](../dist/install-progress.mjs) accepts optional metadata only on failure. The [launcher](../../ovos-start-launcher/docs/index.md) enables automatic reporting only for its tracked installer child, reads a private per-attempt descriptor receipt and sends failure plus URL in one callback; the [relay](../../ovos-install-status/docs/index.md) stores it under the existing owner scope and 24-hour deadline. A fresh install command is required; old sessions are not backfilled. [Rendering/tracker tests](../test/install-progress.test.mjs), [clipboard regressions](../test/copy.test.mjs), [proxy tests](../test/status-api.test.mjs).
+[`copyReportLink`](../dist/app.mjs) copies the exact validated URL, selects it if clipboard access fails, and ignores results from a previous attempt. [`InstallTracker`](../dist/install-progress.mjs) accepts optional metadata only on failure. The [launcher](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/docs/index.md) enables automatic reporting only for its tracked installer child, reads a private per-attempt descriptor receipt and sends failure plus URL in one callback; the [relay](self-hosting.md) stores it under the existing owner scope and 24-hour deadline. A fresh install command is required; old sessions are not backfilled. [Rendering/tracker tests](../test/install-progress.test.mjs), [clipboard regressions](../test/copy.test.mjs), [proxy tests](../test/node-api.test.mjs).
 
 ## Version 0.44.0: reinstall or choose another device
 
@@ -14,7 +14,7 @@ Wizard-started installs automatically upload a filtered current-run failure repo
 
 [`restartWizard`](../dist/app.mjs) starts at language with confirmed choices retained. It allocates a distinct one-hour code, resets the prerequisite acknowledgement and navigation identity, pushes a separate history entry and leaves the old relay record untouched. The header home link uses the same operation but begins with the greeting. Neither operation copies or executes installation. An identical same-second code leaves the completed screen intact and asks the user to wait; invalid clocks cannot mint a new attempt.
 
-[`InstallTracker.reset`](../dist/install-progress.mjs) stops timers, invalidates the request generation and clears connection/session state. Late old responses cannot replace the new attempt. The existing [relay contract](../../ovos-install-status/docs/index.md) and24-hour tracking lifetime are unchanged. [Navigation tests](../test/navigation.test.mjs) cover retained recipes, browser history/reload, guarded states and code identity; [tracker tests](../test/install-progress.test.mjs) cover asynchronous isolation. There are no Python runtime classes in this browser feature; the existing Python regression suite remains under [`test/`](../test/).
+[`InstallTracker.reset`](../dist/install-progress.mjs) stops timers, invalidates the request generation and clears connection/session state. Late old responses cannot replace the new attempt. The existing [relay contract](self-hosting.md) and24-hour tracking lifetime are unchanged. [Navigation tests](../test/navigation.test.mjs) cover retained recipes, browser history/reload, guarded states and code identity; [tracker tests](../test/install-progress.test.mjs) cover asynchronous isolation. There are no Python runtime classes in this browser feature; the existing Python regression suite remains under [`test/`](../test/).
 
 ## Version 0.42.0 examples and next steps
 
@@ -24,7 +24,7 @@ The verification contract remains unchanged. `installed`/`services_ready` keep t
 
 `installed` proves installer completion; `services_ready` proves expected service processes are running. Neither proves working audio. The browser shows a compact installation receipt and `pendingVoiceView` with the first Terminal menu action. A collapsed `checkCommandView` copies the existing checker for later use. `voice_ready`, sent after a user confirms a correct OVOS reply, expands the examples and reveals a check-again disclosure. Version0.42 also offers a closed future-example preview while the check remains pending.
 
-`needs_attention` can mean deliberate deferral, no terminal, or a headless hub skipping local audio; it is not an installation failure and cannot prove whether the terminal is still open. Hubs get satellite/service guidance and no local voice-check prompt. Lost/expired tracking preserves the pending state and recovery command; only active tracking asks users to keep the page open. [State tests](../test/install-progress.test.mjs) and [checker `check_setup_inner`](../../ovos-start-launcher/lib/runtime.sh#L187) document these boundaries.
+`needs_attention` can mean deliberate deferral, no terminal, or a headless hub skipping local audio; it is not an installation failure and cannot prove whether the terminal is still open. Hubs get satellite/service guidance and no local voice-check prompt. Lost/expired tracking preserves the pending state and recovery command; only active tracking asks users to keep the page open. [State tests](../test/install-progress.test.mjs) and [checker `check_setup_inner`](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/runtime.sh#L187) document these boundaries.
 
 ## Version 0.39.0 active progress
 
@@ -41,7 +41,7 @@ The verification contract remains unchanged. `installed`/`services_ready` keep t
 
 ## Version0.35.0 checkpoint and timing contract
 
-Launcher2.3.0 adds fixed `stage_system`, `stage_packages`, `stage_services`, `stage_finalize` events through [`CallbackModule.v2_runner_on_ok`](../../ovos-start-launcher/lib/ansible_progress.py). Only successful role tasks emit phases; skipped tasks do not. Roles are mapped by identity rather than output. Ansible handlers cannot regress a phase. Service setup is not proof that services run, and only a zero setup exit emits `installed`.
+Launcher2.3.0 adds fixed `stage_system`, `stage_packages`, `stage_services`, `stage_finalize` events through [`CallbackModule.v2_runner_on_ok`](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/ansible_progress.py). Only successful role tasks emit phases; skipped tasks do not. Roles are mapped by identity rather than output. Ansible handlers cannot regress a phase. Service setup is not proof that services run, and only a zero setup exit emits `installed`.
 
 The relay retains the stable `status=installing`, rank3 and a separate monotonic phase1–4, so older clients/launchers remain compatible. Failure preserves phase/rank; the browser shows the last confirmed phase rather than claiming an exact failing task. The stored detailed checkpoints cover downloading, preparation, packages, services and finalization; active display groups them into three stages. New hooks require a fresh launch; already-running older commands keep their coarse updates.
 
@@ -50,7 +50,7 @@ Migration0002 adds `phase` (constant0 default) and nullable `installed_at`; olde
 `installationMilestones` and `installationTiming` are pure browser derivations with boundary tests. `timingView` updates separately to preserve focus, and the checklist’s polite live region announces changed checkpoints. Review and setup navigation hide for started, completed, failed and cancelled attempts and return only for a new waiting attempt.
 
 
-Version0.34.2 uses explicit simulated status headings and [`generateDemoThumbnails`](../scripts/generate-demo-thumbnails.mjs) to bundle the original two JPEGs. This avoids a new image request after a connection loss. Live failed events still omit completion guidance. Launcher2.2.1 corrects installer dependency permissions without changing milestone semantics; see [launcher guide](../../ovos-start-launcher/docs/index.md).
+Version0.34.2 uses explicit simulated status headings and [`generateDemoThumbnails`](../scripts/generate-demo-thumbnails.mjs) to bundle the original two JPEGs. This avoids a new image request after a connection loss. Live failed events still omit completion guidance. Launcher2.2.1 corrects installer dependency permissions without changing milestone semantics; see [launcher guide](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/docs/index.md).
 
 
 The public wizard is served by GitHub Pages. The [Node API](../server/node-api.mjs) creates sessions, reads owner-scoped status, and accepts narrowly scoped installer events. See [self-hosting](self-hosting.md) for configuration and migration from the previous service.
@@ -73,7 +73,7 @@ Milestones are waiting → started → downloading → installing → installed 
 
 [`InstallTracker`](../dist/install-progress.mjs#L40) restores progress from the server on reload, polls without overlapping requests, ignores older snapshots and stops off-screen. Restoring the review page from browser Back resumes the same session without extending its deadline. Network failures preserve confirmed milestones and the phase headline, while a separate Reconnecting badge and retry button explain connection recovery. Expired tracking has no retry action. Expired tracking preserves access to the device checker. Failed/cancelled attempts offer an explicit new command and session rather than silently renewing or reusing the terminal attempt.
 
-The installer sends a tiny JSON event to a fixed HTTPS origin with2-second connection and3-second total limits. Curl disables user config, does not follow redirects, sends the bearer on stdin and never executes a response. Tracking is best effort; network errors cannot change installer success/failure. A plain code-only command remains supported. Invalid/expired/32-bit preflight rejection cannot report a validated status; missing curl cannot report either. Terminal remains the source of detailed errors. See [launcher contract](../../ovos-start-launcher/docs/index.md) and [relay contract](../../ovos-install-status/docs/index.md).
+The installer sends a tiny JSON event to a fixed HTTPS origin with2-second connection and3-second total limits. Curl disables user config, does not follow redirects, sends the bearer on stdin and never executes a response. Tracking is best effort; network errors cannot change installer success/failure. A plain code-only command remains supported. Invalid/expired/32-bit preflight rejection cannot report a validated status; missing curl cannot report either. Terminal remains the source of detailed errors. See [launcher contract](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/docs/index.md) and [relay contract](self-hosting.md).
 
 ## Post-install content
 
@@ -83,6 +83,6 @@ Official videos: [Coffee automation](https://www.youtube.com/watch?v=PRzGxmTCFb0
 
 ## Validation and production
 
-`npm test` includes [`install-progress.test.mjs`](../test/install-progress.test.mjs), [`node-api.test.mjs`](../test/node-api.test.mjs) and existing copy/navigation tests. Existing Python [`test_export_cleans_private_downloads`](../test/test_export_safety.py) checks current downloaded-script safety. Relay [`test_schema.py`](../../ovos-install-status/test/test_schema.py) uses `sqlite3.Connection` and the real Drizzle migration; service tests use actual SQLite prepared queries. No production Python class is introduced.
+`npm test` includes [`install-progress.test.mjs`](../test/install-progress.test.mjs), [`node-api.test.mjs`](../test/node-api.test.mjs) and existing copy/navigation tests. Existing Python [`test_export_cleans_private_downloads`](../test/test_export_safety.py) checks current downloaded-script safety. [Node API tests](../test/node-api.test.mjs) exercise the real SQLite migrations and prepared queries. No production Python class is introduced.
 
 Build: `npm run build` retains browser sources in `dist/` and copies only public assets into `dist/client/` for GitHub Pages. The separate Node service uses SQLite and a private environment file; neither server code nor runtime secrets are published to Pages. Browser requests refuse redirects. Browser previews simulate callbacks, are labeled and cannot export executable installation commands; no physical device was installed during QA.

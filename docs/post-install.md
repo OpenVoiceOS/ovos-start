@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-08 - Motive: Make the examples disclosure easier to discover.
+Last Edit: Codex - 2026-10-08 - Motive: Fix links after moving repositories to OpenVoiceOS.
 
 # Post-install starting points
 
@@ -11,7 +11,7 @@ Version **0.42.0** gives users examples and practical next actions after a succe
 - A hub receives satellite-pairing instructions and service checks, with no local microphone or wake-word prompt.
 - Failed, cancelled and still-running installations receive no completion guide.
 
-The unchanged shell [`check_setup_inner`](../../ovos-start-launcher/lib/runtime.sh#L187) emits `voice_ready` only after confirmation. The Python [`CallbackModule`](../../ovos-start-launcher/lib/ansible_progress.py#L62) reports installation phases, not microphone readiness. See the [launcher guide](../../ovos-start-launcher/docs/index.md) and [callback contract](install-progress.md).
+The unchanged shell [`check_setup_inner`](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/runtime.sh#L187) emits `voice_ready` only after confirmation. The Python [`CallbackModule`](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/ansible_progress.py#L62) reports installation phases, not microphone readiness. See the [launcher guide](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/docs/index.md) and [callback contract](install-progress.md).
 
 ## Examples and language coverage
 

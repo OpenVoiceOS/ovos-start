@@ -31,6 +31,33 @@ export function createBrowserCredential({getStorage=()=>globalThis.localStorage,
 const browserCredential=createBrowserCredential();
 export const CHECK_COMMAND='sh "$HOME/.config/ovos-installer/check-setup.sh"';
 export const INSTALLED_STATES=Object.freeze(['installed','services_ready','voice_ready']);
+const CHECK_STATES=Object.freeze(['pending','checking','passed','failed']);
+const COMPLETED_STEPS=Object.freeze({packages_installed:'System packages installed',audio_configured:'Audio configured',components_installed:'OVOS components installed',services_started:'Services started'});
+
+/** Show only explicit completed tasks; installer phases never imply these receipts.
+ * @param {object} model Tracker state. @returns {Array<object>} Confirmed steps.
+ */
+export function installationReceipts(model) {
+  const received=model.session?.completedSteps;
+  if(!Array.isArray(received))return [];
+  return Object.entries(COMPLETED_STEPS).filter(([id])=>received.includes(id)).map(([id,label])=>({id,label}));
+}
+
+/** Device-reported checks; a correct spoken reply confirms both for older launchers.
+ * @param {object} model Tracker state. @returns {Array<object>} Speaker and voice results.
+ */
+export function audioChecks(model) {
+  const confirmed=model.session?.status==='voice_ready';
+  return [
+    {id:'audio',label:'Speaker',icon:'speaker',field:'audioStatus',descriptions:{pending:'Waiting for the sound check.',checking:'Listen for the test sound.',passed:'You confirmed you heard it.',failed:'Check the volume and audio output.'}},
+    {id:'microphone',label:'Microphone & voice',icon:'microphone',field:'microphoneStatus',descriptions:{pending:'Waiting for the voice check.',checking:'Say the wake word, then ask a question.',passed:'You confirmed OVOS replied.',failed:'Check your microphone and try the voice question again.'}},
+  ].map(check=>{
+    const value=model.session?.[check.field];
+    const status=CHECK_STATES.includes(value)?value:confirmed&&value===undefined?'passed':'pending';
+    const label={pending:'Not checked',checking:model.error?'Awaiting result':'Checking',passed:'Passed',failed:'Failed'}[status];
+    return {...check,status,statusLabel:label,description:check.descriptions[status]};
+  });
+}
 export const VOICE_EXAMPLES=Object.freeze(Object.fromEntries(Object.entries(STARTER_EXAMPLES).filter(([,items])=>items.some(item=>item.kind==='time')).map(([locale,items])=>[locale,items.find(item=>item.kind==='time').phrase])));
 export const DEMOS=Object.freeze([
   {thumbnail:DEMO_THUMBNAILS['coffee-demo'],asset:'coffee-demo.jpg',title:'A coffee, by voice',url:'https://www.youtube.com/watch?v=PRzGxmTCFb0',meta:'Dutch audio · 19 sec'},
@@ -51,12 +78,14 @@ const messages={
 /** Derive accessible, honest status text without fake percentages. @param {object} model @returns {object} */
 export function progressCopy(model) {
   const installed=INSTALLED_STATES.includes(model.session?.status);
+  const complete=model.session?.status==='voice_ready'&&audioChecks(model).every(check=>check.status==='passed');
   let [title,description]=messages[model.session?.status]||messages.waiting;
+  if(model.session?.status==='voice_ready'&&!complete)[title,description]=messages.services_ready;
   if(['failed','cancelled'].includes(model.session?.status))return {title,description,installed:false,complete:false};
   if(model.session?.attention){title='A check needs your attention';description='Open Terminal to finish the sound and voice checks.';}
   if(model.error==='expired'){title='Installation updates have ended';description='Live updates end after 24 hours. You can still run the device check.';}
-  else if(model.error&&!['failed','cancelled','voice_ready'].includes(model.session?.status)){title=model.session?'Reconnecting…':'Continue in Terminal';description=model.session&&!installed?'Your device may still be installing. We’ll reconnect automatically.':model.session?'We’ll reconnect automatically.':'Live updates are unavailable. Follow the installer in Terminal.';}
-  return {title,description,installed,complete:model.session?.status==='voice_ready'};
+  else if(model.error&&!['failed','cancelled'].includes(model.session?.status)){title=model.session?'Reconnecting…':'Continue in Terminal';description=model.session&&!installed?'Your device may still be installing. We’ll reconnect automatically.':model.session?'We’ll reconnect automatically.':'Live updates are unavailable. Follow the installer in Terminal.';}
+  return {title,description,installed,complete};
 }
 
 /** Confirmed installer checkpoints. An active phase is never a completion receipt.
@@ -155,6 +184,8 @@ export class InstallTracker {
     const value=await response.json();
     if(!/^[a-f0-9]{32}$/.test(value.id)||!Object.hasOwn(messages,value.status)||!Number.isSafeInteger(value.expiresAt)||!Number.isSafeInteger(value.updatedAt)||!Number.isSafeInteger(value.createdAt)||typeof value.attention!=='boolean')throw new Error('unavailable');
     if(value.phase!==undefined&&(!Number.isInteger(value.phase)||value.phase<0||value.phase>4))throw new Error('unavailable');
+    for(const field of ['audioStatus','microphoneStatus'])if(value[field]!==undefined&&!CHECK_STATES.includes(value[field]))throw new Error('unavailable');
+    if(value.completedSteps!==undefined&&(!Array.isArray(value.completedSteps)||value.completedSteps.length>4||new Set(value.completedSteps).size!==value.completedSteps.length||value.completedSteps.some(step=>!Object.hasOwn(COMPLETED_STEPS,step))))throw new Error('unavailable');
     if(data.code&&(typeof value.launchToken!=='string'||value.launchToken.length!==22||!/^[A-Za-z0-9_-]{22}$/.test(value.launchToken)))throw new Error('unavailable');
     if(value.status!=='failed'||!errorReportUrl(value.errorUrl))delete value.errorUrl;
     delete value.writeToken;
@@ -172,7 +203,14 @@ export class InstallTracker {
   /** Emit only into the current mounted review screen. @returns {void} */
   emit(){if(this.active)this.onChange(this.snapshot());}
   /** Schedule a bounded poll without overlapping requests. @returns {void} */
-  queue(){this.cancel(this.timer);if(this.active&&this.session&&!this.polling&&!['voice_ready','failed','cancelled'].includes(this.session.status)&&this.error!=='expired')this.timer=this.schedule(()=>{void this.poll();},this.error?15000:5000);}
+  queue(){
+    this.cancel(this.timer);
+    if(!this.active||!this.session||this.polling||['failed','cancelled'].includes(this.session.status)||this.error==='expired')return;
+    const remaining=this.session.expiresAt*1000-this.now();
+    if(remaining<=0){this.error='expired';this.emit();return;}
+    const delay=this.error?15000:progressCopy(this.snapshot()).complete?30000:5000;
+    this.timer=this.schedule(()=>{void this.poll();},Math.min(delay,remaining));
+  }
   /** Fetch new milestones while preserving already confirmed completion on network failure. @returns {Promise<void>} */
   async poll(){
     if(!this.active||!this.session||this.pending)return;

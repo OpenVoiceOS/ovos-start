@@ -26,6 +26,7 @@ test('starter phrases have pinned skill provenance and no unsupported-language f
 });
 
 test('next steps follow selected integrations and hub mode suppresses local voice integrations',()=>{
+ assert.equal(GUIDE_LINKS.skills,'https://andlo.github.io/ovos-klondike-mercantile/');
  assert.deepEqual(nextSteps({...state,homeassistant:false,llmMode:'off'}).map(item=>item.id),['skills','help']);
  assert.deepEqual(nextSteps(state).map(item=>item.id),['skills','homeassistant','ai','help']);
  for(const llmMode of ['local','online'])assert.equal(nextSteps({...state,llmMode}).filter(item=>item.id==='ai').length,1);

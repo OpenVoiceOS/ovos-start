@@ -1,17 +1,17 @@
-Last Edit: Codex - 2026-10-08 - Motive: Simplify the post-install examples and document keyboard and mobile checks.
+Last Edit: Codex (GPT-6) - 2026-10-09 - Motive: Document separate audio results and the Klondike Mercantile skills link.
 
 # Post-install starting points
 
-Version **0.56.2** presents starter questions in a compact **Try asking** panel after a successful installation. [`progressView` and `gettingStartedView`](../dist/post-install.mjs#L76) render the guide; [`starterExamples` and `nextSteps`](../dist/post-install-content.mjs#L17) choose content from the confirmed recipe.
+Version **0.60.0** presents separate audio results and starter questions in a compact **Try asking** panel after a successful installation. [`progressView`, `audioChecksView` and `gettingStartedView`](../dist/post-install.mjs) render the guide; [`starterExamples` and `nextSteps`](../dist/post-install-content.mjs) choose content from the confirmed recipe.
 
 ## Verification and visibility
 
 - `installed` and `services_ready` keep **Check your speaker and microphone** primary. Supported examples are available in a closed **Try asking** panel with an **After your voice check** subtitle. The whole header is a native disclosure, with a voice icon, **Show examples** / **Hide examples** labels and a rotating chevron. Enter and Space toggle it. Keyboard focus stays visible; the action spans the panel on narrow screens.
-- `voice_ready` displays the examples directly. This is the user's confirmed reply in the terminal checker, not browser measurement of audio.
+- `voice_ready` with both current audio checks passed displays the examples directly. This is the user's confirmed reply in the terminal checker, not browser measurement of audio. A later unfinished or failed check keeps the examples in their optional disclosure while preserving the successful installation receipt.
 - A hub receives satellite-pairing instructions and service checks, with no local microphone or wake-word prompt.
 - Failed, cancelled and still-running installations receive no completion guide.
 
-The unchanged shell [`check_setup_inner`](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/runtime.sh#L187) emits `voice_ready` only after confirmation. The Python [`CallbackModule`](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/ansible_progress.py#L62) reports installation phases, not microphone readiness. See the [launcher guide](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/docs/index.md) and [callback contract](install-progress.md).
+The shell [`check_setup_inner`](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/runtime.sh) emits separate speaker and microphone/voice results and sends `voice_ready` only after confirmation. An explicit failed check or probe error remains separate from installer success, and deferring does not fabricate an audio failure. The Python [`CallbackModule`](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/lib/ansible_progress.py) reports installation work, not microphone readiness. See the [launcher guide](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/docs/index.md) and [callback contract](install-progress.md).
 
 ## Examples and language coverage
 
@@ -29,7 +29,7 @@ Examples use `lang` and `data-no-translate`, preserving source phrases while the
 
 ## Next actions and help
 
-`nextSteps` offers skill discovery, selected Home Assistant/AI setup guides, and Matrix help. Descriptions ask the user to check integrations; they do not assert successful pairing or provider configuration. Hubs omit the local voice-integration cards and use the working [official satellite guide](https://openvoiceos.github.io/beta-technical-manual/satellites/). URLs are fixed reviewed constants rather than recipe-supplied destinations. Non-English pages warn that linked guides may be in English.
+`nextSteps` offers skill discovery through [OVOS Klondike Mercantile](https://andlo.github.io/ovos-klondike-mercantile/), selected Home Assistant/AI setup guides, and Matrix help. `GUIDE_LINKS.skills` uses this same destination for **Find skills**, **Add your first skill** and language-specific skill guidance. Descriptions ask the user to check integrations; they do not assert successful pairing or provider configuration. Hubs omit the local voice-integration cards and use the working [official satellite guide](https://openvoiceos.github.io/beta-technical-manual/satellites/). URLs are fixed reviewed constants rather than recipe-supplied destinations. Non-English pages warn that linked guides may be in English.
 
 The existing **Copy check command** action exposes `sh "$HOME/.config/ovos-installer/check-setup.sh"` for the OVOS device. The browser never executes it. Optional disclosures and stable `data-progress-focus` keys preserve reading and keyboard context during tracking refreshes through [`preserveProgressInteraction`](../dist/progress-interaction.mjs).
 

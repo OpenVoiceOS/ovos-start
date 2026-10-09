@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
-import { mkdtempSync, rmSync, statSync, writeFileSync, mkdirSync, symlinkSync, chmodSync } from 'node:fs';
+import { mkdtempSync, rmSync, statSync, writeFileSync, mkdirSync, symlinkSync, chmodSync, readdirSync, copyFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { request as httpRequest } from 'node:http';
@@ -165,14 +165,78 @@ test('launch and status deadlines stay bounded', async t => {
 
 test('persistent database, capabilities and migration journal survive restarts', async t => {
   const f = fixture(t), first = await f.create();
-  assert.equal(f.store.database.prepare('SELECT count(*) n FROM node_migrations').get().n, 4);
+  assert.equal(f.store.database.prepare('SELECT count(*) n FROM node_migrations').get().n, 6);
   assert.equal(statSync(f.filename).mode & 0o777, 0o600);
   f.store.close();
   const reopened = openDatabase(f.filename); t.after(() => reopened.close());
-  assert.equal(reopened.database.prepare('SELECT count(*) n FROM node_migrations').get().n, 4);
+  assert.equal(reopened.database.prepare('SELECT count(*) n FROM node_migrations').get().n, 6);
   const api = createApi(reopened, config, () => now);
   const response = await api(new Request(publicOrigin + '/api/install', { method: 'POST', headers: { Origin: wizard, 'Content-Type': 'application/json', Authorization: `Bearer ${browser}` }, body: JSON.stringify({ code }) }));
   assert.deepEqual(await response.json(), first);
+});
+
+test('audio progress survives a process restart and stays private to its browser owner',async t=>{
+  const f=fixture(t),session=await f.create();
+  const writeToken=createHmac('sha256',secret).update(`install:${session.id}`).digest('hex');
+  for(const event of ['installing','packages_installed','installed','services_ready','audio_checking','audio_passed','microphone_checking','microphone_failed']){
+    assert.equal((await f.event({event},writeToken)).status,200);
+  }
+  const before=await (await f.call({id:session.id})).json();
+  assert.equal(before.audioStatus,'passed');assert.equal(before.microphoneStatus,'failed');assert.equal(before.attention,true);
+  assert.deepEqual(before.completedSteps,['packages_installed','services_started']);
+  f.store.close();
+  const reopened=openDatabase(f.filename);t.after(()=>reopened.close());
+  const api=createApi(reopened,config,()=>now);
+  const read=token=>api(new Request(publicOrigin+'/api/install',{method:'POST',headers:{Origin:wizard,'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({id:session.id})}));
+  assert.equal((await read(other)).status,410);
+  assert.deepEqual(await (await read(browser)).json(),before);
+});
+
+test('audio migration preserves prior sessions and backfills only confirmed voice checks',t=>{
+  const directory=mkdtempSync(join(tmpdir(),'ovos-audio-migration-'));
+  t.after(()=>rmSync(directory,{recursive:true,force:true}));
+  const legacyMigrations=join(directory,'old-migrations');mkdirSync(legacyMigrations);
+  const migrationRoot=new URL('../server/relay/drizzle/',import.meta.url);
+  for(const name of readdirSync(migrationRoot).filter(name=>/^000[0-3]_.*\.sql$/.test(name)))copyFileSync(new URL(name,migrationRoot),join(legacyMigrations,name));
+  const filename=join(directory,'installs.sqlite'),legacy=openDatabase(filename,legacyMigrations);
+  const states=['waiting','installed','services_ready','voice_ready'];
+  const insert=legacy.database.prepare('INSERT INTO installs (id,owner,code,write_hash,status,rank,created_at,start_before,expires_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)');
+  for(const [index,status] of states.entries())insert.run(String(index),String(index),String(index),String(index),status,status==='waiting'?0:index+3,now,now+3600,now+86400,now);
+  legacy.close();
+  const migrated=openDatabase(filename);t.after(()=>migrated.close());
+  assert.equal(migrated.database.prepare('SELECT count(*) n FROM node_migrations').get().n,6);
+  for(const row of migrated.database.prepare('SELECT * FROM installs').all()){
+    assert.equal(row.audio_status,row.status==='voice_ready'?'passed':'pending');
+    assert.equal(row.microphone_status,row.status==='voice_ready'?'passed':'pending');
+    assert.equal(row.completed_steps,row.status==='services_ready'?8:0);
+    assert.equal(row.created_at,now);assert.equal(row.expires_at,now+86400);
+  }
+  for(const field of ['audio_status','microphone_status']){
+    assert.throws(()=>migrated.database.prepare(`UPDATE installs SET ${field} = ?`).run('untrusted status'),/CHECK/);
+  }
+});
+
+test('completed-step migration preserves prior audio outcomes and only backfills confirmed service state',t=>{
+  const directory=mkdtempSync(join(tmpdir(),'ovos-steps-migration-'));
+  t.after(()=>rmSync(directory,{recursive:true,force:true}));
+  const legacyMigrations=join(directory,'old-migrations');mkdirSync(legacyMigrations);
+  const migrationRoot=new URL('../server/relay/drizzle/',import.meta.url);
+  for(const name of readdirSync(migrationRoot).filter(name=>/^000[0-4]_.*\.sql$/.test(name)))copyFileSync(new URL(name,migrationRoot),join(legacyMigrations,name));
+  const filename=join(directory,'installs.sqlite'),legacy=openDatabase(filename,legacyMigrations);
+  assert.equal(legacy.database.prepare('SELECT count(*) n FROM node_migrations').get().n,5);
+  const insert=legacy.database.prepare('INSERT INTO installs (id,owner,code,write_hash,status,rank,audio_status,microphone_status,created_at,start_before,expires_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)');
+  for(const [index,status] of ['installed','services_ready','voice_ready'].entries()){
+    insert.run(String(index),String(index),String(index),String(index),status,index+4,'passed','failed',now,now+3600,now+86400,now);
+  }
+  legacy.close();
+  const migrated=openDatabase(filename);t.after(()=>migrated.close());
+  assert.equal(migrated.database.prepare('SELECT count(*) n FROM node_migrations').get().n,6);
+  for(const row of migrated.database.prepare('SELECT * FROM installs').all()){
+    assert.equal(row.completed_steps,row.status==='services_ready'?8:0);
+    assert.equal(row.audio_status,'passed');assert.equal(row.microphone_status,'failed');
+    assert.equal(row.created_at,now);assert.equal(row.expires_at,now+86400);
+  }
+  for(const value of [-1,16,1.5,'untrusted'])assert.throws(()=>migrated.database.prepare('UPDATE installs SET completed_steps = ?').run(value),/CHECK/);
 });
 
 test('database health fails closed without exposing paths, SQL or secrets', async t => {

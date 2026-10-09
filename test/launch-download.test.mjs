@@ -27,7 +27,7 @@ if(process.env.OVOS_RELAY_ROOT){
  }
 }
 
-const now=1800000000,setup=issueSetup({...DEFAULTS,device:'computer'},now),token='A'.repeat(22),writeToken='b'.repeat(64);
+const now=1800000000,setup=issueSetup({...DEFAULTS,device:'computer',channel:'testing'},now),token='A'.repeat(22),writeToken='b'.repeat(64);
 const launchUrl=`${INSTALL_LINK_ORIGIN}/s/${token}`;
 assert.equal(setup.code,responses.code);assert.equal(writeToken,responses.writeToken);
 const actualBootstrap=Buffer.from(responses.bootstrap);

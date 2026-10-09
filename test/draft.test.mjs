@@ -14,6 +14,15 @@ test('unfinished choices with no device survive reload without becoming delibera
  assert.equal(writeDraft(store,value),true);
  const restored=readDraft(store);assert.equal(restored.state.device,null);assert.equal(restored.state.locale,'fr-fr');assert.equal(restored.skillsAnswered,false);assert.equal(restored.routes[0].step,'language');
 });
+test('saved Testing drafts and edit baselines retain their release after the default changes',()=>{
+ const state={...selectDevice(DEFAULTS,'computer'),channel:'testing'},store=storage();
+ const value=draft({state,confirmedState:state,routes:[{step:'channel',editing:true,editSnapshot:state,editAnswered:['language','device'],editSkillsAnswered:false}],issuedFragment:'#setup='+issueSetup(state).code});
+ assert.equal(writeDraft(store,value),true);
+ const restored=readDraft(store);
+ assert.equal(restored.state.channel,'testing');
+ assert.equal(restored.confirmedState.channel,'testing');
+ assert.equal(restored.routes[0].editSnapshot.channel,'testing');
+});
 test('draft round trip retains deliberate unknown capability answers and original expired deadline',()=>{
  const state=selectDevice(DEFAULTS,'pi'),setup=issueSetup(state,Math.floor(Date.now()/1000)-3601),store=storage();
  const value=draft({state,confirmedState:state,routes:[{step:'review'}],answered:['language','device','prepare','piModel'],issuedFragment:'#setup='+setup.code});

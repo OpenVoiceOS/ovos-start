@@ -7,7 +7,7 @@ function setup(overrides = {}) { return { ...DEFAULTS, device: 'pi', ...override
 
 test('default recipe uses upstream keys and opts out of telemetry and tuning', () => {
   const yaml = buildYaml(setup());
-  for (const line of ['uninstall: false', 'method: virtualenv', 'channel: testing', 'profile: ovos', '  skills: true', '  gui: false', '  homeassistant: false', '  llm: false', 'raspberry_pi_tuning: false', 'share_telemetry: false', 'share_usage_telemetry: false']) assert.ok(yaml.split('\n').includes(line));
+  for (const line of ['uninstall: false', 'method: virtualenv', 'channel: alpha', 'profile: ovos', '  skills: true', '  gui: false', '  homeassistant: false', '  llm: false', 'raspberry_pi_tuning: false', 'share_telemetry: false', 'share_usage_telemetry: false']) assert.ok(yaml.split('\n').includes(line));
   assert.ok(!yaml.includes('locale:') && !yaml.includes('hardware:'));
 });
 
@@ -19,7 +19,7 @@ test('Mark II and DevKit force the supported channel, method and exact hardware 
   assert.throws(() => buildYaml({ ...state, channel: 'testing' }));
   assert.throws(() => buildYaml({ ...state, method: 'containers' }));
   assert.throws(() => buildYaml({ ...state, experience: 'hub' }));
-  assert.equal(selectDevice(state, 'computer').channel, 'testing');
+  assert.equal(selectDevice(state, 'computer').channel, 'alpha');
   assert.match(compatibility(state), /64-bit Debian 13/);
   }
 });
@@ -29,7 +29,7 @@ test('Mark I and Jetson use automatic detection without unsupported hardware key
     const state = selectDevice(setup(), device);
     assert.doesNotMatch(buildYaml(state), /hardware:/);
     assert.match(buildYaml(state), /  gui: false/);
-    assert.equal(state.channel, 'testing');
+    assert.equal(state.channel, 'alpha');
   }
   assert.match(compatibility(setup({ device: 'mark1' })), /64-bit Debian 13/);
   assert.equal(selectDevice(setup({ method: 'containers' }), 'mark1').method, 'virtualenv');

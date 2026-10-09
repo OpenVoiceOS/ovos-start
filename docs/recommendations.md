@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-09 - Motive: Document installer main and supported native Apple Silicon Macs.
+Last Edit: Codex - 2026-10-09 - Motive: Make Alpha the default while preserving saved release choices.
 
 # Adaptive setup contract
 
@@ -14,7 +14,9 @@ Device details precede speech choices through [`firstCapability` / `afterCapabil
 
 [`languageView`, `selectLanguage` and `restore`](../dist/app.mjs) show the suggested or saved language with Continue and an optional labelled 12-language native selector. Selecting an alternative closes the chooser and focuses Continue; only confirmation advances. Incompatible local speech changes to public, and cancelling a review edit restores the complete previous recipe. The interface uses a single question column without a companion scene. The selected locale also translates the wizard UI through the bundled [catalogs](localization.md). Hardware is selected explicitly; the browser can be running on a different computer.
 
-[`recommend`, `speechEligibility`, `localModelGuidance`](../dist/recommendations.mjs) explain their recommendation. New users start with everyday skills; experts and the tinkering purpose start empty. [`applySkillDefaults`](../dist/flow.mjs) preserves explicitly chosen/restored bundles when profile preferences change and reapplies defaults only when they were inferred. Optional connections remain opt-in. [`chooseSpeech`](../dist/flow.mjs) enforces local-speech method/channel requirements and releases the channel override when leaving local speech.
+[`recommend`, `speechEligibility`, `localModelGuidance`](../dist/recommendations.mjs) explain their recommendation. New users start with everyday skills; experts and the tinkering purpose start empty. [`applySkillDefaults`](../dist/flow.mjs) preserves explicitly chosen/restored bundles when profile preferences change and reapplies defaults only when they were inferred. Optional connections remain opt-in.
+
+[`DEFAULTS`](../dist/scenario.mjs) starts every new setup on Alpha. [`selectDevice`](../dist/scenario.mjs), [`chooseExperience` and `chooseSpeech`](../dist/flow.mjs) retain the selected channel when hardware, purpose or speech changes; hardware and local-speech requirements still enforce Alpha where needed. Existing links and drafts keep their saved Testing choice. The release picker lists Alpha first and offers Testing on compatible setups. [Flow regressions](../test/flow.test.mjs) and [saved-code regressions](../test/short-setup.test.mjs) verify these rules.
 
 ## Speech evidence and limits
 

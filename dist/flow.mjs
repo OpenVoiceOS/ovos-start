@@ -22,7 +22,6 @@ export function chooseExperience(state, experience, skillsAnswered = false) {
   const compatible = devicesForExperience(experience);
   const device = compatible.includes(state.device) ? state.device : null;
   const next = { ...DEFAULTS, ...state, experience, device,
-    channel: (usesAlphaPreset(state.device) && !device) || (experience === 'hub' && state.speech === 'local' && !usesAlphaPreset(device)) ? 'testing' : state.channel,
     speech: experience === 'hub' ? 'auto' : state.speech,
     homeassistant: experience === 'hub' ? false : state.homeassistant,
     llmMode: experience === 'hub' ? 'off' : state.llmMode,
@@ -50,12 +49,12 @@ export function platformTarget(platform, unlisted = false) {
   throw new Error('Choose an operating system.');
 }
 
-/** Apply speech requirements and release their channel override when no longer needed. @param {object} state @param {string} speech @returns {object} */
+/** Apply speech requirements while retaining the selected release channel. @param {object} state @param {string} speech @returns {object} */
 export function chooseSpeech(state, speech) {
   if (!['auto', 'public', 'local'].includes(speech)) throw new Error('Choose a speech setup.');
   return { ...state, speech,
     method: speech === 'local' ? 'virtualenv' : state.method,
-    channel: speech === 'local' || usesAlphaPreset(state.device) ? 'alpha' : state.speech === 'local' ? 'testing' : state.channel };
+    channel: speech === 'local' || usesAlphaPreset(state.device) ? 'alpha' : state.channel };
 }
 
 /** Apply a capability answer and derive known board architecture, never the installed OS. @param {object} state @param {string} key @param {string} value @returns {object} */

@@ -925,5 +925,6 @@
   "My Mac uses Apple Silicon and macOS 15 or later; the required tools are installed.": "Nire Mac-ak Apple Silicon eta macOS 15 edo berriagoa ditu; beharrezko tresnak instalatuta daude.",
   "Not supported by the installer.": "Instalatzaileak ez du onartzen.",
   "Check Apple menu → About This Mac before continuing.": "Jarraitu aurretik, begiratu Apple menua → Mac honi buruz.",
-  "The installer uses the latest main branch.": "Instalatzaileak main adarraren azken bertsioa erabiltzen du."
+  "The installer uses the latest main branch.": "Instalatzaileak main adarraren azken bertsioa erabiltzen du.",
+  "Changes go through Alpha first.": "Aldaketak lehenik Alpha kanaletik igarotzen dira."
 }

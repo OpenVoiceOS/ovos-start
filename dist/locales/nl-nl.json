@@ -925,5 +925,6 @@
   "My Mac uses Apple Silicon and macOS 15 or later; the required tools are installed.": "Mijn Mac heeft Apple Silicon en macOS 15 of nieuwer; de benodigde programma’s zijn geïnstalleerd.",
   "Not supported by the installer.": "Niet ondersteund door het installatieprogramma.",
   "Check Apple menu → About This Mac before continuing.": "Controleer het Apple-menu → Over deze Mac voordat je doorgaat.",
-  "The installer uses the latest main branch.": "Het installatieprogramma gebruikt de nieuwste versie van de main-branch."
+  "The installer uses the latest main branch.": "Het installatieprogramma gebruikt de nieuwste versie van de main-branch.",
+  "Changes go through Alpha first.": "Wijzigingen komen eerst in Alpha."
 }

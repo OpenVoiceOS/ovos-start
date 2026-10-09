@@ -925,5 +925,6 @@
   "My Mac uses Apple Silicon and macOS 15 or later; the required tools are installed.": "मेरे Mac में Apple Silicon और macOS 15 या उसके बाद का संस्करण है; ज़रूरी टूल इंस्टॉल हैं।",
   "Not supported by the installer.": "इंस्टॉलर इसे सपोर्ट नहीं करता।",
   "Check Apple menu → About This Mac before continuing.": "आगे बढ़ने से पहले Apple मेन्यू → About This Mac देखें।",
-  "The installer uses the latest main branch.": "इंस्टॉलर main ब्रांच का सबसे नया संस्करण इस्तेमाल करता है।"
+  "The installer uses the latest main branch.": "इंस्टॉलर main ब्रांच का सबसे नया संस्करण इस्तेमाल करता है।",
+  "Changes go through Alpha first.": "बदलाव पहले Alpha में आते हैं।"
 }

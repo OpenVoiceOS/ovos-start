@@ -51,3 +51,14 @@ The current relay pins a launcher revision that reports to `start-api.smartgic.i
 Use `node --test test/node-api*.test.mjs` for ownership isolation, CORS, payload limits, callbacks, persistent state, transactional migrations and real HTTP requests, plus the preserved relay regressions. [`createHttpServer`](../server/node-server.mjs) supplies the listener limits; [`createApi`](../server/node-api.mjs) supplies authentication and throttling. Verify public HTTPS, `/healthz`, a simulated install callback and persistence across a service restart before switching the frontend.
 
 [`server/relay/NOTICE`](../server/relay/NOTICE) records the source revision and license of the preserved relay code.
+
+## Website and DNS
+
+GitHub Pages publishes the frontend from the `dev` branch of `OpenVoiceOS/ovos-start` through [the deployment workflow](../.github/workflows/pages.yml). Its custom domain is `start.openvoiceos.pt`; HTTPS enforcement is enabled in the repository’s Pages settings. Only `dist/client` is uploaded.
+
+| Record | Target | Settings |
+| --- | --- | --- |
+| CNAME `start.openvoiceos.pt` | `openvoiceos.github.io` | TTL 300, DNS only |
+| CNAME `start-api.smartgic.io` | `961cc898-6447-4079-adff-0bc3e74386e1.cfargotunnel.com` | Cloudflare proxied, automatic TTL |
+
+The `ovos-start-api` tunnel runs as `cloudflared-ovos-start.service` on `agh01.home.lan`. It forwards only the API hostname to `http://127.0.0.1:8787`, with a final 404 rule for every other hostname. The existing tunnel service has separate configuration and credentials.

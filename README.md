@@ -1,6 +1,10 @@
+<!-- Last Edit: Codex - 2026-10-08 - Motive: Add the public wizard address and hosting guide. -->
+
 # OVOS Start
 
 A web wizard that helps you install [OpenVoiceOS](https://www.openvoiceos.org/) on your device.
+
+**[Open the wizard](https://start.openvoiceos.pt/)**
 
 Choose your device, language, and voice options. The wizard shows you how to prepare your device, then gives you an install command to copy into its terminal. Installation runs on your device, with progress shown in the browser.
 
@@ -8,7 +12,7 @@ After installation, the wizard guides you through checking your speaker and micr
 
 ## Run locally
 
-With Node.js, npm, and Python 3 installed:
+With Node.js 24 LTS, npm, and Python 3 installed:
 
 ```sh
 npm ci
@@ -17,7 +21,7 @@ npm start
 
 Open <http://localhost:4187>. Local previews let you explore the wizard; installation commands are disabled.
 
-See the [developer guide](docs/index.md) for tests, production builds, and how the wizard works.
+See the [developer guide](docs/index.md) for tests and builds, or [self-hosting](docs/self-hosting.md) to run the API.
 
 ## Sponsorship
 

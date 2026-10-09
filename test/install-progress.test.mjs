@@ -40,7 +40,7 @@ test('new capability is only in executable artifact, never shared recipe link an
   for(const token of ['$(touch x)','x','a'.repeat(21),'a'.repeat(22)+'\n','a'.repeat(64)])assert.throws(()=>buildShortCommand(artifact,now,token));
   assert.throws(()=>buildShortCommand(artifact,now+3600,session.launchToken));
 });
-test('session restores from server without any browser storage and polling stops off screen',async()=>{
+test('session restores from server without saving install capabilities and polling stops off screen',async()=>{
   const calls=[],timers=new Map();let n=0;const tracker=new InstallTracker({fetcher:async(url,options)=>{calls.push(JSON.parse(options.body));return reply();},schedule:fn=>{timers.set(++n,fn);return n;},cancel:id=>timers.delete(id)});
   await tracker.connect('code');await tracker.connect('code');assert.equal(calls.length,1);assert.equal(timers.size,1);tracker.stop();assert.equal(timers.size,0);
   await tracker.connect('code');assert.equal(timers.size,1);tracker.stop();

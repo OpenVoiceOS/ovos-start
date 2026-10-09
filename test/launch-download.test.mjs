@@ -127,7 +127,7 @@ exit "$result"
 test('tracked command is the short bounded pipe; downloaded scripts retain full-download guards',()=>{
  const command=buildShortCommand(setup,now,token);
  assert.equal(command,`curl -qfsS -m120 ${launchUrl} | sh`);
- assert.equal(command.length,98);
+ assert.ok(command.length<90,'public hostname keeps the command short');
  assert.doesNotMatch(command,/mktemp|sh -c|printf|--track/);
  assert.ok(!command.includes(writeToken));assert.ok(!command.includes(setup.code));
  const script=buildSetupScript(setup,now,token);
@@ -241,6 +241,6 @@ test('localhost, loopback, file and explicit simulation are distinct from a live
  for(const hostname of ['localhost','review.localhost','127.0.0.1','127.1.2.3','[::1]'])assert.equal(isPreviewContext({hostname,protocol:'http:'}),true);
  assert.equal(isPreviewContext({hostname:'',protocol:'file:'}),true);
  assert.equal(isPreviewContext({hostname:'preview.example',protocol:'https:'},'simulated'),true);
- assert.equal(isPreviewContext({hostname:'ovos-start-wizard.goldyfruit.chatgpt.site',protocol:'https:'}),false);
+ assert.equal(isPreviewContext({hostname:'start.openvoiceos.pt',protocol:'https:'}),false);
  const url=new URL(liveWizardUrl({...setup,launchToken:token}));assert.equal(url.hash,'#setup='+setup.code);assert.ok(!url.href.includes(token));
 });

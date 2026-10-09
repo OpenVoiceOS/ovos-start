@@ -6,6 +6,9 @@ import { mkdtempSync, rmSync, statSync, writeFileSync, mkdirSync, symlinkSync, c
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { request as httpRequest } from 'node:http';
+import { createServer as createTcpServer } from 'node:net';
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { once } from 'node:events';
 import { configuration, createApi, rateAddress } from '../server/node-api.mjs';
 import { openDatabase } from '../server/node-database.mjs';
@@ -219,4 +222,37 @@ test('HTTP adapter serves real requests and enforces body bounds with no forward
     request.on('error', reject); request.write('x'.repeat(800)); request.end('x'.repeat(800));
   });
   assert.equal(chunked, 413); assert.equal(server.maxConnections, 64); assert.equal(server.requestTimeout, 10000);
+});
+
+test('the real CLI stays listening through a release-directory symlink and stops cleanly', async t => {
+  const directory = mkdtempSync(join(tmpdir(), 'ovos-cli-'));
+  const current = join(directory, 'current');
+  symlinkSync(fileURLToPath(new URL('../', import.meta.url)), current, 'dir');
+  const reservation = createTcpServer(); reservation.listen(0, '127.0.0.1'); await once(reservation, 'listening');
+  const port = reservation.address().port;
+  await new Promise(resolve => reservation.close(resolve));
+  const child = spawn(process.execPath, [join(current, 'server/node-server.mjs')], {
+    env: { PUBLIC_ORIGIN: publicOrigin, ALLOWED_ORIGINS: wizard, RELAY_ADMIN_KEY: secret, DATABASE_PATH: join(directory, 'state/installs.sqlite'), PORT: String(port) },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  const exited = once(child, 'exit');
+  t.after(async () => {
+    if (child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
+    await exited; rmSync(directory, { recursive: true, force: true });
+  });
+  child.stderr.resume();
+  await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('CLI did not start listening.')), 5000);
+    child.once('error', error => { clearTimeout(timer); reject(error); });
+    child.once('exit', () => { clearTimeout(timer); reject(new Error('CLI exited before listening.')); });
+    child.stdout.on('data', chunk => {
+      if (chunk.toString().includes('OVOS API listening on loopback.')) { clearTimeout(timer); resolve(); }
+    });
+  });
+  const health = await fetch(`http://127.0.0.1:${port}/healthz`, { signal: AbortSignal.timeout(3000), headers: { Connection: 'close' } });
+  assert.equal(health.status, 200); assert.deepEqual(await health.json(), { ok: true });
+  assert.equal(child.exitCode, null);
+  child.kill('SIGTERM');
+  const stopped = await Promise.race([exited, new Promise((_, reject) => { const timer = setTimeout(() => reject(new Error('CLI did not stop.')), 5000); timer.unref(); })]);
+  assert.deepEqual(stopped, [0, null]);
 });

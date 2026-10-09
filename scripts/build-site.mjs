@@ -4,7 +4,7 @@ import { resolve, join, basename } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {generateDemoThumbnails} from './generate-demo-thumbnails.mjs';
 
-/** Build only public entry points and assets; source modules stay in the repo.
+/** Build only static browser assets for GitHub Pages; API code is deployed separately.
  * @param {object} options Optional isolated source/output roots for build tests.
  * @returns {Promise<object>} Browser dependency metadata for verification.
  */
@@ -28,7 +28,8 @@ export async function buildSite({source=resolve('dist'),output=resolve('dist')}=
   await rm(join(client,'theme.mjs'));
   const css=await transform(await readFile(join(source,'style.css'),'utf8'),{loader:'css',minify:true,legalComments:'inline'});
   await writeFile(join(client,'style.css'),css.code);
-  await build({entryPoints:['server/worker.mjs'],outfile:join(output,'server/index.js'),bundle:true,format:'esm',platform:'browser',target:'es2022'});
+  await writeFile(join(client,'CNAME'),'start.openvoiceos.pt\n');
+  await writeFile(join(client,'.nojekyll'),'');
   return browser.metafile;
 }
 

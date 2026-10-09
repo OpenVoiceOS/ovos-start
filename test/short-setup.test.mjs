@@ -18,7 +18,7 @@ test('short commands use only the bound relay capability and remain one line', (
   assert.match(code, /^[0-9A-HJKMNP-TV-Z]{4}(?:-[0-9A-HJKMNP-TV-Z]{4}){3}$/);
   assert.deepEqual(decodeRecipeCode(code,{now:issuedAt}), state);
   assert.ok(buildShortCommand(setup,issuedAt,token).includes('/s/'+token));
-  assert.match(LAUNCHER_URL,/^https:\/\/raw\.githubusercontent\.com\/goldyfruit\/ovos-start-launcher\/[a-f0-9]{40}\/v2\.sh$/);
+  assert.match(LAUNCHER_URL,/^https:\/\/raw\.githubusercontent\.com\/OpenVoiceOS\/ovos-start-launcher\/[a-f0-9]{40}\/v2\.sh$/);
   assert.ok(!buildShortCommand(setup,issuedAt,token).includes(code));
   assert.equal(buildShortCommand(setup,issuedAt,token).split('\n').length, 1);
   assert.ok(buildShortCommand(setup,issuedAt,token).endsWith(' | sh'));

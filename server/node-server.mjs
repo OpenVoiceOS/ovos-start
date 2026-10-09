@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
+import { realpathSync } from 'node:fs';
 import { Readable } from 'node:stream';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { configuration, createApi } from './node-api.mjs';
 import { openDatabase } from './node-database.mjs';
 
@@ -76,6 +77,14 @@ export function start(env = process.env) {
   return { server, store };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+/** Recognize the CLI even when systemd starts it through the current-release symlink.
+ * @returns {boolean}
+ */
+function invokedDirectly() {
+  try { return Boolean(process.argv[1]) && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url)); }
+  catch { return false; }
+}
+
+if (invokedDirectly()) {
   try { start(); } catch { console.error('OVOS API could not start; check private runtime configuration.'); process.exitCode = 1; }
 }

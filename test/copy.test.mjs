@@ -3,9 +3,9 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const root=new URL('../dist/',import.meta.url).pathname;
-const {DEFAULTS,DEVICES}=await import(root+'scenario.mjs');
-const {issueSetup,setupStatus,buildShortCommand}=await import(root+'short-setup.mjs');
-const {revealCopyFallback,updateHandoffStep}=await import(root+'handoff.mjs');
+const {DEFAULTS,DEVICES,validateState,buildYaml}=await import(root+'scenario.mjs');
+const {issueSetup,sameSetupChoices,setupStatus,buildShortCommand,buildSetupScript}=await import(root+'short-setup.mjs');
+const {CommandReceipt,revealCopyFallback,updateHandoffStep}=await import(root+'handoff.mjs');
 const {PrerequisiteGate}=await import(root+'prerequisites.mjs');
 const source=readFileSync(root+'app.mjs','utf8');
 function declaration(name){const m=source.match(new RegExp(`^(?:async )?function ${name}\\([^\\n]*\\) \\{[\\s\\S]*?^\\}`,'m'));assert.ok(m,name);return m[0];}
@@ -27,13 +27,26 @@ function harness(){
  const title={textContent:'Next'},paste={textContent:'Paste'},status={textContent:''},expiry={textContent:''};
  const nodes={'.command-fallback':manual,'[data-install-action]':button,'#install-command':command,'#share-link':link,'[data-copy="link"]':linkButton,'[data-paste-title]':title,'.paste-step p':paste,'[data-copy-status]':status,'[data-code-expiry]':expiry};
  const prerequisiteGate=new PrerequisiteGate();prerequisiteGate.selectDevice('computer');prerequisiteGate.selectFamily('debian');prerequisiteGate.confirm(true);prerequisiteGate.accept('computer');
- const context=vm.createContext({answered:new Set(['telemetry']),go:target=>{context.step=target;events.push('go:'+target);},finish:()=>context.render(true),prerequisiteGate,manualCopyFor:null,commandCopyAttempt:0,previewOnly:false,Date:{now:()=>now*1000},Math,setupStatus:(s,t=now)=>setupStatus(s,t),buildShortCommand,revealCopyFallback,updateHandoffStep,DEVICES,state:{...setup.state},setupSession:setup,step:'review',expiryTimer:null,
+ const context=vm.createContext({answered:new Set(['telemetry']),go:target=>{context.step=target;events.push('go:'+target);},finish:()=>context.render(true),prerequisiteGate,manualCopyFor:null,commandCopyAttempt:0,commandReceipt:new CommandReceipt(),previewOnly:false,Date:{now:()=>now*1000},Math,issueSetup:state=>issueSetup(state,now),sameSetupChoices,validateState,buildYaml,setupStatus:(s,t=now)=>setupStatus(s,t),buildShortCommand,buildSetupScript,revealCopyFallback,updateHandoffStep,DEVICES,state:{...setup.state},setupSession:setup,step:'review',expiryTimer:null,
  navigator:{clipboard:{writeText(value){writes.push(value);return new Promise((a,b)=>{resolve=a;reject=b;});}}},
  document:{querySelector:s=>nodes[s]??null},wizard:{querySelector:s=>nodes[s]??null,querySelectorAll:s=>s==='[data-prerequisite-required]'?gatedRegions:handoffSteps},shareUrl:()=>`https://example.test/#setup=${setup.code}`,
  installTracker:{session:{launchToken:'L'.repeat(22)},code:setup.code},trackingShown:false,updateInstallProgress(){},icon:x=>`[${x}]`,toast:x=>toasts.push(x),localize:()=>events.push('localize'),applyTranslations(){},clearTimeout(){},setTimeout:()=>1,
  });
- vm.runInContext([declaration('launchToken'),declaration('manualCopyReady'),declaration('updateManualCopy'),declaration('updateExpiry'),declaration('copy')].join('\n'),context);
+ vm.runInContext([declaration('launchToken'),declaration('manualCopyReady'),declaration('updateManualCopy'),declaration('updateExpiry'),declaration('commitSetup'),declaration('copy')].join('\n'),context);
  return {context,nodes,button,handoffSteps,gatedRegions,classes,command,link,outer,inner,manual,fallback,writes,toasts,events,title,status,expiry,setNow:n=>{now=n;},resolve:()=>resolve(),reject:()=>reject(Error('clipboard denied'))};
+}
+/** Exercise inline changes with real recipe/copy state and controlled rendering. @returns {object} Handoff fixture. */
+function connectionHarness(){
+ const h=harness();
+ h.context.installTracker.session.status='waiting';
+ h.context.confirmedState={...h.context.state};h.context.aiConnectionsOpen=true;
+ h.context.persist=()=>h.events.push('persist');
+ h.context.render=(focus=false)=>{assert.equal(focus,false);h.events.push('render');h.context.updateExpiry();};
+ for(const selector of ['[data-connection="homeassistant"]','[data-connections-ai]']){
+  h.nodes[selector]={focus(options){assert.equal(options.preventScroll,true);h.events.push('focus:'+selector);}};
+ }
+ vm.runInContext(declaration('setConnection'),h.context);
+ return h;
 }
 test('clipboard rejection reveals and selects the actual command without claiming success',async()=>{
  const h=harness(),pending=h.context.copy('command');h.reject();await pending;
@@ -80,6 +93,177 @@ test('successful copy stays concise and preserves the existing paste instruction
  const h=harness(),pending=h.context.copy('command');h.resolve();await pending;
  assert.match(h.button.innerHTML,/<span>Copied<\/span>/);assert.doesNotMatch(h.button.innerHTML,/Copy again/);
  assert.equal(h.classes.has('copied'),true);assert.equal(h.handoffSteps[1].attributes['aria-current'],'step');assert.equal(h.handoffSteps[0].done,true);assert.equal(h.title.textContent,'Next');assert.match(h.status.textContent,/Paste.*terminal/);
+});
+
+test('a changed recipe requires an updated command until the current recipe is copied',async()=>{
+ const h=harness(),original=h.context.setupSession;
+ let pending=h.context.copy('command');h.resolve();await pending;
+ assert.equal(h.context.commandReceipt.copiedCode,original.code);
+ h.context.state.homeassistant=true;
+ assert.equal(h.context.commitSetup(),true);h.context.updateExpiry();
+ assert.notEqual(h.context.setupSession.code,original.code);
+ assert.equal(h.context.setupSession.state.homeassistant,true);
+ assert.equal(h.context.commandReceipt.needsUpdate,true);
+ assert.equal(h.context.commandReceipt.copiedCode,null);
+ assert.equal(h.context.trackingShown,false);
+ assert.match(h.button.innerHTML,/Copy updated command/);
+ assert.equal(h.classes.has('copied'),false);
+ assert.equal(h.handoffSteps[0].attributes['aria-current'],'step');
+ assert.equal(h.handoffSteps[1].attributes['aria-current'],undefined);
+ h.context.installTracker.code=h.context.setupSession.code;
+ h.context.installTracker.session={status:'waiting',launchToken:'N'.repeat(22)};
+ pending=h.context.copy('command');h.resolve();await pending;
+ assert.ok(h.writes.at(-1).includes('/s/'+'N'.repeat(22)));
+ assert.equal(h.context.commandReceipt.needsUpdate,false);
+ assert.equal(h.context.commandReceipt.copiedCode,h.context.setupSession.code);
+ assert.equal(h.classes.has('copied'),true);
+ assert.equal(h.handoffSteps[1].attributes['aria-current'],'step');
+});
+
+test('editing after manual fallback removes the old command and requests an updated copy',async()=>{
+ const h=harness(),pending=h.context.copy('command');h.reject();await pending;
+ assert.equal(h.manual.hidden,false);assert.ok(h.command.value);
+ h.context.state.llmMode='online';h.context.commitSetup();h.context.updateExpiry();
+ assert.equal(h.context.manualCopyFor,null);
+ assert.equal(h.manual.hidden,true);assert.equal(h.command.value,'');
+ assert.equal(h.context.commandReceipt.needsUpdate,true);
+ assert.match(h.button.innerHTML,/Copy updated command/);
+});
+
+test('pending clipboard writes remain invalid after same-second A to B to A edits',async()=>{
+ for(const outcome of ['resolve','reject']){
+  const h=harness(),original=h.context.setupSession,pending=h.context.copy('command');
+  assert.equal(h.context.commandReceipt.exposed,true);
+  const attempt=h.context.commandCopyAttempt;
+  h.context.state.homeassistant=true;h.context.commitSetup();
+  h.context.state.homeassistant=false;h.context.commitSetup();h.context.updateExpiry();
+  assert.equal(h.context.setupSession.code,original.code);
+  assert.equal(h.context.commandCopyAttempt,attempt+2);
+  h[outcome]();await pending;
+  assert.equal(h.context.commandReceipt.copiedCode,null,outcome);
+  assert.equal(h.context.commandReceipt.needsUpdate,true,outcome);
+  assert.match(h.button.innerHTML,/Copy updated command/);
+  assert.equal(h.classes.has('copied'),false);
+  assert.equal(h.manual.hidden,true);assert.equal(h.command.value,'');
+  assert.deepEqual(h.toasts,[]);
+ }
+});
+
+test('editing during launch preparation never copies the obsolete recipe',async()=>{
+ const h=harness();let finish;h.context.installTracker.session=null;
+ h.context.installTracker.connect=()=>new Promise(resolve=>{finish=resolve;});
+ const pending=h.context.copy('command');
+ h.context.state.llmMode='local';h.context.commitSetup();h.context.updateExpiry();
+ finish();await pending;
+ assert.equal(h.writes.length,0);
+ assert.equal(h.context.commandReceipt.exposed,false);
+ assert.equal(h.context.commandReceipt.needsUpdate,false);
+ assert.equal(h.classes.has('copied'),false);
+ assert.equal(h.context.trackingShown,false);
+ assert.equal(h.context.setupSession.state.llmMode,'local');
+});
+
+test('unmodified choices preserve their session and successful copy receipt',async()=>{
+ const h=harness(),pending=h.context.copy('command');h.resolve();await pending;
+ const original=h.context.setupSession,attempt=h.context.commandCopyAttempt;
+ assert.equal(h.context.commitSetup(),false);
+ assert.equal(h.context.setupSession,original);
+ assert.equal(h.context.commandCopyAttempt,attempt);
+ assert.equal(h.context.commandReceipt.copiedCode,original.code);
+ assert.equal(h.context.commandReceipt.needsUpdate,false);
+ assert.equal(h.context.trackingShown,true);
+});
+
+test('freshly rendered controls recover only the current recipe copy receipt',async()=>{
+ const h=harness(),pending=h.context.copy('command');h.resolve();await pending;
+ h.classes.clear();h.button.innerHTML='Copy install command';h.context.updateExpiry();
+ assert.equal(h.classes.has('copied'),true);assert.match(h.button.innerHTML,/Copied/);
+ assert.equal(h.handoffSteps[1].attributes['aria-current'],'step');
+ h.context.state.homeassistant=true;h.context.commitSetup();h.context.updateExpiry();
+ assert.equal(h.classes.has('copied'),false);assert.match(h.button.innerHTML,/Copy updated command/);
+ assert.equal(h.handoffSteps[1].attributes['aria-current'],undefined);
+});
+
+test('expiration takes priority over the updated-command cue',async()=>{
+ const h=harness(),pending=h.context.copy('command');h.resolve();await pending;
+ h.context.state.homeassistant=true;h.context.commitSetup();h.setNow(initialNow+3600);h.context.updateExpiry();
+ assert.match(h.button.innerHTML,/Copy new command/);
+ assert.doesNotMatch(h.button.innerHTML,/Copy updated command|Copied/);
+ assert.equal(h.button.dataset.installAction,'renew');
+ assert.equal(h.classes.has('copied'),false);
+});
+
+test('inline Home Assistant and AI edits preserve preparation and focus without navigation',()=>{
+ for(const [key,value,field,expected] of [['homeassistant','yes','homeassistant',true],['llmMode','local','llmMode','local'],['llmMode','online','llmMode','online']]){
+  const h=connectionHarness(),old=h.context.setupSession;
+  h.context.setConnection(key,value);
+  assert.equal(h.context.state[field],expected);
+  assert.equal(h.context.setupSession.state[field],expected);
+  assert.equal(h.context.confirmedState[field],expected);
+  assert.notEqual(h.context.setupSession.code,old.code);
+  assert.equal(h.context.prerequisiteGate.ready(h.context.state.device),true);
+  assert.equal(h.context.commandReceipt.exposed,false);
+  assert.equal(h.context.commandReceipt.needsUpdate,false);
+  assert.equal(h.context.step,'review');
+  const selector=key==='homeassistant'?'[data-connection="homeassistant"]':'[data-connections-ai]';
+  assert.deepEqual(h.events,['persist','render','focus:'+selector]);
+  assert.equal(h.context.answered.has(key==='homeassistant'?'homeassistant':'llm'),true);
+  if(key==='llmMode')assert.equal(h.context.aiConnectionsOpen,false);
+ }
+});
+
+test('inline changes after copying request an updated command while keeping both choices',async()=>{
+ const h=connectionHarness(),pending=h.context.copy('command');h.resolve();await pending;
+ h.context.setConnection('homeassistant','yes');
+ h.context.setConnection('llmMode','online');
+ assert.equal(h.context.setupSession.state.homeassistant,true);
+ assert.equal(h.context.setupSession.state.llmMode,'online');
+ assert.equal(h.context.commandReceipt.needsUpdate,true);
+ assert.equal(h.context.commandReceipt.copiedCode,null);
+ assert.match(h.button.innerHTML,/Copy updated command/);
+ assert.equal(h.classes.has('copied'),false);
+ assert.equal(h.context.trackingShown,false);
+});
+
+test('started installations reject inline changes without losing tracking or their command',()=>{
+ for(const status of ['started','downloading','installing','installed','services_ready','voice_ready','failed','cancelled']){
+  for(const [key,value] of [['homeassistant','yes'],['llmMode','online']]){
+   const h=connectionHarness(),old=h.context.setupSession,tracker=h.context.installTracker;
+   tracker.session.status=status;h.context.trackingShown=true;
+   h.context.setConnection(key,value);
+   assert.equal(h.context.setupSession,old,status);
+   assert.equal(h.context.installTracker,tracker,status);
+   assert.equal(tracker.session.status,status);
+   assert.equal(h.context.trackingShown,true,status);
+   assert.equal(h.context.state.homeassistant,false);
+   assert.equal(h.context.state.llmMode,'off');
+   assert.equal(h.context.commandCopyAttempt,0);
+   assert.deepEqual(h.events,[]);
+  }
+ }
+});
+
+test('invalid or irrelevant inline choices cannot mutate a saved recipe',()=>{
+ for(const [key,value] of [['homeassistant','true'],['homeassistant','maybe'],['llmMode','secret'],['llmMode','yes'],['telemetry','no'],['__proto__','yes']]){
+  const h=connectionHarness(),old=h.context.setupSession;
+  h.context.setConnection(key,value);
+  assert.equal(h.context.setupSession,old);assert.equal(h.context.commandCopyAttempt,0);assert.deepEqual(h.events,[]);
+ }
+ for(const kind of ['hub','away','unchanged']){
+  const h=connectionHarness(),old=h.context.setupSession;
+  if(kind==='hub')h.context.state.experience='hub';
+  if(kind==='away')h.context.step='speech';
+  h.context.setConnection('homeassistant',kind==='unchanged'?'no':'yes');
+  assert.equal(h.context.setupSession,old,kind);assert.equal(h.context.commandCopyAttempt,0,kind);assert.deepEqual(h.events,[]);
+ }
+});
+
+test('inline choices stay available before a tracker session exists',()=>{
+ const h=connectionHarness();h.context.installTracker.session=null;
+ h.context.setConnection('homeassistant','yes');
+ assert.equal(h.context.setupSession.state.homeassistant,true);
+ assert.equal(h.context.commandReceipt.needsUpdate,false);
+ assert.ok(h.events.includes('render'));
 });
 
 test('successful and pending copies have no command disclosure; rejection reveals manual selection',async()=>{
@@ -323,6 +507,50 @@ test('failed launch preparation never falls back to an untracked script download
  await h.context.download('script');
  assert.equal(h.context.trackingShown,false);
  assert.deepEqual(h.toasts,['Could not prepare your install command. Please try again.']);
+});
+
+test('exported scripts require updated commands after edits; scenario files do not claim a copied command',async()=>{
+ for(const kind of ['script','yaml']){
+  const h=harness(),downloads=[],blobs=[];
+  h.context.installTracker.connect=async()=>h.context.installTracker.session;
+  h.context.Blob=class {constructor(parts,options){blobs.push({parts,options});}};
+  h.context.URL={createObjectURL:()=> 'blob:download',revokeObjectURL(){}};
+  const link={click(){downloads.push({name:this.download,exposed:h.context.commandReceipt.exposed});},remove(){}};
+  h.context.document.createElement=tag=>{assert.equal(tag,'a');return link;};
+  h.context.document.body={append:element=>assert.equal(element,link)};
+  vm.runInContext(declaration('download'),h.context);
+  await h.context.download(kind);
+  assert.equal(downloads.length,1);assert.equal(blobs.length,1);
+  assert.equal(downloads[0].exposed,kind==='script');
+  assert.equal(h.context.commandReceipt.copiedCode,null);
+  assert.equal(h.classes.has('copied'),false);
+  h.context.state.homeassistant=true;h.context.commitSetup();h.context.updateExpiry();
+  assert.equal(h.context.commandReceipt.needsUpdate,kind==='script');
+  assert.match(h.button.innerHTML,kind==='script'?/Copy updated command/:/Copy install command/);
+ }
+});
+
+test('editing while a script capability loads cancels the obsolete download',async()=>{
+ const h=harness();let finish;h.context.installTracker.session=null;
+ h.context.installTracker.connect=()=>new Promise(resolve=>{finish=resolve;});
+ h.context.Blob=class {constructor(){assert.fail('An obsolete recipe must not be downloaded');}};
+ vm.runInContext(declaration('download'),h.context);
+ const pending=h.context.download('script');
+ h.context.state.homeassistant=true;h.context.commitSetup();finish();await pending;
+ assert.equal(h.context.commandReceipt.exposed,false);
+ assert.equal(h.context.commandReceipt.copiedCode,null);
+ assert.equal(h.context.trackingShown,false);
+});
+
+test('command receipt keeps an update reminder until confirmation or a fresh journey',()=>{
+ const receipt=new CommandReceipt();
+ assert.equal(receipt.exposed,false);assert.equal(receipt.needsUpdate,false);assert.equal(receipt.copiedCode,null);
+ receipt.invalidate();assert.equal(receipt.needsUpdate,false);
+ receipt.expose();receipt.invalidate();assert.equal(receipt.needsUpdate,true);
+ receipt.expose();assert.equal(receipt.needsUpdate,true);assert.equal(receipt.copiedCode,null);
+ receipt.confirm('current');assert.equal(receipt.needsUpdate,false);assert.equal(receipt.copiedCode,'current');
+ receipt.invalidate();assert.equal(receipt.needsUpdate,true);assert.equal(receipt.copiedCode,null);
+ receipt.reset();assert.equal(receipt.exposed,false);assert.equal(receipt.needsUpdate,false);assert.equal(receipt.copiedCode,null);
 });
 
 test('report copy is scoped to the failed attempt and has a selectable fallback',async()=>{

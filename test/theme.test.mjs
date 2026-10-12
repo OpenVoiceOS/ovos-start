@@ -73,6 +73,18 @@ test('subtle light colors retain readable body, accent and confirmation text',()
   const base=browser();assert.equal(base.meta.content,tokens['--paper']);
 });
 
+test('optional connection choices and update notices stay readable in every appearance',()=>{
+  for(const theme of ['light','dark','automatic-dark']){
+    const tokens=palette(theme);
+    for(const bg of ['--card','--soft'])for(const fg of ['--ink','--muted','--accent','--install-done']){
+      assertContrast(tokens[fg],tokens[bg],4.5,`${theme}: connection ${fg} on ${bg}`);
+    }
+  }
+  assert.match(css,/\.connection-action\{[^}]*min-height:44px/);
+  assert.match(css,/\.connection-providers button\{[^}]*min-height:48px/);
+  assert.match(css,/@media\(forced-colors:active\)\{\.connection-providers \[aria-pressed="true"\]/);
+});
+
 test('requirement highlights have readable text and a distinct icon in each appearance',()=>{
   for(const theme of ['light','dark','automatic-dark']){
     const tokens=palette(theme);

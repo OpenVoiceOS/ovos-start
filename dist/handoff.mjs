@@ -1,5 +1,20 @@
 import { DEVICES, LANGUAGES } from './scenario.mjs';
 
+/** Track exported commands independently of DOM replacement and clipboard timing. */
+export class CommandReceipt {
+  exposed = false;
+  needsUpdate = false;
+  copiedCode = null;
+  /** Record possible clipboard or file exposure before asynchronous delivery. @returns {void} */
+  expose() { this.exposed = true; this.copiedCode = null; }
+  /** Require a fresh copy after a real recipe change, even when choices are restored. @returns {void} */
+  invalidate() { this.needsUpdate ||= this.exposed; this.copiedCode = null; }
+  /** Confirm delivery only after the current clipboard request succeeds. @param {string} code Recipe. @returns {void} */
+  confirm(code) { this.copiedCode = code; this.needsUpdate = false; }
+  /** Begin an independent journey without inheriting an old copy receipt. @returns {void} */
+  reset() { this.exposed = false; this.needsUpdate = false; this.copiedCode = null; }
+}
+
 /** Brief, target-specific installation instructions. No browser hardware inference.
  * @param {object} state Validated recipe. @returns {object} Handoff copy.
  */

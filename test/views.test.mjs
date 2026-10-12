@@ -13,11 +13,12 @@ import {preparationFor} from '../dist/preparation.mjs';
 import {liveWizardUrl} from '../dist/preview.mjs';
 import {icon,deviceIcon} from '../dist/icons.mjs';
 import {translateMessage} from '../dist/i18n.mjs';
+import {connectionsView} from '../dist/connections.mjs';
 import {sudoPasswordNotice} from '../dist/terminal-notice.mjs';
 const source=readFileSync(new URL('../dist/app.mjs',import.meta.url),'utf8');
 /** Load production renderers with actual domain modules and controlled state. @returns {object} View scope. */
 function views(){
- const c=vm.createContext({prerequisiteGate:new PrerequisiteGate(),manualCopyFor:null,installTracker:{session:null},prerequisitesView,previewOnly:false,liveWizardUrl,...scenario,...flow,...journey,...recommendations,...handoff,...short,preparationFor,icon,deviceIcon,sudoPasswordNotice,
+ const c=vm.createContext({connectionsView,aiConnectionsOpen:false,prerequisiteGate:new PrerequisiteGate(),manualCopyFor:null,installTracker:{session:null},prerequisitesView,previewOnly:false,liveWizardUrl,...scenario,...flow,...journey,...recommendations,...handoff,...short,preparationFor,icon,deviceIcon,sudoPasswordNotice,
  state:{...scenario.DEFAULTS,device:'pi'},answered:new Set(['telemetry']),telemetrySelection:scenario.DEFAULTS.telemetry,step:'piModel',devicePane:'cards',unlistedDevice:false,platformUnsure:false,detailsOpen:false,setupSession:null,shareUrl:()=>'',launchToken:()=> 'L'.repeat(22),});
  const names=['escape','intro','card','answerCard','deviceView','platformView','experienceView','capabilityView','preparationView','detailsView','prerequisitePageView','reviewOptionsView','setupEditorView','manualCopyReady','resultView','tweakView','telemetryView'];
  const declarations=names.map(name=>source.match(new RegExp(`^function ${name}\\([^\\n]*\\) \\{[\\s\\S]*?^\\}`,'m'))?.[0]);
@@ -79,12 +80,12 @@ test('install summary groups device identity, confirmation and labelled settings
  assert.match(header,/class="setup-device" data-edit="device" aria-label="Edit Device: Mycroft Mark II"/);
  assert.match(header,/<strong>Mycroft Mark II<\/strong><span>English \(US\)<\/span>/);
  assert.doesNotMatch(row,/data-edit="device"|device-symbol|setup-summary-connector|aria-current|aria-pressed/);
- for(const choice of handoff.setupSummary(c.state).filter(choice=>choice.target!=='device')){
+ for(const choice of handoff.setupSummary(c.state).filter(choice=>!['device','homeassistant','llm'].includes(choice.target))){
   assert.ok(row.includes(`data-edit="${choice.target}" aria-label="Edit ${choice.label}: ${choice.value}"`));
   assert.ok(row.includes(`<span class="setup-feature-kind">${choice.label}</span><strong>${choice.value}</strong>`));
  }
- assert.match(row,/<span class="setup-feature-kind">AI<\/span><strong>Online provider<\/strong>/);
- assert.equal((row.match(/class="setup-summary-icon"/g)||[]).length,4);
+ assert.match(html,/connection-included[\s\S]*Online provider/);
+ assert.equal((row.match(/class="setup-summary-icon"/g)||[]).length,2);
  assert.doesNotMatch(row,/setup-summary-hint/);
  assert.equal((header.match(/data-review-prerequisites/g)||[]).length,1);
  assert.match(header,/aria-labelledby="preparation-state preparation-review-label"/);
@@ -129,8 +130,6 @@ for(const [device,hardware] of Object.entries(scenario.DEVICES)){
      ...(hub?[['purpose','Use','Voice hub']]:[]),
      ...(options.skills?[['skills','Skills',options.extraSkills?'Everyday + extras':'Everyday essentials']]:[]),
      ...(!hub?[['speech','Speech',options.speech==='public'?'Online services':'Installer chooses']]:[]),
-     ...(options.homeassistant?[['homeassistant','Home Assistant','Connect my server']]:[]),
-     ...(options.llmMode==='online'?[['llm','AI','Online provider']]:[]),
     ];
     assert.deepEqual([...row.matchAll(/data-edit="([^"]+)"/g)].map(match=>match[1]),expected.map(([target])=>target));
     for(const [target,label,value] of expected){
@@ -138,6 +137,13 @@ for(const [device,hardware] of Object.entries(scenario.DEVICES)){
      assert.ok(row.includes(`<span class="setup-feature-kind">${label}</span><strong>${value}</strong>`));
     }
     const copyStep=html.slice(html.indexOf('data-handoff-step="copy"'),html.indexOf('data-handoff-step="paste"'));
+    if(hub)assert.doesNotMatch(html,/class="setup-connections"/);
+    else{
+     assert.equal((html.match(/class="setup-connections"/g)||[]).length,1,'connections have one visible home');
+     assert.ok(html.indexOf('class="setup-connections"')<html.indexOf('data-install-action'),'optional features appear before copying');
+     assert.match(html,/data-connection="homeassistant"/);assert.match(html,/data-connections-ai/);
+     assert.doesNotMatch(html,/review-additions|data-edit="homeassistant"|data-edit="llm"/);
+    }
     assert.match(copyStep,/data-install-action >[\s\S]*Copy install command[\s\S]*data-code-expiry/);
     assert.match(copyStep,/<div class="command-fallback" hidden>/);
     assert.match(copyStep,/id="install-command"[^>]*><\/textarea>/);
@@ -178,7 +184,7 @@ test('Edit setup exposes every saved setting before preparation without granting
  const c=views();c.detailsOpen=true;const html=c.resultView();
  assert.match(html,/<h1[^>]*>Your setup<\/h1>/);
  for(const target of ['language','device','speech','skills','guidance','method','telemetry'])assert.ok(html.includes(`data-edit="${target}"`),target);
- assert.match(html,/data-edit="homeassistant"/);assert.match(html,/data-edit="llm"/);
+ assert.match(html,/data-connection="homeassistant"/);assert.match(html,/data-connections-ai/);
  assert.match(html,/data-review-prerequisites>Continue/);
  assert.doesNotMatch(html,/data-install-action|id="install-command"|data-prerequisite-continue/);
  assert.equal(c.prerequisiteGate.ready(c.state.device),false);

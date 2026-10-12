@@ -1,10 +1,10 @@
-Last Edit: Codex - 2026-10-09 - Motive: Keep the statistics toggle on without a glow and describe its payload accurately.
+Last Edit: Codex - 2026-10-12 - Motive: Document visible optional connections and updated-command handling.
 
 # Adaptive setup contract
 
 ## One question at a time
 
-[`nextQuestion`](../dist/journey.mjs) sequences Language, Device, Speech and Install, asking hardware details only when relevant. Guidance, purpose, Home Assistant and AI are optional review edits. Starter skills are derived from the earlier profile and are edited only on demand from review. The four-stage indicator groups questions rather than promising a fixed question count. Card answers advance after a short reaction; reduced motion removes the delay. Language confirmation uses one button.
+[`nextQuestion`](../dist/journey.mjs) sequences Language, Device, Speech and Install, asking hardware details only when relevant. Guidance and purpose are optional review edits. Home Assistant and AI connections appear directly on the install page, before the copy action. Starter skills are derived from the earlier profile and are edited only on demand from review. The four-stage indicator groups questions rather than promising a fixed question count. Card answers advance after a short reaction; reduced motion removes the delay. Language confirmation uses one button.
 
 Device details precede speech choices through [`firstCapability` / `afterCapability`](../dist/journey.mjs): Pi generation and memory are separate questions. Known Pi/Jetson boards skip CPU identification; general computers and Macs retain their relevant processor questions. Unknown is an answer, never an unfinished field. Unknown or unsupported answers stop the branch at the speech choices, where [`localSpeechOption`](../dist/recommendations.mjs) disables local speech and explains why. Change my device details revisits the questions. An enabled speech choice advances directly; no separate result screen or automatic acceptance remains. Headless hubs skip speech and unsupported integrations. Navigation state is separate from the version-2 recipe.
 
@@ -51,6 +51,10 @@ See [ovos-installer: macOS](https://github.com/OpenVoiceOS/ovos-installer/blob/m
 ## Skills, Home Assistant and AI
 
 Everyday skills map to the upstream essential/internet/audio bundles; server excludes audio. Extras map to media and dad jokes. Empty disables both flags. These alternatives are available in the final review Skills editor, rather than a mandatory question. This is bundle selection, not an invented per-skill installation API. Container server extras are unavailable.
+
+[`connectionsView`](../dist/connections.mjs) renders two visible, optional rows before the install command. Home Assistant is added or removed inline; AI opens a keyboard-accessible choice between an existing model server and an online provider. Selection collapses the chooser and keeps focus on Change, with a named provider status and a removal action inside the chooser. Existing local-model capability guidance remains visible for a selected model server. Connection credentials are still entered only in the device terminal. The setup summary and advanced disclosure do not duplicate these controls. The preparation-stage setup editor exposes the same rows without unlocking installation.
+
+[`setConnection` and `commitSetup`](../dist/app.mjs) validate changes, preserve preparation and telemetry answers, save the immutable recipe, cancel stale copy outcomes and retain page position. Edits are refused once the matching device session leaves `waiting`. [`CommandReceipt`](../dist/handoff.mjs) preserves current copy confirmation through ordinary rendering; after a previously copied, manually exposed or downloaded command changes, the page says **Copy updated command** and asks the visitor to replace their earlier command. This is a UI reminder, not server-side revocation of old commands. [Connection tests](../test/connections.test.mjs), [copy lifecycle tests](../test/copy.test.mjs) and [view tests](../test/views.test.mjs) cover discovery, recipe flags, clipboard races, terminal-only credentials and shared behavior across supported voice devices. There is no additional mandatory wizard step.
 
 Home Assistant connects an existing server. AI fallback connects an existing OpenAI-compatible endpoint, local or online; it does not provision an LLM/Ollama. Smaller devices are directed to a model server on another capable computer. The headless `server` profile does not offer these integrations.
 

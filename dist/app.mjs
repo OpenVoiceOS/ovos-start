@@ -11,7 +11,8 @@ import { nextTrivia, readTriviaHistory, updateTriviaNote } from './facts.mjs';
 import { canRotateTrivia, TriviaRotation } from './trivia-rotation.mjs';
 import { icon, deviceIcon } from './icons.mjs';
 import { LAUNCHER_URL, issueSetup, sameSetupChoices, setupStatus, buildShortCommand, buildSetupScript, readSetupSession } from './short-setup.mjs';
-import { installHandoff, reviewChoices, setupSummary, revealCopyFallback, updateHandoffStep } from './handoff.mjs';
+import { CommandReceipt, installHandoff, reviewChoices, setupSummary, revealCopyFallback, updateHandoffStep } from './handoff.mjs';
+import { connectionsView } from './connections.mjs';
 import { PrerequisiteGate, prerequisitesView } from './prerequisites.mjs';
 import { bindDistroPicker } from './distro-picker.mjs';
 import { preparationFor } from './preparation.mjs';
@@ -45,6 +46,8 @@ let confirmedState = { ...state };
 let setupSession = null;
 let manualCopyFor = null;
 let commandCopyAttempt = 0;
+const commandReceipt = new CommandReceipt();
+let aiConnectionsOpen = false;
 let expiryTimer = null;
 let step = 'welcome';
 let welcomePlayback=null;
@@ -367,12 +370,11 @@ function reviewPrerequisites() {
  */
 function reviewOptionsView(overview=false) {
   const choices=reviewChoices(state);
-  const optional=choices.filter(choice=>(choice.target==='homeassistant'&&!state.homeassistant)||(choice.target==='llm'&&state.llmMode==='off'));
-  const visible=choices.filter(choice=>choice.target!=='guidance'&&!optional.includes(choice));
+  const visible=choices.filter(choice=>!['guidance','homeassistant','llm'].includes(choice.target));
   return `    <${overview?'section':'details'} class="details install-options" ${!overview&&detailsOpen?'open':''}>
       ${overview?'':`<summary><span>Your setup <small>View or edit</small></span>${icon('expand_more')}</summary>`}
       <div class="review-choices">${visible.map(choice=>`<button class="review-choice" data-edit="${choice.target}" aria-label="Edit ${choice.label}: ${escape(choice.value)}"><span class="review-choice-icon" aria-hidden="true">${icon(choice.icon)}</span><span><span class="review-choice-label">${choice.label}</span><strong>${escape(choice.value)}</strong></span></button>`).join('')}</div>
-      ${optional.length?`<div class="review-additions">${optional.map(choice=>`<button data-edit="${choice.target}">${choice.target==='homeassistant'?'Add Home Assistant':'Add AI'}</button>`).join('')}</div>`:''}
+      ${overview?connectionsView(state,aiConnectionsOpen):''}
       ${detailsView()}
     </${overview?'section':'details'}>`;
 }
@@ -393,10 +395,12 @@ function resultView() {
     <section data-install-progress hidden aria-label="Installation progress"></section>
     <div class="install-card">
       <div class="install-target install-target-summary"><button type="button" class="setup-device" data-edit="device" aria-label="Edit Device: ${escape(DEVICES[state.device].name)}">${deviceIcon(state.device)}<span class="setup-device-copy"><strong>${DEVICES[state.device].name}</strong><span>${LANGUAGES[state.locale]}</span></span></button><button type="button" class="preparation-status" data-review-prerequisites aria-labelledby="preparation-state preparation-review-label" title="Review preparation">${icon('check')}<span id="preparation-state">Tools confirmed</span><span class="sr-only" id="preparation-review-label">Review preparation</span></button></div>
-      <ul class="setup-icon-summary" role="list" aria-label="Your setup">${setupSummary(state).filter(choice=>choice.target!=='device').map(choice=>`<li><button class="setup-summary-icon" type="button" data-edit="${choice.target}" aria-label="Edit ${choice.label}: ${escape(choice.value)}"><span class="setup-feature-icon" aria-hidden="true">${icon(choice.icon)}</span><span class="setup-feature-label"><span class="setup-feature-kind">${choice.label}</span><strong>${escape(choice.value)}</strong></span></button></li>`).join('')}</ul>
+      <ul class="setup-icon-summary" role="list" aria-label="Your setup">${setupSummary(state).filter(choice=>!['device','homeassistant','llm'].includes(choice.target)).map(choice=>`<li><button class="setup-summary-icon" type="button" data-edit="${choice.target}" aria-label="Edit ${choice.label}: ${escape(choice.value)}"><span class="setup-feature-icon" aria-hidden="true">${icon(choice.icon)}</span><span class="setup-feature-label"><span class="setup-feature-kind">${choice.label}</span><strong>${escape(choice.value)}</strong></span></button></li>`).join('')}</ul>
       ${usesRaspberryPiTuning(state.device)?'<p class="setup-tuning-note">Raspberry Pi tuning is included.</p>':''}
+      ${connectionsView(state,aiConnectionsOpen)}
       <ol class="handoff-actions" data-prerequisite-required ${!prerequisiteGate.ready(state.device)?'hidden':''}>
         <li data-handoff-step="copy" ${prerequisiteGate.ready(state.device)?'aria-current="step"':''}><span class="handoff-number" aria-hidden="true"><span>1</span>${icon('check')}</span><div class="handoff-action-body">
+          <p class="command-update" data-command-update role="status" hidden>Your setup changed. Copy the updated command before pasting it on your device.</p>
           <button class="button install-copy" data-install-action ${previewOnly||!prerequisiteGate.ready(state.device)?'disabled':''}>${icon('copy')}<span>Copy install command</span></button><span class="code-expiry" data-code-expiry role="status" data-prerequisite-required></span>
           <div class="command-fallback" ${manualCopyReady()?'':'hidden'}><label class="sr-only" for="install-command">Your one-line install command</label><textarea class="command" id="install-command" readonly spellcheck="false" rows="3" data-no-translate>${manualCopyReady()?escape(buildShortCommand(setupSession,undefined,launchToken())):''}</textarea></div>
         </div></li>
@@ -513,15 +517,48 @@ function go(target) {
   recordRoute(!changed);render(true);
 }
 
+/** Issue changed choices while invalidating every pending or previously delivered command.
+ * @returns {boolean} Whether the immutable recipe changed.
+ */
+function commitSetup() {
+  if(sameSetupChoices(setupSession,state))return false;
+  commandCopyAttempt+=1;manualCopyFor=null;commandReceipt.invalidate();trackingShown=false;
+  try{setupSession=issueSetup(state);}
+  catch{setupSession={state:{...state},code:null,version:0,issuedAt:null,expiresAt:null};}
+  return true;
+}
+
 /** Finish a valid recipe and preserve complete old/new shared-link behavior. @returns {void} */
 function finish() {
   state = validateState({...state,channel:'alpha'}); confirmedState={...state}; editing = false; editSnapshot = null; detailsOpen = state.expertise==='expert';
-  if(!sameSetupChoices(setupSession,state)){
-    try{setupSession=issueSetup(state);}
-    catch{setupSession={state:{...state},code:null,version:0,issuedAt:null,expiresAt:null};}
-  }
+  commitSetup();
   go('review');
 
+}
+
+/** Keep optional edits on this page and refuse changes to an installation already running.
+ * @param {string} key Connection field. @param {string} value Whitelisted setting. @returns {void}
+ */
+function setConnection(key, value) {
+  if(step!=='review'||state.experience==='hub')return;
+  if(installTracker.code===setupSession?.code&&installTracker.session&&installTracker.session.status!=='waiting')return;
+  if(key==='homeassistant'&&!['yes','no'].includes(value)||key==='llmMode'&&!['off','local','online'].includes(value)||!['homeassistant','llmMode'].includes(key))return;
+  const next=validateState({...state,[key]:key==='homeassistant'?value==='yes':value,channel:'alpha'});
+  if(sameSetupChoices(setupSession,next))return;
+  state=next;confirmedState={...state};answered.add(key==='homeassistant'?'homeassistant':'llm');
+  if(key==='llmMode')aiConnectionsOpen=false;
+  commitSetup();persist();render();
+  wizard.querySelector(key==='homeassistant'?'[data-connection="homeassistant"]':'[data-connections-ai]')?.focus({preventScroll:true});
+}
+
+/** Expand optional AI choices without changing the recipe or copied command. @returns {void} */
+function toggleAIConnections() {
+  if(step!=='review'||state.experience==='hub')return;
+  if(installTracker.code===setupSession?.code&&installTracker.session&&installTracker.session.status!=='waiting')return;
+  aiConnectionsOpen=!aiConnectionsOpen;
+  const current=wizard.querySelector('.setup-connections');if(!current)return;
+  current.outerHTML=connectionsView(state,aiConnectionsOpen);localize();
+  wizard.querySelector('[data-connections-ai]')?.focus({preventScroll:true});
 }
 
 /** Complete one answer, returning directly to review during targeted edits. @returns {void} */
@@ -634,6 +671,7 @@ function restartWizard(target='language') {
   cancelTransition();clearTimeout(expiryTimer);expiryTimer=null;installTracker.reset();
   state={...fresh.state};confirmedState={...state};setupSession=fresh;
   prerequisiteGate.confirm(false);trackingShown=false;progressSignature='';
+  commandReceipt.reset();commandCopyAttempt+=1;manualCopyFor=null;aiConnectionsOpen=false;
   answered=new Set();telemetrySelection=DEFAULTS.telemetry;preparedFor=null;skillsAnswered=true;
   editing=false;editSnapshot=null;editAnswered=[];editSkillsAnswered=false;editPreparedFor=null;
   languageChooserOpen=false;detailsOpen=false;devicePane='cards';unlistedDevice=false;platformUnsure=false;
@@ -704,6 +742,8 @@ function updateExpiry() {
   const status=setupStatus(setupSession,now);
   const retryInstall=installTracker.code===setupSession?.code&&['failed','cancelled'].includes(installTracker.session?.status);
   const active=status.kind==='active'&&!retryInstall;
+  const copied=active&&commandReceipt.copiedCode===setupSession?.code;
+  if(copied)button.classList.add('copied');else button.classList.remove('copied');
   button.disabled=previewOnly||!prerequisiteGate.ready(state.device)||status.kind==='clock';
   const script=wizard.querySelector('[data-download="script"]');if(script)script.disabled=button.disabled;
   for(const region of wizard.querySelectorAll('[data-prerequisite-required]'))region.hidden=!prerequisiteGate.ready(state.device);
@@ -716,10 +756,14 @@ function updateExpiry() {
 
     wizard.querySelector('[data-copy-status]').textContent='';
   }
-  else if(!button.classList.contains('copied')){
-    button.innerHTML=`${icon('copy')}<span>Copy install command</span>`;
+  else if(copied){
+    button.innerHTML=`${icon('check')}<span>Copied</span>`;
+  }
+  else{
+    button.innerHTML=`${icon('copy')}<span>${commandReceipt.needsUpdate?'Copy updated command':'Copy install command'}</span>`;
     wizard.querySelector('[data-paste-title]').textContent=state.device==='windows'?'Open Ubuntu in WSL2, paste and press Enter.':`Open Terminal on your ${DEVICES[state.device].name}, paste and press Enter.`;
   }
+  const updated=wizard.querySelector('[data-command-update]');if(updated)updated.hidden=!active||!commandReceipt.needsUpdate;
   wizard.querySelector('[data-code-expiry]').textContent=retryInstall?'Copy a new command to continue. Your choices are saved.':status.message;
   updateManualCopy();
   updateHandoffStep(wizard,active&&button.classList.contains('copied'),prerequisiteGate.ready(state.device));
@@ -876,16 +920,19 @@ async function copy(kind) {
   const value = kind === 'command' ? buildShortCommand(artifact,Math.floor(Date.now()/1000),launchToken()) : shareUrl();
   const target = document.querySelector(kind === 'command' ? '#install-command' : '#share-link');
   const button = document.querySelector(kind==='command'?'[data-install-action]':`[data-copy="${kind}"]`);
+  if(kind==='command')commandReceipt.expose();
   try {
     await navigator.clipboard.writeText(value);
     if(kind==='command'&&attempt!==commandCopyAttempt)return;
     if(!button?.isConnected||setupSession!==artifact||(kind==='command'&&!prerequisiteGate.ready(state.device)))return;
     if(kind==='command'&&setupStatus(artifact).kind!=='active'){updateExpiry();toast('That command expired while copying. Copy a new command.');return;}
     if(kind==='command'){
+      commandReceipt.confirm(artifact.code);
       button.innerHTML=`${icon('check')}<span>Copied</span>`;
       button.classList.add('copied');
       updateHandoffStep(wizard,true);
       document.querySelector('[data-copy-status]').textContent='Command copied. Paste it in the terminal on your OVOS device, then press Enter.';
+      const updated=wizard.querySelector('[data-command-update]');if(updated)updated.hidden=true;
     }else toast('Setup link copied. Your choices are saved in the link.');
     localize();
   } catch {
@@ -914,7 +961,7 @@ async function download(kind) {
   if(!yaml){await installTracker.connect(artifact.code);if(setupSession!==artifact||step!=='review'||!prerequisiteGate.ready(state.device))return;if(setupStatus(artifact).kind!=='active'){updateExpiry();return;}if(!launchToken()){updateExpiry();toast('Could not prepare your install command. Please try again.');return;}trackingShown=true;updateInstallProgress();}
   const blob = new Blob([yaml ? buildYaml(state) : buildSetupScript(artifact,Math.floor(Date.now()/1000),launchToken())], { type: yaml ? 'text/yaml' : 'text/x-shellscript' });
   const url = URL.createObjectURL(blob); const link = document.createElement('a');
-  link.href = url; link.download = yaml ? 'scenario.yaml' : `ovos-${state.device}-setup.sh`; document.body.append(link); link.click(); link.remove();
+  link.href = url; link.download = yaml ? 'scenario.yaml' : `ovos-${state.device}-setup.sh`; document.body.append(link); if(!yaml)commandReceipt.expose(); link.click(); link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   toast(yaml ? 'Scenario downloaded. The full script also sets your language.' : `Downloaded. On your device, run: sh ovos-${state.device}-setup.sh`);
 }
@@ -948,6 +995,8 @@ document.addEventListener('click', event => {
   if(target.hasAttribute('data-back')){back();return;}
   if(target.hasAttribute('data-cancel-edit')){cancelTransition();cancelEdit();return;}
   if(target.hasAttribute('data-edit')){editQuestion(target.dataset.edit);return;}
+  if(target.hasAttribute('data-connection')){setConnection(target.dataset.connection,target.dataset.value);return;}
+  if(target.hasAttribute('data-connections-ai')){toggleAIConnections();return;}
   if(target.hasAttribute('data-next-trivia')){advanceTrivia();return;}
   if(target.hasAttribute('data-pause-trivia')){triviaPaused=!triviaPaused;syncTriviaRotation();return;}
   if(target.hasAttribute('data-change-language')){languageChooserOpen=!languageChooserOpen;render();wizard.querySelector(languageChooserOpen?'[data-language-select]':'[data-change-language]').focus({preventScroll:true});return;}

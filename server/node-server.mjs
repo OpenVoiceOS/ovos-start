@@ -4,6 +4,7 @@ import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import { configuration, createApi } from './node-api.mjs';
 import { openDatabase } from './node-database.mjs';
+import { purgeHomeAssistant } from './home-assistant.mjs';
 
 /** Build a bounded HTTP listener; the only supported bind address is loopback.
  * @param {object} store Open SQLite store. @param {object} config Runtime configuration.
@@ -30,9 +31,10 @@ export function createHttpServer(store, config, clock) {
       if (!['GET', 'HEAD'].includes(incoming.method)) {
         // Bound input before making a Web Request; never buffer arbitrary HTTP bodies.
         const chunks = []; let size = 0;
+        const limit = url.pathname === '/api/connections' ? 6144 : 1024;
         for await (const chunk of incoming) {
           size += chunk.length;
-          if (size > 1024) {
+          if (size > limit) {
             outgoing.writeHead(413, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', Connection: 'close' });
             outgoing.end('{"error":"invalid_payload"}'); return;
           }
@@ -53,6 +55,12 @@ export function createHttpServer(store, config, clock) {
   server.maxConnections = 64;
   server.maxRequestsPerSocket = 100;
   server.keepAliveTimeout = 5000;
+  // Erase expired ciphertext even when the site receives no requests.
+  const cleanup = setInterval(() => {
+    try { purgeHomeAssistant(store, clock ? clock() : Math.floor(Date.now() / 1000)); } catch { /* Keep private database diagnostics out of logs. */ }
+  }, 60000);
+  cleanup.unref();
+  server.once('close', () => clearInterval(cleanup));
   server.on('clientError', (_error, socket) => {
     if (socket.writable) socket.end('HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');
   });

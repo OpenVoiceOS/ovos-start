@@ -55,7 +55,7 @@ function harness({state=recipe(),step='language',suggestedLocale='en-us'}={}){
       rebuild();
     }
   };
-  context=vm.createContext({prerequisiteGate:new PrerequisiteGate(),
+  context=vm.createContext({homeAssistantDraft:{clear(){},saving:false},homeAssistantModel:()=>({}),mountHomeAssistant(){},refreshConnections(){},prerequisiteGate:new PrerequisiteGate(),
     DEFAULTS,LANGUAGES,RECIPE_QUESTIONS,readSetupSession,readDraft:()=>null,canResumeDraft:()=>false,ownsDraftHistory:()=>false,localeFlag:()=>'',triviaStorage:null,history:{state:null},crypto:{randomUUID:()=> 'test-session'},navigationId:'test-session',routes:[],routeCursor:-1,browserBaseCursor:0,preparedFor:null,editAnswered:[],editSkillsAnswered:false,editPreparedFor:null,
     triviaRotation:{stop(){}},installTracker:{stop(){},connect:async()=>null},updateInstallProgress(){},trackingShown:false,progressSignature:"",state:{...state},confirmedState:{...state},step,setupSession:null,manualCopyFor:null,
     languageSuggestion:{locale:suggestedLocale},localeRequest:0,languageChooserOpen:true,

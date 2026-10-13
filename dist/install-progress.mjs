@@ -169,7 +169,7 @@ export function guideKind(state) {return state.experience==='hub'?'hub':!state.s
 export class InstallTracker {
   /** @param {object} options Injectable browser interfaces for meaningful lifecycle tests. */
   constructor({fetcher=(...args)=>fetch(...args),credential=browserCredential,onChange=()=>{},schedule=(...args)=>setTimeout(...args),cancel=timer=>clearTimeout(timer),now=()=>Date.now()}={}) {
-    Object.assign(this,{fetcher,credential,onChange,schedule,cancel,now});this.code=null;this.session=null;this.error=null;this.active=false;this.generation=0;this.timer=null;this.pending=null;this.polling=null;this.observedAt=null;
+    Object.assign(this,{fetcher,credential,onChange,schedule,cancel,now});this.code=null;this.session=null;this.error=null;this.active=false;this.generation=0;this.timer=null;this.pending=null;this.polling=null;this.observedAt=null;this.handoffRevision=0;
   }
   /** Current view state. @returns {object} */
   snapshot(){return {code:this.code,session:this.session,error:this.error,observedAt:this.observedAt};}
@@ -185,10 +185,29 @@ export class InstallTracker {
     if(value.phase!==undefined&&(!Number.isInteger(value.phase)||value.phase<0||value.phase>4))throw new Error('unavailable');
     for(const field of ['audioStatus','microphoneStatus'])if(value[field]!==undefined&&!CHECK_STATES.includes(value[field]))throw new Error('unavailable');
     if(value.completedSteps!==undefined&&(!Array.isArray(value.completedSteps)||value.completedSteps.length>4||new Set(value.completedSteps).size!==value.completedSteps.length||value.completedSteps.some(step=>!Object.hasOwn(COMPLETED_STEPS,step))))throw new Error('unavailable');
+    for(const field of ['homeassistantReady','homeassistantClaimed'])if(value[field]!==undefined&&typeof value[field]!=='boolean')throw new Error('unavailable');
     if(data.code&&(typeof value.launchToken!=='string'||value.launchToken.length!==22||!/^[A-Za-z0-9_-]{22}$/.test(value.launchToken)))throw new Error('unavailable');
     if(value.status!=='failed'||!errorReportUrl(value.errorUrl))delete value.errorUrl;
     delete value.writeToken;
     return value;
+  }
+  /** Save or remove a secret handoff without exposing it through status or recipes.
+   * @param {string} id Owned installation. @param {object|null} homeassistant Connection data.
+   * @returns {Promise<boolean>} Whether the temporary handoff is ready.
+   */
+  async saveHomeAssistant(id,homeassistant){
+    const credential=this.credential();
+    if(typeof credential!=='string'||!/^[a-f0-9]{64}$/.test(credential)||typeof id!=='string'||!/^[a-f0-9]{32}$/.test(id))throw new Error('unavailable');
+    const generation=this.generation;
+    this.handoffRevision++;
+    try{
+      const response=await this.fetcher(new URL('/api/connections',INSTALL_API_URL).href,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+credential},credentials:'omit',cache:'no-store',referrerPolicy:'no-referrer',redirect:'error',body:JSON.stringify({id,homeassistant}),signal:AbortSignal.timeout(10000)});
+      if(!response.ok)throw new Error('unavailable');
+      const value=await response.json();
+      if(typeof value.ready!=='boolean')throw new Error('unavailable');
+      if(generation===this.generation&&this.session?.id===id&&!this.session.homeassistantClaimed){this.session.homeassistantReady=value.ready;}
+      return value.ready;
+    }finally{this.handoffRevision++;}
   }
   /** Restore the same server session on reload; never issue a new recipe. @param {string} code @returns {Promise<object|null>} */
   connect(code){
@@ -214,12 +233,13 @@ export class InstallTracker {
   async poll(){
     if(!this.active||!this.session||this.pending)return;
     if(this.polling)return this.polling;
-    const generation=this.generation,id=this.session.id;
+    const generation=this.generation,id=this.session.id,handoffRevision=this.handoffRevision;
     this.cancel(this.timer);
     this.polling=(async()=>{
       try{
         const value=await this.request({id});
         if(generation!==this.generation||value.id!==id||value.updatedAt<this.session.updatedAt)return;
+        if(handoffRevision!==this.handoffRevision){delete value.homeassistantReady;delete value.homeassistantClaimed;}
         const order=Object.keys(messages),before=order.indexOf(this.session.status),after=order.indexOf(value.status);
         if((value.phase??0)<(this.session.phase??0)||after<before||(['failed','cancelled'].includes(this.session.status)&&value.status!==this.session.status))return;
         this.session={...this.session,...value};this.error=null;this.observedAt=Math.floor(this.now()/1000);

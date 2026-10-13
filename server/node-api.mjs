@@ -3,6 +3,7 @@ import { isIP } from 'node:net';
 import { handle as relay, body } from './relay/server/worker.mjs';
 import { decodeRecipeEnvelope } from '../dist/recipe-code.mjs';
 import { validateState } from '../dist/scenario.mjs';
+import { claimHomeAssistant, homeAssistantStatus, purgeHomeAssistant, saveHomeAssistant } from './home-assistant.mjs';
 
 const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
 
@@ -82,18 +83,38 @@ export function createApi(store, config, clock = () => Math.floor(Date.now() / 1
     try {
       const url = new URL(request.url), now = clock();
       if (url.origin !== config.publicOrigin || url.search) return json({ error: 'not_found' }, 404);
+      purgeHomeAssistant(store, now);
       if (url.pathname === '/healthz' && request.method === 'GET') {
         store.database.prepare('SELECT 1').get(); return json({ ok: true });
       }
       // Administrative relay routes are intentionally not reachable through this service.
-      const browser = url.pathname === '/api/install';
-      const capability = url.pathname === '/v1/events' || /^\/s\/[A-Za-z0-9_-]{22}$/.test(url.pathname);
+      const connections = url.pathname === '/api/connections';
+      const browser = url.pathname === '/api/install' || connections;
+      const deviceConnection = url.pathname === '/v1/homeassistant';
+      const capability = deviceConnection || url.pathname === '/v1/events' || /^\/s\/[A-Za-z0-9_-]{22}$/.test(url.pathname);
       if (!browser && !capability) return json({ error: 'not_found' }, 404);
       const suppliedOrigin = request.headers.get('origin');
       if (browser && config.allowedOrigins.has(suppliedOrigin)) cors = suppliedOrigin;
       const address = sign(`rate:${rateAddress(request, peer)}`);
       if (!requests(address, now)) return finish(json({ error: 'rate_limited' }, 429));
-      if (!browser) return await relay(request, env, now);
+      if (deviceConnection) {
+        if (request.method !== 'POST') return json({ error: 'not_found' }, 404);
+        const token = request.headers.get('authorization')?.match(/^Bearer ([a-f0-9]{64})$/)?.[1];
+        if (!token) return json({ error: 'unauthorized' }, 401);
+        let data; try { data = await body(request); } catch { return json({ error: 'invalid_payload' }, 400); }
+        if (Object.keys(data).length) return json({ error: 'invalid_payload' }, 400);
+        const result = claimHomeAssistant(store, config.secret, token, now);
+        if (result.data) return json(result.data, result.status);
+        return new Response(result.text ?? null, { status: result.status, headers: {
+          'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'private, no-store',
+          'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Content-Security-Policy': "default-src 'none'; sandbox",
+        } });
+      }
+      if (!browser) {
+        const response = await relay(request, env, now);
+        purgeHomeAssistant(store, now);
+        return response;
+      }
       if (!config.allowedOrigins.has(suppliedOrigin)) return json({ error: 'forbidden' }, 403);
       if (request.method === 'OPTIONS') {
         const headers = (request.headers.get('access-control-request-headers') || '').toLowerCase().split(',').map(value => value.trim()).filter(Boolean);
@@ -106,9 +127,13 @@ export function createApi(store, config, clock = () => Math.floor(Date.now() / 1
       // No cookies or hosting-specific identity headers participate in authentication.
       const bearer = request.headers.get('authorization')?.match(/^Bearer ([a-f0-9]{64})$/)?.[1];
       if (!bearer) return finish(json({ error: 'unauthorized' }, 401));
-      let data; try { data = await body(request); } catch { return finish(json({ error: 'invalid_payload' }, 400)); }
-      if (Object.keys(data).length !== 1) return finish(json({ error: 'invalid_payload' }, 400));
+      let data; try { data = await body(request, connections ? 6144 : 1024); } catch { return finish(json({ error: 'invalid_payload' }, 400)); }
       const owner = sign(`browser:${bearer}`);
+      if (connections) {
+        const result = saveHomeAssistant(store, config.secret, owner, data, now);
+        return finish(json(result.data, result.status));
+      }
+      if (Object.keys(data).length !== 1) return finish(json({ error: 'invalid_payload' }, 400));
       let route;
       if (Object.hasOwn(data, 'code')) {
         try {
@@ -119,7 +144,12 @@ export function createApi(store, config, clock = () => Math.floor(Date.now() / 1
         route = '/v1/sessions';
       } else if (typeof data.id === 'string' && /^[a-f0-9]{32}$/.test(data.id)) route = '/v1/session';
       else return finish(json({ error: 'invalid_payload' }, 400));
-      const invoke = () => relay(new Request(config.publicOrigin + route, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.secret}` }, body: JSON.stringify({ ...data, owner }) }), env, now);
+      const invoke = async () => {
+        const response = await relay(new Request(config.publicOrigin + route, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.secret}` }, body: JSON.stringify({ ...data, owner }) }), env, now);
+        if (response.status !== 200) return response;
+        const session = await response.json();
+        return json({ ...session, ...homeAssistantStatus(store, session.id, now) });
+      };
       if (route === '/v1/session') return finish(await invoke());
       const create = async () => {
         const existing = store.database.prepare('SELECT id FROM installs WHERE owner = ? AND code = ?').get(owner, data.code);

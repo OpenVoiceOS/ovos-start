@@ -639,6 +639,24 @@ html:lang(hi) .workbench:not([data-question="welcome"]) h1{letter-spacing:0;line
 .command-update{margin:0 0 12px;padding:12px 14px;border-left:3px solid var(--accent);background:var(--soft);color:var(--ink);font-size:14px;line-height:1.6;border-radius:0 8px 8px 0}
 @media(max-width:540px){.setup-connections{margin-top:20px;padding-top:18px}.connection-row{grid-template-columns:34px minmax(0,1fr) auto;column-gap:10px;padding:18px 0}.connection-icon{width:34px;height:38px;border-radius:10px}.connection-icon>.ui-icon{width:20px;height:20px}.connection-copy h3{font-size:16px}.connection-action{padding:9px 10px;font-size:13px}.connection-action>.ui-icon{display:none}.connection-options,.connection-detail{grid-column:1/-1}.connection-providers{grid-template-columns:1fr}.connection-options{padding:14px}}
 @media(forced-colors:active){.connection-providers [aria-pressed="true"]{border:2px solid Highlight}.connection-included{color:CanvasText}}
+
+/* Optional Home Assistant connection: short, labelled fields and just-in-time help. */
+.connection-pending{display:flex;align-items:center;gap:5px;margin-top:7px;font-size:13px;line-height:1.5;color:var(--accent)}
+.connection-pending>.ui-icon{width:17px;height:17px}
+.ha-form{grid-column:2/-1;min-width:0;margin-top:20px;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
+.ha-intro{font-size:15px;color:var(--ink);margin:0 0 20px;font-weight:600}
+.ha-field+.ha-field{margin-top:20px}.ha-field label{display:block;margin:0 0 8px;font-size:14px;font-weight:650}
+.ha-field input{box-sizing:border-box;width:100%;min-width:0;min-height:48px;padding:12px 14px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);font:inherit;font-size:16px}
+.ha-field input:focus{outline:2px solid var(--accent);outline-offset:2px}.ha-field input::placeholder{color:var(--muted)}
+.ha-field p,.ha-privacy,.ha-form-footer>span{font-size:13px;line-height:1.6;color:var(--muted);margin:7px 0 0}
+.ha-token-input{display:flex;gap:8px}.ha-token-input input{flex:1}.ha-token-input button{min-width:64px;min-height:48px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--accent);font:inherit;font-size:14px}
+.ha-token-help{margin-top:18px;font-size:14px;line-height:1.6}.ha-token-help summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;color:var(--accent);font-weight:600;min-height:44px;list-style:none}.ha-token-help summary::-webkit-details-marker{display:none}.ha-token-help summary>.ui-icon{width:20px;height:20px}.ha-token-help[open] summary>.ui-icon{transform:rotate(180deg)}
+.ha-token-help ol{padding-left:22px;margin:6px 0 12px;color:var(--ink)}.ha-token-help li+li{margin-top:7px}.ha-token-help a{color:var(--accent);display:inline-flex;align-items:center;gap:6px;text-underline-offset:3px}.ha-token-help a>.ui-icon{width:17px;height:17px}
+.ha-privacy{border-top:1px solid var(--line);padding-top:16px;margin-top:16px}
+.ha-form-footer{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px}.ha-form-footer>span{max-width:25ch;margin:0}.ha-form-footer .button{font-size:14px;min-height:44px;padding:11px 16px;white-space:normal;box-shadow:none}
+.ha-error{color:var(--ink);background:var(--soft);border-left:3px solid var(--accent);font-size:14px;line-height:1.6;margin:16px 0 0;padding:10px 12px}
+.ha-saved{display:flex;align-items:center;justify-content:space-between;gap:16px;max-width:none}.ha-saved p{margin:0}.ha-saved .text-button{flex:none;min-height:44px;font-size:14px}
+@media(max-width:540px){.ha-form{grid-column:1/-1;padding:16px;margin-top:16px}.ha-form-footer,.ha-saved{align-items:stretch;flex-direction:column;gap:10px}.ha-form-footer>span{max-width:none}.ha-saved .text-button{align-self:flex-start}}
 @media(max-width:480px){.site-header .brand{flex:1 1 100%}.preparation-card{padding:4px 0}.step-copy strong{font-size:12px}.brand-divider{display:none}}
 
 .check-command{display:block;margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:8px;font-size:13px;overflow-wrap:anywhere;user-select:all}

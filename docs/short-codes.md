@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-09 - Motive: Move public wizard and installer links to openvoiceos.org.
+Last Edit: Codex - 2026-10-12 - Motive: Document Home Assistant wizard setup and temporary credential handoff.
 
 # One-hour installation links
 
@@ -18,9 +18,9 @@ The wizard copies a short `curl … | sh` command for tracked installations. [`b
 
 [`issueSetup`](../dist/short-setup.mjs) freezes the choices and original issue/deadline. The recipe remains a sixteen-character Crockford Base32 v2 value: fifteen choice fields, timestamp and CRC8. The checksum detects mistakes; it is not authentication. The [relay](../server/relay/server/worker.mjs) derives a separate 128-bit launch capability and stores only its indexed hash in SQLite. Authenticated create/restore returns it; ordinary status reads do not. Existing rows are lazily backfilled without moving deadlines.
 
-`GET /s/CAPABILITY` resolves only its own recipe and write-only tracking capability. It never reveals status, owner identity or user credentials, and cannot accept an arbitrary download URL. Responses are not cached. At `now >= issuedAt + 3600`, the server returns only a nonzero diagnostic script instead of an installer, including when installation has already started. The launcher independently rechecks the timestamp before installation. A running installation is not interrupted; progress remains available for its existing 24-hour window.
+`GET /s/CAPABILITY` resolves only its own recipe and write-only tracking capability. It never contains status, owner identity or Home Assistant credentials directly, and cannot accept an arbitrary download URL. Responses are not cached. At `now >= issuedAt + 3600`, the server returns only a nonzero diagnostic script instead of an installer, including when installation has already started. The launcher independently rechecks the timestamp before installation. A running installation is not interrupted; progress remains available for its existing 24-hour window.
 
-Copying, downloading, reloading, sharing, Back and cancelling an edit never renew the deadline. Expired links retain choices; **Copy new command** explicitly issues a new recipe. Shared setup links and local drafts contain only choices/route metadata. They do not contain launch or write capabilities. Each browser credential receives an independent installation session. Keep executable commands private: their URL capability can remain in shell history or access logs.
+Copying, downloading, reloading, sharing, Back and cancelling an edit never renew the deadline. Expired links retain choices; **Copy new command** explicitly issues a new recipe. Shared setup links and local drafts contain only choices/route metadata. They do not contain launch or write capabilities. Each browser credential receives an independent installation session. Keep executable commands private: their URL capability can remain in shell history or access logs and authorizes the installer to redeem its one-time Home Assistant handoff when one was saved. Shared recipe links cannot redeem it.
 
 ## Download and terminal behavior
 
@@ -34,7 +34,7 @@ Relay [`launchError`](../server/relay/server/launch-errors.mjs#L56) returns a gr
 
 Executable downloads require the same valid launch session as copying. [`buildSetupScript`](../dist/short-setup.mjs) fully downloads the relay body over HTTPS into a private 0700 directory / 0600 file, rejects failed or empty transfers and invalid shell syntax, preserves the child exit code, and removes the directory on exit, INT or TERM. Failed session creation exposes neither a fallback command nor a runnable download.
 
-The canonical [v2 launcher](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/docs/index.md) retains 64-bit/user/OS validation, private scenario backups, existing-checkout protection, target-only credential prompts and post-reboot checks. It clears inherited Git repository/index/ref context before fetching, preserving ordinary Git and network configuration. The browser codec remains for choices; unused local launcher mirrors and old inline generators are removed. The relay sends the callback write token only inside the target bootstrap, not the create-session JSON response.
+The canonical [v2 launcher](https://github.com/OpenVoiceOS/ovos-start-launcher/blob/dev/docs/index.md) retains 64-bit/user/OS validation, private scenario backups, existing-checkout protection, private Home Assistant handoff and target-terminal AI/legacy credential prompts and post-reboot checks. It clears inherited Git repository/index/ref context before fetching, preserving ordinary Git and network configuration. The browser codec remains for choices; unused local launcher mirrors and old inline generators are removed. The relay sends the callback write token only inside the target bootstrap, not the create-session JSON response.
 
 ## Verification
 

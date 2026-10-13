@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 const root=new URL('../dist/',import.meta.url).pathname;
 const {DEFAULTS,DEVICES,validateState,buildYaml}=await import(root+'scenario.mjs');
 const {issueSetup,sameSetupChoices,setupStatus,buildShortCommand,buildSetupScript}=await import(root+'short-setup.mjs');
+const {HomeAssistantDraft}=await import(root+'home-assistant.mjs');
 const {CommandReceipt,revealCopyFallback,updateHandoffStep}=await import(root+'handoff.mjs');
 const {PrerequisiteGate}=await import(root+'prerequisites.mjs');
 const source=readFileSync(root+'app.mjs','utf8');
@@ -27,7 +28,7 @@ function harness(){
  const title={textContent:'Next'},paste={textContent:'Paste'},status={textContent:''},expiry={textContent:''};
  const nodes={'.command-fallback':manual,'[data-install-action]':button,'#install-command':command,'#share-link':link,'[data-copy="link"]':linkButton,'[data-paste-title]':title,'.paste-step p':paste,'[data-copy-status]':status,'[data-code-expiry]':expiry};
  const prerequisiteGate=new PrerequisiteGate();prerequisiteGate.selectDevice('computer');prerequisiteGate.selectFamily('debian');prerequisiteGate.confirm(true);prerequisiteGate.accept('computer');
- const context=vm.createContext({answered:new Set(['telemetry']),go:target=>{context.step=target;events.push('go:'+target);},finish:()=>context.render(true),prerequisiteGate,manualCopyFor:null,commandCopyAttempt:0,commandReceipt:new CommandReceipt(),previewOnly:false,Date:{now:()=>now*1000},Math,issueSetup:state=>issueSetup(state,now),sameSetupChoices,validateState,buildYaml,setupStatus:(s,t=now)=>setupStatus(s,t),buildShortCommand,buildSetupScript,revealCopyFallback,updateHandoffStep,DEVICES,state:{...setup.state},setupSession:setup,step:'review',expiryTimer:null,
+ const context=vm.createContext({homeAssistantSaving:false,clearHomeAssistantHandoff(){},homeAssistantModel:()=>({ready:true}),homeAssistantDraft:new HomeAssistantDraft(),forgetHomeAssistant(){},prepareHomeAssistant:async()=>true,answered:new Set(['telemetry']),go:target=>{context.step=target;events.push('go:'+target);},finish:()=>context.render(true),prerequisiteGate,manualCopyFor:null,commandCopyAttempt:0,commandReceipt:new CommandReceipt(),previewOnly:false,Date:{now:()=>now*1000},Math,issueSetup:state=>issueSetup(state,now),sameSetupChoices,validateState,buildYaml,setupStatus:(s,t=now)=>setupStatus(s,t),buildShortCommand,buildSetupScript,revealCopyFallback,updateHandoffStep,DEVICES,state:{...setup.state},setupSession:setup,step:'review',expiryTimer:null,
  navigator:{clipboard:{writeText(value){writes.push(value);return new Promise((a,b)=>{resolve=a;reject=b;});}}},
  document:{querySelector:s=>nodes[s]??null},wizard:{querySelector:s=>nodes[s]??null,querySelectorAll:s=>s==='[data-prerequisite-required]'?gatedRegions:handoffSteps},shareUrl:()=>`https://example.test/#setup=${setup.code}`,
  installTracker:{session:{launchToken:'L'.repeat(22)},code:setup.code},trackingShown:false,updateInstallProgress(){},icon:x=>`[${x}]`,toast:x=>toasts.push(x),localize:()=>events.push('localize'),applyTranslations(){},clearTimeout(){},setTimeout:()=>1,
@@ -112,7 +113,7 @@ test('a changed recipe requires an updated command until the current recipe is c
  assert.equal(h.handoffSteps[1].attributes['aria-current'],undefined);
  h.context.installTracker.code=h.context.setupSession.code;
  h.context.installTracker.session={status:'waiting',launchToken:'N'.repeat(22)};
- pending=h.context.copy('command');h.resolve();await pending;
+ pending=h.context.copy('command');await Promise.resolve();h.resolve();await pending;
  assert.ok(h.writes.at(-1).includes('/s/'+'N'.repeat(22)));
  assert.equal(h.context.commandReceipt.needsUpdate,false);
  assert.equal(h.context.commandReceipt.copiedCode,h.context.setupSession.code);

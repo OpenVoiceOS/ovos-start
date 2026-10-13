@@ -18,7 +18,7 @@ import {sudoPasswordNotice} from '../dist/terminal-notice.mjs';
 const source=readFileSync(new URL('../dist/app.mjs',import.meta.url),'utf8');
 /** Load production renderers with actual domain modules and controlled state. @returns {object} View scope. */
 function views(){
- const c=vm.createContext({connectionsView,aiConnectionsOpen:false,prerequisiteGate:new PrerequisiteGate(),manualCopyFor:null,installTracker:{session:null},prerequisitesView,previewOnly:false,liveWizardUrl,...scenario,...flow,...journey,...recommendations,...handoff,...short,preparationFor,icon,deviceIcon,sudoPasswordNotice,
+ const c=vm.createContext({homeAssistantDraft:{clear(){},saving:false},homeAssistantModel:()=>({}),mountHomeAssistant(){},refreshConnections(){},connectionsView,aiConnectionsOpen:false,prerequisiteGate:new PrerequisiteGate(),manualCopyFor:null,installTracker:{session:null},prerequisitesView,previewOnly:false,liveWizardUrl,...scenario,...flow,...journey,...recommendations,...handoff,...short,preparationFor,icon,deviceIcon,sudoPasswordNotice,
  state:{...scenario.DEFAULTS,device:'pi'},answered:new Set(['telemetry']),telemetrySelection:scenario.DEFAULTS.telemetry,step:'piModel',devicePane:'cards',unlistedDevice:false,platformUnsure:false,detailsOpen:false,setupSession:null,shareUrl:()=>'',launchToken:()=> 'L'.repeat(22),});
  const names=['escape','intro','card','answerCard','deviceView','platformView','experienceView','capabilityView','preparationView','detailsView','prerequisitePageView','reviewOptionsView','setupEditorView','manualCopyReady','resultView','tweakView','telemetryView'];
  const declarations=names.map(name=>source.match(new RegExp(`^function ${name}\\([^\\n]*\\) \\{[\\s\\S]*?^\\}`,'m'))?.[0]);

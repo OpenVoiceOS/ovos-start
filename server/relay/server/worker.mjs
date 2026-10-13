@@ -64,12 +64,12 @@ function json(data,status=200) {
   return Response.json(data,{status,headers:{'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'}});
 }
 
-/** Read at most 1 KiB, even when Content-Length is absent or dishonest. @param {Request} request @returns {Promise<object>} */
-export async function body(request) {
+/** Read a bounded body, even when Content-Length is absent or dishonest. @param {Request} request @param {number} limit Maximum bytes. @returns {Promise<object>} */
+export async function body(request,limit=1024) {
   if(request.headers.get('content-type')?.split(';')[0]!=='application/json')throw new Error('payload');
   const reader=request.body?.getReader();if(!reader)throw new Error('payload');
   const chunks=[];let size=0;
-  try { for(;;){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>1024){await reader.cancel();throw new Error('payload');}chunks.push(value);} }
+  try { for(;;){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>limit){await reader.cancel();throw new Error('payload');}chunks.push(value);} }
   finally {reader.releaseLock();}
   const bytes=new Uint8Array(size);let at=0;for(const chunk of chunks){bytes.set(chunk,at);at+=chunk.length;}
   const data=JSON.parse(new TextDecoder().decode(bytes));

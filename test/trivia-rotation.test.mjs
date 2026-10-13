@@ -53,7 +53,7 @@ test('trivia rotates every 20 seconds even when frequent progress polls resynchr
 test('default browser timers keep their native receiver instead of binding the rotation controller',()=>{
   const source=readFileSync(new URL('../dist/trivia-rotation.mjs',import.meta.url),'utf8').replace(/^export /gm,'');
   let callback,cleared,delay;
-  const context=vm.createContext({
+  const context=vm.createContext({homeAssistantDraft:{clear(){},saving:false},homeAssistantModel:()=>({}),mountHomeAssistant(){},refreshConnections(){},
     setTimeout(fn,ms){assert.equal(this,undefined,'Window.setTimeout rejects an unrelated receiver');callback=fn;delay=ms;return 7;},
     clearTimeout(id){assert.equal(this,undefined,'Window.clearTimeout rejects an unrelated receiver');cleared=id;},
   });

@@ -13,6 +13,7 @@ import { icon, deviceIcon } from './icons.mjs';
 import { LAUNCHER_URL, issueSetup, sameSetupChoices, setupStatus, buildShortCommand, buildSetupScript, readSetupSession } from './short-setup.mjs';
 import { CommandReceipt, installHandoff, reviewChoices, setupSummary, revealCopyFallback, updateHandoffStep } from './handoff.mjs';
 import { connectionsView } from './connections.mjs';
+import { HomeAssistantDraft } from './home-assistant.mjs';
 import { PrerequisiteGate, prerequisitesView } from './prerequisites.mjs';
 import { bindDistroPicker } from './distro-picker.mjs';
 import { preparationFor } from './preparation.mjs';
@@ -48,6 +49,9 @@ let manualCopyFor = null;
 let commandCopyAttempt = 0;
 const commandReceipt = new CommandReceipt();
 let aiConnectionsOpen = false;
+const homeAssistantDraft = new HomeAssistantDraft();
+let homeAssistantCleanup = Promise.resolve();
+let homeAssistantSaving = false;
 let expiryTimer = null;
 let step = 'welcome';
 let welcomePlayback=null;
@@ -292,7 +296,7 @@ function skillsView() {
 
 /** Ask only whether to connect an existing Home Assistant service. @returns {string} */
 function homeAssistantView() {
-  return intro('Give your home <em>a voice?</em>', 'Introduce OVOS to the Home Assistant server you already run.')+`<div class="answer-deck two">${answerCard('homeassistant','yes',icon('home_assistant'),'Yes, let’s connect it','I already run Home Assistant. Ask for my server details in the device terminal.',state.homeassistant)}${answerCard('homeassistant','no',icon('schedule'),'Maybe later','My home can wait. On with the setup.',!state.homeassistant)}</div><p class="under-deck">This connects Home Assistant; it doesn’t install it. Tokens stay out of your setup link.</p>`;
+  return intro('Give your home <em>a voice?</em>', 'Introduce OVOS to the Home Assistant server you already run.')+`<div class="answer-deck two">${answerCard('homeassistant','yes',icon('home_assistant'),'Yes, let’s connect it','I already run Home Assistant. Add its address and token before installing.',state.homeassistant)}${answerCard('homeassistant','no',icon('schedule'),'Maybe later','My home can wait. On with the setup.',!state.homeassistant)}</div><p class="under-deck">This connects Home Assistant; it doesn’t install it. Tokens stay out of your setup link.</p>`;
 }
 
 /** Ask only which optional AI connection to use. @returns {string} */
@@ -374,7 +378,7 @@ function reviewOptionsView(overview=false) {
   return `    <${overview?'section':'details'} class="details install-options" ${!overview&&detailsOpen?'open':''}>
       ${overview?'':`<summary><span>Your setup <small>View or edit</small></span>${icon('expand_more')}</summary>`}
       <div class="review-choices">${visible.map(choice=>`<button class="review-choice" data-edit="${choice.target}" aria-label="Edit ${choice.label}: ${escape(choice.value)}"><span class="review-choice-icon" aria-hidden="true">${icon(choice.icon)}</span><span><span class="review-choice-label">${choice.label}</span><strong>${escape(choice.value)}</strong></span></button>`).join('')}</div>
-      ${overview?connectionsView(state,aiConnectionsOpen):''}
+      ${overview?connectionsView(state,aiConnectionsOpen,homeAssistantModel()):''}
       ${detailsView()}
     </${overview?'section':'details'}>`;
 }
@@ -397,7 +401,7 @@ function resultView() {
       <div class="install-target install-target-summary"><button type="button" class="setup-device" data-edit="device" aria-label="Edit Device: ${escape(DEVICES[state.device].name)}">${deviceIcon(state.device)}<span class="setup-device-copy"><strong>${DEVICES[state.device].name}</strong><span>${LANGUAGES[state.locale]}</span></span></button><button type="button" class="preparation-status" data-review-prerequisites aria-labelledby="preparation-state preparation-review-label" title="Review preparation">${icon('check')}<span id="preparation-state">Tools confirmed</span><span class="sr-only" id="preparation-review-label">Review preparation</span></button></div>
       <ul class="setup-icon-summary" role="list" aria-label="Your setup">${setupSummary(state).filter(choice=>!['device','homeassistant','llm'].includes(choice.target)).map(choice=>`<li><button class="setup-summary-icon" type="button" data-edit="${choice.target}" aria-label="Edit ${choice.label}: ${escape(choice.value)}"><span class="setup-feature-icon" aria-hidden="true">${icon(choice.icon)}</span><span class="setup-feature-label"><span class="setup-feature-kind">${choice.label}</span><strong>${escape(choice.value)}</strong></span></button></li>`).join('')}</ul>
       ${usesRaspberryPiTuning(state.device)?'<p class="setup-tuning-note">Raspberry Pi tuning is included.</p>':''}
-      ${connectionsView(state,aiConnectionsOpen)}
+      ${connectionsView(state,aiConnectionsOpen,homeAssistantModel())}
       <ol class="handoff-actions" data-prerequisite-required ${!prerequisiteGate.ready(state.device)?'hidden':''}>
         <li data-handoff-step="copy" ${prerequisiteGate.ready(state.device)?'aria-current="step"':''}><span class="handoff-number" aria-hidden="true"><span>1</span>${icon('check')}</span><div class="handoff-action-body">
           <p class="command-update" data-command-update role="status" hidden>Your setup changed. Copy the updated command before pasting it on your device.</p>
@@ -487,6 +491,7 @@ function render(focus = false) {
   renderSteps();
   wizard.innerHTML = `<div class="screen ${focus?'entering':''}" data-question="${step}">${views[step]()}${step==='welcome'||(step==='review'&&!prerequisiteGate.ready(state.device))?'':projectTriviaView()}</div>`;
   document.querySelector('.workbench').dataset.question=step;
+  mountHomeAssistant();
   updateExpiry();
   localize();
   if(step==='review'&&setupSession?.code){
@@ -522,6 +527,7 @@ function go(target) {
  */
 function commitSetup() {
   if(sameSetupChoices(setupSession,state))return false;
+  clearHomeAssistantHandoff();
   commandCopyAttempt+=1;manualCopyFor=null;commandReceipt.invalidate();trackingShown=false;
   try{setupSession=issueSetup(state);}
   catch{setupSession={state:{...state},code:null,version:0,issuedAt:null,expiresAt:null};}
@@ -536,15 +542,90 @@ function finish() {
 
 }
 
+/** Describe readiness without putting a credential into render data. @returns {object} */
+function homeAssistantModel() {
+  const session=installTracker.code===setupSession?.code?installTracker.session:null;
+  return {ready:session?.homeassistantReady===true,editing:homeAssistantDraft.editing,saving:homeAssistantSaving,error:homeAssistantDraft.error};
+}
+
+/** Restore private input through DOM properties, never HTML attributes. @returns {void} */
+function mountHomeAssistant() {
+  const region=wizard.querySelector('.setup-connections');if(region)region.dataset.haReady=String(homeAssistantModel().ready);
+  const address=wizard.querySelector('#ha-url'),token=wizard.querySelector('#ha-token');
+  if(address)address.value=homeAssistantDraft.url;
+  if(token)token.value=homeAssistantDraft.token;
+  const error=wizard.querySelector('#ha-error');if(error){error.textContent=t(homeAssistantDraft.error,state.locale);error.hidden=!homeAssistantDraft.error;}
+}
+
+/** Refresh only connection controls so editing never moves the page. @returns {void} */
+function refreshConnections() {
+  const region=wizard.querySelector('.setup-connections');if(!region)return;
+  region.outerHTML=connectionsView(state,aiConnectionsOpen,homeAssistantModel());mountHomeAssistant();localize();
+}
+
+/** Serialize cleanup before another handoff, including a same-second recipe reversal. @returns {void} */
+function clearHomeAssistantHandoff() {
+  const session=installTracker.code===setupSession?.code?installTracker.session:null;
+  if(setupSession?.state.homeassistant&&session?.status==='waiting'){
+    session.homeassistantReady=false;
+    homeAssistantCleanup=homeAssistantCleanup.then(()=>installTracker.saveHomeAssistant(session.id,null)).catch(()=>{});
+  }
+}
+
+/** Drop unused server credentials when removing this optional connection. @returns {void} */
+function forgetHomeAssistant() {
+  clearHomeAssistantHandoff();homeAssistantDraft.clear();
+}
+
+/** Validate and save an owned handoff before copying or downloading a command.
+ * @returns {Promise<boolean>} Only a confirmed saved handoff permits export.
+ */
+async function prepareHomeAssistant() {
+  if(!state.homeassistant||state.experience==='hub')return true;
+  if(previewOnly||step!=='review'||homeAssistantSaving)return false;
+  if(homeAssistantModel().ready&&!homeAssistantDraft.editing)return true;
+  const artifact=setupSession;
+  for(const [field,id] of [['url','#ha-url'],['token','#ha-token']]){
+    const input=wizard.querySelector(id);if(input&&input.value!==homeAssistantDraft[field])homeAssistantDraft.input(field,input.value);
+  }
+  let value;
+  try{value=homeAssistantDraft.value();}
+  catch(error){
+    homeAssistantDraft.error=error.message==='url'?'Enter your Home Assistant address, starting with http:// or https://.':'Paste the long-lived access token from your Home Assistant profile.';
+    mountHomeAssistant();const field=wizard.querySelector(error.message==='url'?'#ha-url':'#ha-token');field?.setAttribute('aria-invalid','true');field?.focus();return false;
+  }
+  const version=homeAssistantDraft.version;
+  homeAssistantSaving=true;homeAssistantDraft.saving=true;homeAssistantDraft.error='';refreshConnections();
+  let session;
+  try{
+    await homeAssistantCleanup;
+    session=await installTracker.connect(artifact.code);
+    if(!session||setupSession!==artifact||step!=='review'||version!==homeAssistantDraft.version)return false;
+    if(session.status!=='waiting'||session.homeassistantClaimed)throw new Error('started');
+    const ready=await installTracker.saveHomeAssistant(session.id,value);
+    if(!ready)throw new Error('unavailable');
+    if(setupSession!==artifact||!state.homeassistant||version!==homeAssistantDraft.version){await installTracker.saveHomeAssistant(session.id,null).catch(()=>{});return false;}
+    homeAssistantDraft.saved();
+    return true;
+  }catch{
+    if(setupSession===artifact&&version===homeAssistantDraft.version)homeAssistantDraft.error='Could not save your connection. Please try again before copying the command.';
+    return false;
+  }finally{
+    value=null;homeAssistantSaving=false;homeAssistantDraft.saving=false;refreshConnections();
+    if(version===homeAssistantDraft.version){if(homeAssistantDraft.error)wizard.querySelector('#ha-error')?.scrollIntoView({block:'nearest'});else if(step==='review'&&setupSession===artifact)wizard.querySelector('[data-ha-edit]')?.focus({preventScroll:true});}
+  }
+}
+
 /** Keep optional edits on this page and refuse changes to an installation already running.
  * @param {string} key Connection field. @param {string} value Whitelisted setting. @returns {void}
  */
 function setConnection(key, value) {
-  if(step!=='review'||state.experience==='hub')return;
+  if(step!=='review'||state.experience==='hub'||homeAssistantSaving)return;
   if(installTracker.code===setupSession?.code&&installTracker.session&&installTracker.session.status!=='waiting')return;
   if(key==='homeassistant'&&!['yes','no'].includes(value)||key==='llmMode'&&!['off','local','online'].includes(value)||!['homeassistant','llmMode'].includes(key))return;
   const next=validateState({...state,[key]:key==='homeassistant'?value==='yes':value,channel:'alpha'});
   if(sameSetupChoices(setupSession,next))return;
+  if(key==='homeassistant'&&value==='no')forgetHomeAssistant();
   state=next;confirmedState={...state};answered.add(key==='homeassistant'?'homeassistant':'llm');
   if(key==='llmMode')aiConnectionsOpen=false;
   commitSetup();persist();render();
@@ -553,11 +634,11 @@ function setConnection(key, value) {
 
 /** Expand optional AI choices without changing the recipe or copied command. @returns {void} */
 function toggleAIConnections() {
-  if(step!=='review'||state.experience==='hub')return;
+  if(step!=='review'||state.experience==='hub'||homeAssistantSaving)return;
   if(installTracker.code===setupSession?.code&&installTracker.session&&installTracker.session.status!=='waiting')return;
   aiConnectionsOpen=!aiConnectionsOpen;
   const current=wizard.querySelector('.setup-connections');if(!current)return;
-  current.outerHTML=connectionsView(state,aiConnectionsOpen);localize();
+  current.outerHTML=connectionsView(state,aiConnectionsOpen,homeAssistantModel());mountHomeAssistant();localize();
   wizard.querySelector('[data-connections-ai]')?.focus({preventScroll:true});
 }
 
@@ -671,7 +752,7 @@ function restartWizard(target='language') {
   cancelTransition();clearTimeout(expiryTimer);expiryTimer=null;installTracker.reset();
   state={...fresh.state};confirmedState={...state};setupSession=fresh;
   prerequisiteGate.confirm(false);trackingShown=false;progressSignature='';
-  commandReceipt.reset();commandCopyAttempt+=1;manualCopyFor=null;aiConnectionsOpen=false;
+  commandReceipt.reset();commandCopyAttempt+=1;manualCopyFor=null;aiConnectionsOpen=false;homeAssistantDraft.clear();
   answered=new Set();telemetrySelection=DEFAULTS.telemetry;preparedFor=null;skillsAnswered=true;
   editing=false;editSnapshot=null;editAnswered=[];editSkillsAnswered=false;editPreparedFor=null;
   languageChooserOpen=false;detailsOpen=false;devicePane='cards';unlistedDevice=false;platformUnsure=false;
@@ -800,6 +881,10 @@ function updateInstallProgress() {
   const region=wizard.querySelector('[data-install-progress]');if(!region)return;
   const restoreInteraction=preserveProgressInteraction(wizard,document.querySelector('.steps'));
   const model=installTracker.snapshot();
+  const haReady=homeAssistantModel().ready;
+  const connection=wizard.querySelector('.setup-connections');
+  if(connection&&connection.dataset.haReady!==String(haReady)&&!homeAssistantDraft.editing&&!homeAssistantDraft.saving)refreshConnections();
+  if(model.session?.homeassistantClaimed||model.session?.status!=='waiting'&&model.session)homeAssistantDraft.clear();
   if(model.session&&model.session.status!=='waiting')trackingShown=true;
   const waiting=wizard.querySelector('[data-install-waiting]');
   const pending=!model.session||model.session.status==='waiting';
@@ -915,6 +1000,10 @@ async function copy(kind) {
     if(setupStatus(artifact).kind!=='active'){updateExpiry();return;}
   }
   if(kind==='command'&&!launchToken()){updateExpiry();toast('Could not prepare your install command. Please try again.');return;}
+  if(kind==='command'&&state.homeassistant&&(!homeAssistantModel().ready||homeAssistantDraft.editing)){
+    if(!await prepareHomeAssistant()||setupSession!==artifact||step!=='review'||!prerequisiteGate.ready(state.device))return;
+    if(setupStatus(artifact).kind!=='active'){updateExpiry();return;}
+  }
   if(kind==='command'&&attempt!==commandCopyAttempt)return;
   if(kind==='command'){manualCopyFor=null;trackingShown=true;updateInstallProgress();updateManualCopy();}
   const value = kind === 'command' ? buildShortCommand(artifact,Math.floor(Date.now()/1000),launchToken()) : shareUrl();
@@ -959,6 +1048,7 @@ async function download(kind) {
   if(!yaml&&setupStatus(setupSession,now).kind!=='active'){updateExpiry();toast('Copy a new command before downloading it.');return;}
   const artifact=setupSession;
   if(!yaml){await installTracker.connect(artifact.code);if(setupSession!==artifact||step!=='review'||!prerequisiteGate.ready(state.device))return;if(setupStatus(artifact).kind!=='active'){updateExpiry();return;}if(!launchToken()){updateExpiry();toast('Could not prepare your install command. Please try again.');return;}trackingShown=true;updateInstallProgress();}
+  if(!yaml&&state.homeassistant&&(!homeAssistantModel().ready||homeAssistantDraft.editing)){if(!await prepareHomeAssistant()||setupSession!==artifact||step!=='review'||!prerequisiteGate.ready(state.device)||setupStatus(artifact).kind!=='active')return;}
   const blob = new Blob([yaml ? buildYaml(state) : buildSetupScript(artifact,Math.floor(Date.now()/1000),launchToken())], { type: yaml ? 'text/yaml' : 'text/x-shellscript' });
   const url = URL.createObjectURL(blob); const link = document.createElement('a');
   link.href = url; link.download = yaml ? 'scenario.yaml' : `ovos-${state.device}-setup.sh`; document.body.append(link); if(!yaml)commandReceipt.expose(); link.click(); link.remove();
@@ -966,6 +1056,10 @@ async function download(kind) {
   toast(yaml ? 'Scenario downloaded. The full script also sets your language.' : `Downloaded. On your device, run: sh ovos-${state.device}-setup.sh`);
 }
 
+
+window.addEventListener('pagehide',()=>{homeAssistantDraft.clear();const field=wizard.querySelector('#ha-token');if(field)field.value='';});
+wizard.addEventListener('input',event=>{const field=event.target;if(!['ha-url','ha-token'].includes(field.id))return;homeAssistantDraft.input(field.id==='ha-url'?'url':'token',field.value);field.removeAttribute('aria-invalid');const error=wizard.querySelector('#ha-error');if(error){error.hidden=true;error.textContent='';}commandCopyAttempt++;commandReceipt.invalidate();manualCopyFor=null;updateExpiry();});
+wizard.addEventListener('submit',event=>{if(!event.target.matches('[data-ha-form]'))return;event.preventDefault();void prepareHomeAssistant();});
 
 document.addEventListener('pointerdown',event=>{
   const target=event.target.closest('button, .brand, .skip-link');if(target)choiceInput.pointerDown(event,target);
@@ -996,6 +1090,8 @@ document.addEventListener('click', event => {
   if(target.hasAttribute('data-cancel-edit')){cancelTransition();cancelEdit();return;}
   if(target.hasAttribute('data-edit')){editQuestion(target.dataset.edit);return;}
   if(target.hasAttribute('data-connection')){setConnection(target.dataset.connection,target.dataset.value);return;}
+  if(target.hasAttribute('data-ha-edit')){homeAssistantDraft.edit();commandCopyAttempt++;manualCopyFor=null;commandReceipt.invalidate();refreshConnections();updateExpiry();wizard.querySelector('#ha-url')?.focus();return;}
+  if(target.hasAttribute('data-ha-show')){const field=wizard.querySelector('#ha-token');if(field){const show=field.type==='password';field.type=show?'text':'password';target.setAttribute('aria-pressed',String(show));target.textContent=t(show?'Hide':'Show',state.locale);}return;}
   if(target.hasAttribute('data-connections-ai')){toggleAIConnections();return;}
   if(target.hasAttribute('data-next-trivia')){advanceTrivia();return;}
   if(target.hasAttribute('data-pause-trivia')){triviaPaused=!triviaPaused;syncTriviaRotation();return;}

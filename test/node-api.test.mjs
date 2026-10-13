@@ -214,11 +214,11 @@ test('launch and status deadlines stay bounded', async t => {
 
 test('persistent database, capabilities and migration journal survive restarts', async t => {
   const f = fixture(t), first = await f.create();
-  assert.equal(f.store.database.prepare('SELECT count(*) n FROM node_migrations').get().n, 6);
+  assert.equal(f.store.database.prepare('SELECT count(*) n FROM node_migrations').get().n, 7);
   assert.equal(statSync(f.filename).mode & 0o777, 0o600);
   f.store.close();
   const reopened = openDatabase(f.filename); t.after(() => reopened.close());
-  assert.equal(reopened.database.prepare('SELECT count(*) n FROM node_migrations').get().n, 6);
+  assert.equal(reopened.database.prepare('SELECT count(*) n FROM node_migrations').get().n, 7);
   const api = createApi(reopened, config, () => now);
   const response = await api(new Request(publicOrigin + '/api/install', { method: 'POST', headers: { Origin: wizard, 'Content-Type': 'application/json', Authorization: `Bearer ${browser}` }, body: JSON.stringify({ code }) }));
   assert.deepEqual(await response.json(), first);
@@ -253,7 +253,7 @@ test('audio migration preserves prior sessions and backfills only confirmed voic
   for(const [index,status] of states.entries())insert.run(String(index),String(index),String(index),String(index),status,status==='waiting'?0:index+3,now,now+3600,now+86400,now);
   legacy.close();
   const migrated=openDatabase(filename);t.after(()=>migrated.close());
-  assert.equal(migrated.database.prepare('SELECT count(*) n FROM node_migrations').get().n,6);
+  assert.equal(migrated.database.prepare('SELECT count(*) n FROM node_migrations').get().n,7);
   for(const row of migrated.database.prepare('SELECT * FROM installs').all()){
     assert.equal(row.audio_status,row.status==='voice_ready'?'passed':'pending');
     assert.equal(row.microphone_status,row.status==='voice_ready'?'passed':'pending');
@@ -279,7 +279,7 @@ test('completed-step migration preserves prior audio outcomes and only backfills
   }
   legacy.close();
   const migrated=openDatabase(filename);t.after(()=>migrated.close());
-  assert.equal(migrated.database.prepare('SELECT count(*) n FROM node_migrations').get().n,6);
+  assert.equal(migrated.database.prepare('SELECT count(*) n FROM node_migrations').get().n,7);
   for(const row of migrated.database.prepare('SELECT * FROM installs').all()){
     assert.equal(row.completed_steps,row.status==='services_ready'?8:0);
     assert.equal(row.audio_status,'passed');assert.equal(row.microphone_status,'failed');

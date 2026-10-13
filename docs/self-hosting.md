@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-09 - Motive: Preserve existing wizard sessions during the public domain transition.
+Last Edit: Codex - 2026-10-12 - Motive: Document Home Assistant wizard setup and temporary credential handoff.
 
 # Host the wizard API
 
@@ -16,13 +16,13 @@ Configure these values in a private service environment file, never in frontend 
 | `DATABASE_PATH` | Absolute filename; defaults to `/var/lib/ovos-start/installs.sqlite` |
 | `PORT` | Loopback port; defaults to `8787` |
 
-Origins must be exact HTTPS origins with no trailing slash, paths or wildcards. Deploy the `server/` directory together with `dist/recipe-code.mjs`, `dist/scenario.mjs` and `dist/recommendations.mjs`; these source modules validate recipes independently of the browser.
+Origins must be exact HTTPS origins with no trailing slash, paths or wildcards. Deploy the `server/` directory together with `dist/recipe-code.mjs`, `dist/scenario.mjs` and `dist/recommendations.mjs` and `dist/home-assistant.mjs`; these source modules validate recipes independently of the browser.
 
 Use a dedicated service account. Its database directory must be owned by that account with mode `0700`; the database is mode `0600`. Keep the secret stable across restarts: changing it invalidates ownership and installer capabilities. Do not log authorization headers, request bodies or temporary install URLs.
 
 [`deploy/ovos-start-api.service`](../deploy/ovos-start-api.service) supplies the systemd service: the dedicated `ovos-start` user, private state directory, automatic restart and a 256 MiB memory limit. It reads `/etc/ovos-start/api.env`, runs `/opt/ovos-start/current/server/node-server.mjs` using `/opt/ovos-start/node/bin/node`, and keeps the application filesystem read-only. The runtime and `current` symlinks should be managed by root. Enable it only after the runtime, application files and private environment are in place.
 
-[`openDatabase`](../server/node-database.mjs) applies the relay's six migrations in a transaction and records their checksums. Restarting does not replay them. It rejects changed migrations, symlinks and a public state directory. SQLite uses WAL, full synchronous writes and a one-second busy timeout. Back up the live database using SQLite's backup facilities; copying only the main file while WAL is active is insufficient.
+[`openDatabase`](../server/node-database.mjs) applies the relay's seven migrations in a transaction and records their checksums. Restarting does not replay them. It rejects changed migrations, symlinks and a public state directory. SQLite uses WAL, full synchronous writes and a one-second busy timeout. Back up the live database using SQLite's backup facilities; copying only the main file while WAL is active is insufficient.
 
 ## API contract
 
@@ -31,6 +31,8 @@ Use a dedicated service account. Its database directory must be owned by that ac
 | Endpoint | Access |
 | --- | --- |
 | `GET /healthz` | Returns `{"ok":true}` only when SQLite answers |
+| `POST /api/connections` | Same browser origin and bearer; save `{id,homeassistant:{url,token}}` or clear with `{id,homeassistant:null}` while waiting |
+| `POST /v1/homeassistant` | Installer write bearer and `{}`; redeem one private connection payload |
 | `POST /api/install` | Allowed wizard origin and browser bearer credential; `{code}` creates/restores a setup, `{id}` reads its status |
 | `OPTIONS /api/install` | Preflight for allowed origins, `POST`, `Authorization` and `Content-Type` |
 | `GET /s/<capability>` | Temporary install command; existing one-hour start deadline |
@@ -40,7 +42,17 @@ The service-only relay routes `/v1/sessions` and `/v1/session` are inaccessible 
 
 Generate a 32-byte browser credential with `crypto.getRandomValues`, retain it in the wizard's first-party storage, and send its lowercase hex encoding in `Authorization: Bearer ...`. Send JSON and use `credentials: 'omit'`. The server derives an opaque owner using HMAC; a different browser credential cannot read another owner's install. Do not include this credential in share links, exported recipes or commands. Clearing browser storage loses access to that browser's earlier progress. The public frontend never receives `RELAY_ADMIN_KEY` or the installer write token.
 
-Cross-site cookies are unnecessary. CORS allows only configured wizard origins. It is not a replacement for bearer authentication. Requests are capped at 1 KiB and have bounded HTTP timeouts. Rate limits allow 180 requests per client address and 1,200 globally per minute, plus 10 new sessions per address and 60 globally per minute. At most 2,000 session rows can be stored; the durable row limit survives process restarts, and expired rows are pruned as new sessions are created. Minute counters reset with the process. Restore/status operations do not consume the new-session quota.
+Cross-site cookies are unnecessary. CORS allows only configured wizard origins. It is not a replacement for bearer authentication. Requests are capped at 1 KiB, except the credential endpoint at 6 KiB and have bounded HTTP timeouts. Rate limits allow 180 requests per client address and 1,200 globally per minute, plus 10 new sessions per address and 60 globally per minute. At most 2,000 session rows can be stored; the durable row limit survives process restarts, and expired rows are pruned as new sessions are created. Minute counters reset with the process. Restore/status operations do not consume the new-session quota.
+
+### Temporary Home Assistant handoff
+
+[`saveHomeAssistant` and `claimHomeAssistant`](../server/home-assistant.mjs) store a validated address/token under AES-256-GCM, with a fresh nonce, a purpose-specific key derived from the relay secret, and authenticated session/recipe binding. This is HTTPS transport plus encryption at rest, not end-to-end encryption. The API never contacts the supplied Home Assistant address. Local HTTP addresses are supported because the device may reach Home Assistant on its LAN.
+
+Only the owning browser can write, replace or remove an unused waiting handoff. Device redemption uses its existing private installer bearer, works before the installation phase (including downloading), and atomically clears the ciphertext before returning two bounded text lines. A consumed handoff cannot be replayed or overwritten. `204` means no wizard handoff was ever saved and allows legacy Terminal prompts; `410` means consumed/expired and stops the launcher. A failed response after consumption requires a fresh command and re-entry of the token; retrieval is deliberately at most once.
+
+Ciphertext expires at the original one-hour command deadline. Requests and a one-minute timer erase bounded batches of expired or unusable encrypted data. Owner-scoped installation responses expose only `homeassistantReady` and `homeassistantClaimed` booleans. No address/token appears in status, the bootstrap, recipe, URL, logs or browser storage. The browser retains unfinished details in page memory to support edits, clears them on page exit or device claim, and serializes abandoned-session cleanup before another handoff. The final device configuration necessarily retains the token for Home Assistant use.
+
+Deploy the API and a launcher supporting this contract before publishing the web form. Keep authorization headers, bodies and executable capability URLs out of proxy logs. The existing private database/backup rules also apply to encrypted handoffs. [`home-assistant-api.test.mjs`](../test/home-assistant-api.test.mjs) verifies owner isolation, expiration, concurrent one-time claims, persistence, tampering, request limits and absence of plaintext in SQLite/WAL/status/bootstrap responses.
 
 ### Confirmed installation milestones
 

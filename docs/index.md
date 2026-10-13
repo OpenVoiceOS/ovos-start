@@ -1,4 +1,4 @@
-Last Edit: Codex - 2026-10-08 - Motive: Document the public wizard and self-hosted API.
+Last Edit: Codex - 2026-10-12 - Motive: Document Home Assistant wizard setup and temporary credential handoff.
 
 # OVOS Start developer guide
 
@@ -42,3 +42,5 @@ The build publishes only the app bundle, early theme script, CSS, HTML, assets a
 - [Post-install examples](post-install.md)
 - [Localization](localization.md)
 - [Asset provenance and licenses](assets.md)
+
+Home Assistant address/token setup now happens inline in the wizard. [`HomeAssistantDraft`](../dist/home-assistant.mjs) keeps private input separate from recipes; the [hosting guide](self-hosting.md#temporary-home-assistant-handoff) explains authenticated, encrypted, single-use delivery to the device. AI provider details continue to be entered in Terminal.
